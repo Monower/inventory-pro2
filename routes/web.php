@@ -8,6 +8,11 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return to_route('login');
 });
+
+
+Route::get('/products', function () {
+    return Inertia::render('Products');
+});
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
 //         'canLogin' => Route::has('login'),

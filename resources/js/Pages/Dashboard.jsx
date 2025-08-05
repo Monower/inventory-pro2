@@ -1,26 +1,28 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import DashboardCard from '../Components/DasboardCard/DashboardCard';
 
 export default function Dashboard() {
     return (
         <AuthenticatedLayout
-            header={
+            /* header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     Dashboard
                 </h2>
-            }
+            } */
         >
             <Head title="Dashboard" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            You're logged in!
-                        </div>
-                    </div>
+            <section>
+                <h3>Dashboard.</h3>
+                <div className='w-full flex flex-wrap items-center gap-3 mt-4'>
+                    {
+                        [1, 2, 3, 4, 5, 6, 7, 8].map((item, index) => (
+                            <DashboardCard />
+                        ))
+                    }
                 </div>
-            </div>
+            </section>
         </AuthenticatedLayout>
     );
 }
