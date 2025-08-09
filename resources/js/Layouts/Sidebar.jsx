@@ -45,18 +45,25 @@ const Sidebar = () => {
                             <Link href="/categories">List</Link>
                             <Link href="/categories/create">Create</Link>
                         </div>
-                        {/* <Link>
-                            Create
-                        </Link> */}
                     </SidebarDropdown>
+                    <SidebarDropdown
+                        title="Sub Categories"
+                        iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
+                    >
+                        <div className="flex flex-col ml-10 mt-2 space-y-2">
+                            <Link href="/sub-categories">List</Link>
+                            <Link href="/sub-categories/create">Create</Link>
+                        </div>
+                    </SidebarDropdown>
+
+
                     {/* <Link href="#" className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700" onClick="showPage('categories', this)">
                         <i className="fas fa-tags text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Categories</span>
                     </Link> */}
-                    <a
+                    {/* <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        // onClick="showPage('suppliers', this)"
                     >
                         <i className="fas fa-truck text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Suppliers</span>
@@ -64,7 +71,6 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        // onClick="showPage('purchases', this)"
                     >
                         <i className="fas fa-shopping-cart text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Purchases</span>
@@ -72,7 +78,6 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        // onClick="showPage('sales', this)"
                     >
                         <i className="fas fa-cash-register text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Sales</span>
@@ -80,7 +85,6 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        // onClick="showPage('inventory', this)"
                     >
                         <i className="fas fa-warehouse text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Inventory</span>
@@ -88,20 +92,18 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        // onClick="showPage('reports', this)"
                     >
                         <i className="fas fa-chart-bar text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Reports</span>
-                    </a>
+                    </a> */}
 
-                    <div id="admin-links">
+                    {/* <div id="admin-links">
                         <div className="px-4 py-2 mt-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             Administration
                         </div>
                         <a
                             href="#"
                             className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                            // onClick="showPage('users', this)"
                         >
                             <i className="fas fa-users-cog text-gray-500 w-6 mr-3"></i>
                             <span className="sidebar-text">
@@ -111,12 +113,11 @@ const Sidebar = () => {
                         <a
                             href="#"
                             className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                            // onClick="showPage('settings', this)"
                         >
                             <i className="fas fa-cog text-gray-500 w-6 mr-3"></i>
                             <span className="sidebar-text">Settings</span>
                         </a>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 

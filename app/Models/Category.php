@@ -9,4 +9,10 @@ class Category extends Model
     protected $table = 'categories';
 
     protected $fillable = ['name'];
+
+
+    public function subCategories()
+    {
+        return $this->hasMany(SubCategory::class);
+    }
 }

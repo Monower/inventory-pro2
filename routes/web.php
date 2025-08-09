@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\SubcategoriesController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -41,6 +42,14 @@ Route::post('/categories/create', [CategoriesController::class, 'store'])->name(
 Route::delete('/categories/{category}', [CategoriesController::class, 'destroy'])->name('categories.destroy');
 Route::get('/categories/edit/{category}', [CategoriesController::class, 'edit'])->name('categories.edit');
 Route::put('/categories/edit/{category}', [CategoriesController::class, 'update'])->name('categories.update');
+
+
+Route::get('/sub-categories', [SubcategoriesController::class, 'index'])->name('subcategories.index');
+Route::get('/sub-categories/create', [SubcategoriesController::class, 'create'])->name('subcategories.create');
+Route::post('/sub-categories/store', [SubcategoriesController::class, 'store'])->name('subcategories.store');
+Route::get('/sub-categories/edit/{subcategory_id}', [SubcategoriesController::class, 'edit'])->name('subcategories.edit'); 
+Route::put('/sub-categories/edit/{subcategory}', [SubcategoriesController::class, 'update'])->name('subcategories.update');
+Route::delete('/sub-categories/delete/{subcategory_id}', [SubcategoriesController::class, 'destroy'])->name('subcategories.destroy');
 
 
 
