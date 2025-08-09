@@ -24,7 +24,7 @@ const Sidebar = () => {
                     <Link
                         href="/dashboard"
                         className="sidebar-link active flex items-center px-4 py-3 rounded-md text-gray-700"
-                        onclick="showPage('dashboard', this)"
+                        // onClick="showPage('dashboard', this)"
                     >
                         <i className="fas fa-tachometer-alt text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Dashboard</span>
@@ -32,7 +32,7 @@ const Sidebar = () => {
                     <Link
                         href="/products"
                         className="sidebar-link active flex items-center px-4 py-3 rounded-md text-gray-700"
-                        onclick="showPage('dashboard', this)"
+                        // onClick="showPage('dashboard', this)"
                     >
                         <i className="fas fa-tachometer-alt text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Products</span>
@@ -49,14 +49,14 @@ const Sidebar = () => {
                             Create
                         </Link> */}
                     </SidebarDropdown>
-                    {/* <Link href="#" className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700" onclick="showPage('categories', this)">
+                    {/* <Link href="#" className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700" onClick="showPage('categories', this)">
                         <i className="fas fa-tags text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Categories</span>
                     </Link> */}
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        onclick="showPage('suppliers', this)"
+                        // onClick="showPage('suppliers', this)"
                     >
                         <i className="fas fa-truck text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Suppliers</span>
@@ -64,7 +64,7 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        onclick="showPage('purchases', this)"
+                        // onClick="showPage('purchases', this)"
                     >
                         <i className="fas fa-shopping-cart text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Purchases</span>
@@ -72,7 +72,7 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        onclick="showPage('sales', this)"
+                        // onClick="showPage('sales', this)"
                     >
                         <i className="fas fa-cash-register text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Sales</span>
@@ -80,7 +80,7 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        onclick="showPage('inventory', this)"
+                        // onClick="showPage('inventory', this)"
                     >
                         <i className="fas fa-warehouse text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Inventory</span>
@@ -88,7 +88,7 @@ const Sidebar = () => {
                     <a
                         href="#"
                         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        onclick="showPage('reports', this)"
+                        // onClick="showPage('reports', this)"
                     >
                         <i className="fas fa-chart-bar text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Reports</span>
@@ -101,7 +101,7 @@ const Sidebar = () => {
                         <a
                             href="#"
                             className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                            onclick="showPage('users', this)"
+                            // onClick="showPage('users', this)"
                         >
                             <i className="fas fa-users-cog text-gray-500 w-6 mr-3"></i>
                             <span className="sidebar-text">
@@ -111,7 +111,7 @@ const Sidebar = () => {
                         <a
                             href="#"
                             className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                            onclick="showPage('settings', this)"
+                            // onClick="showPage('settings', this)"
                         >
                             <i className="fas fa-cog text-gray-500 w-6 mr-3"></i>
                             <span className="sidebar-text">Settings</span>
@@ -129,7 +129,7 @@ const Sidebar = () => {
                         <p id="user-name" className="text-sm font-medium text-gray-700">User Name</p>
                         <p id="user-role" className="text-xs text-gray-500">Administrator</p>
                     </div>
-                    <button onclick="logout()" className="ml-auto text-gray-400 hover:text-gray-500">
+                    <button onClick="logout()" className="ml-auto text-gray-400 hover:text-gray-500">
                         <i className="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
