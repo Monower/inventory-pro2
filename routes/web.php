@@ -6,15 +6,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\SubcategoriesController;
+use App\Http\Controllers\ProductController;
 
 Route::get('/', function () {
     return to_route('login');
 });
 
-
-Route::get('/products', function () {
-    return Inertia::render('Products');
-});
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
 //         'canLogin' => Route::has('login'),
@@ -53,7 +50,12 @@ Route::delete('/sub-categories/delete/{subcategory_id}', [SubcategoriesControlle
 
 
 
-
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+Route::post('/products/create', [ProductController::class, 'store'])->name('products.store');
+Route::get('/products/edit/{product_id}', [ProductController::class, 'edit'])->name('products.edit'); 
+Route::put('/products/edit/{product}', [ProductController::class, 'update'])->name('products.update');
+Route::delete('/products/delete/{product_id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 
 
