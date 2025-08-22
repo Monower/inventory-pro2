@@ -16,4 +16,11 @@ class Product extends Model
     {
         return $this->hasOneThrough(Category::class, SubCategory::class, 'id', 'id', 'sub_category_id', 'category_id');
     }
+
+    protected $fillable = [
+        'name',
+        'description',
+        'price',
+        'sub_category_id',
+    ];
 }

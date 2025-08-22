@@ -1,7 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link } from "@inertiajs/react";
 
-const Index = () => {
+const Index = ({products}) => {
+
+    console.log('products: ',products);
+
     return (
         <AuthenticatedLayout>
             <div className="flex justify-between items-center mb-4">
@@ -22,9 +25,35 @@ const Index = () => {
                             <th>name</th>
                             <th>Category</th>
                             <th>Sub-category</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                        {
+                            products.map((product, index) => (
+                                <tr key={product.id} className="text-center">
+                                    <td>{index + 1}</td>
+                                    <td>{product.name}</td>
+                                    <td>{product.category.name}</td>
+                                    <td>{product.sub_category.name}</td>
+                                    <td>
+                                        <Link
+                                            href={`/products/edit/${product.id}`}
+                                            className="bg-blue-500 text-white p-1 px-2 rounded mr-2"
+                                        >
+                                            Edit
+                                        </Link>
+                                        <Link
+                                            href={`/products/delete/${product.id}`}
+                                            className="bg-red-500 text-white p-1 px-2 rounded"
+                                        >
+                                            Delete
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
                 </table>
             </div>
         </AuthenticatedLayout>
