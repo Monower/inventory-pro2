@@ -6,14 +6,16 @@ const Create = ({categories}) => {
         productName: "",
         description: "",
         price: "",
-        category: "",
-        subCategory: "",
+        category: categories[0].id,
+        subCategory: categories[0].sub_categories[0].id,
     });
 
     const submit = (e) =>{
         e.preventDefault();
         post(route("products.store"));
     };
+
+    console.log('data and categories: ',data, categories);
 
     return (
         <AuthenticatedLayout>

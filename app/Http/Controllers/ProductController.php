@@ -31,21 +31,26 @@ class ProductController extends Controller
         return redirect()->route('products.index');
     }
 
-    public function edit(Product $product){
-        return Inertia::render('product/edit', ['product' => $product]);
+    public function edit($product_id){
+        $product = Product::with(['subCategory', 'category'])->find($product_id);
+        $categories = Category::with('subCategories')->get();
+        return Inertia::render('product/edit', ['product' => $product, 'categories' => $categories]);
     }
 
-    public function update(Product $product, Request $request){
-        $product->name = $request->name;
+    public function update($product_id, Request $request){
+        $product = Product::find($product_id);
+
+        $product->name = $request->productName;
         $product->description = $request->description;
         $product->price = $request->price;
-        $product->sub_category_id = $request->sub_category_id;
+        $product->sub_category_id = $request->subCategory;
         $product->save();
+
         return redirect()->route('products.index');
     }
 
-    public function destroy(Product $product){
-        $product->delete();
+    public function destroy($product_id){
+        Product::destroy($product_id);
         return redirect()->route('products.index');
     }
 }
