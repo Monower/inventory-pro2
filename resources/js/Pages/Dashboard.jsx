@@ -2,7 +2,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import DashboardCard from '../Components/DasboardCard/DashboardCard';
 
-export default function Dashboard() {
+export default function Dashboard({data}) {
+    console.log('total product count: ',data);
     return (
         <AuthenticatedLayout
             /* header={
@@ -14,12 +15,15 @@ export default function Dashboard() {
             <Head title="Dashboard" />
 
             <section>
-                <h3>Dashboard.</h3>
-                <div className='w-full flex flex-wrap items-center gap-3 mt-4'>
+                {/* <h3>Dashboard.</h3> */}
+                <div className='w-full flex flex-wrap items-center gap-3'>
                     {
-                        [1, 2, 3, 4, 5, 6, 7, 8].map((item, index) => (
-                            <DashboardCard />
-                        ))
+                        data?.map((item, index) => {
+                            return (
+                                <DashboardCard key={index} heading={item?.heading} title={item?.title}
+                                    icon={item?.icon} />
+                            )
+                        })
                     }
                 </div>
             </section>

@@ -1,40 +1,22 @@
 import { Link } from "@inertiajs/react";
 import SidebarDropdown from "@/Components/SidebarDropdown";
 
-const Sidebar = () => {
+const Sidebar = ({url}) => {
     return (
         <div className="sidebar bg-white shadow-md flex flex-col">
-            {/* <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <div className="flex items-center">
-                    <div className="bg-indigo-600 text-white p-2 rounded-lg mr-3">
-                        <i className="fas fa-boxes text-xl"></i>
-                    </div>
-                    <span className="logo-text text-xl font-bold text-gray-800">InventoryPro</span>
-                </div>
-                <button id="sidebar-toggle" className="text-gray-500 hover:text-gray-700 focus:outline-none">
-                    <i className="fas fa-chevron-left"></i>
-                </button>
-            </div> */}
 
             <div className="flex-1 overflow-y-auto py-4 px-2">
                 <div className="space-y-1">
-                    {/* <Link href="/" className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700">
-                        Home
-                    </Link> */}
                     <Link
                         href="/dashboard"
-                        className="sidebar-link active flex items-center px-4 py-3 rounded-md text-gray-700"
-                        // onClick="showPage('dashboard', this)"
+                        className={ url == '/dashboard' ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
                     >
-                        <i className="fas fa-tachometer-alt text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Dashboard</span>
                     </Link>
                     <Link
                         href="/products"
-                        className="sidebar-link active flex items-center px-4 py-3 rounded-md text-gray-700"
-                        // onClick="showPage('dashboard', this)"
+                        className={  url == '/products' ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
                     >
-                        <i className="fas fa-tachometer-alt text-gray-500 w-6 mr-3"></i>
                         <span className="sidebar-text">Products</span>
                     </Link>
                     <SidebarDropdown

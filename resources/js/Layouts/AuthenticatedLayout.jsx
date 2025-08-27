@@ -8,9 +8,13 @@ import Sidebar from './Sidebar';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
+    const { url } = usePage();
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+
+    console.log('url: ',url);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -172,7 +176,7 @@ export default function AuthenticatedLayout({ header, children }) {
             )}
 
             <div className='flex'>
-                <Sidebar />
+                <Sidebar url={url} />
                 <main className='w-full p-4'>{children}</main>
             </div>
         </div>
