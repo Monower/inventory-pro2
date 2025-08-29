@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\SubcategoriesController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CustomerController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -57,7 +58,12 @@ Route::put('/products/edit/{product_id}', [ProductController::class, 'update'])-
 Route::delete('/products/delete/{product_id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
 
-
+Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+Route::get('/customer/create', [CustomerController::class, 'create'])->name('customer.create');
+Route::post('/customer/create', [CustomerController::class, 'store'])->name('customer.store');
+Route::get('/customer/edit/{customer_id}', [CustomerController::class, 'edit'])->name('customer.edit'); 
+Route::put('/customer/edit/{customer_id}', [CustomerController::class, 'update'])->name('customer.update');
+Route::delete('/customer/delete/{customer_id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
 
 
 

@@ -15,9 +15,15 @@ const Sidebar = ({url}) => {
                     </Link>
                     <Link
                         href="/products"
-                        className={  url == '/products' ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
+                        className={  url.includes('product') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
                     >
                         <span className="sidebar-text">Products</span>
+                    </Link>
+                    <Link
+                        href="/customers"
+                        className={  url.includes('customer') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
+                    >
+                        <span className="sidebar-text">Customer</span>
                     </Link>
                     <SidebarDropdown
                         title="Categories"
