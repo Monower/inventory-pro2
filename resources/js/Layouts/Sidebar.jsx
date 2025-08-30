@@ -25,6 +25,12 @@ const Sidebar = ({url}) => {
                     >
                         <span className="sidebar-text">Customer</span>
                     </Link>
+                    <Link
+                        href="/staffs"
+                        className={  url.includes('staff') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
+                    >
+                        <span className="sidebar-text">Staffs</span>
+                    </Link>
                     <SidebarDropdown
                         title="Categories"
                         iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"

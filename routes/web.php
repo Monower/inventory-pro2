@@ -9,6 +9,7 @@ use App\Http\Controllers\SubcategoriesController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\StaffController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -64,6 +65,16 @@ Route::post('/customer/create', [CustomerController::class, 'store'])->name('cus
 Route::get('/customer/edit/{customer_id}', [CustomerController::class, 'edit'])->name('customer.edit'); 
 Route::put('/customer/edit/{customer_id}', [CustomerController::class, 'update'])->name('customer.update');
 Route::delete('/customer/delete/{customer_id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
+
+
+
+
+Route::get('/staffs', [StaffController::class, 'index'])->name('staffs.index');
+Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
+Route::post('/staff/create', [StaffController::class, 'store'])->name('staff.store');
+Route::get('/staff/edit/{staff_id}', [StaffController::class, 'edit'])->name('staff.edit'); 
+Route::put('/staff/edit/{staff_id}', [StaffController::class, 'update'])->name('staff.update');
+Route::delete('/staff/delete/{staff_id}', [StaffController::class, 'destroy'])->name('staff.destroy');
 
 
 
