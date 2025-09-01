@@ -34,7 +34,7 @@ class TransactionController extends Controller
     {
         $transaction = new Transaction();
         $transaction->name = $request->name;
-        $transaction->payment_method = $request->payment_method;
+        $transaction->payment_method = $request->paymentMethod;
         $transaction->transaction_type = $request->transaction_type;
         $transaction->source = $request->source;
         $transaction->amount = $request->amount;
@@ -66,7 +66,7 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::find($transaction_id);
         $transaction->name = $request->name;
-        $transaction->payment_method = $request->payment_method;
+        $transaction->payment_method = $request->paymentMethod;
         $transaction->transaction_type = $request->transaction_type;
         $transaction->source = $request->source;
         $transaction->amount = $request->amount;

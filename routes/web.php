@@ -10,6 +10,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\TransactionController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -75,6 +76,15 @@ Route::post('/staff/create', [StaffController::class, 'store'])->name('staff.sto
 Route::get('/staff/edit/{staff_id}', [StaffController::class, 'edit'])->name('staff.edit'); 
 Route::put('/staff/edit/{staff_id}', [StaffController::class, 'update'])->name('staff.update');
 Route::delete('/staff/delete/{staff_id}', [StaffController::class, 'destroy'])->name('staff.destroy');
+
+
+
+Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+Route::get('/transaction/create', [TransactionController::class, 'create'])->name('transaction.create');
+Route::post('/transaction/create', [TransactionController::class, 'store'])->name('transaction.store');
+Route::get('/transaction/edit/{transaction_id}', [TransactionController::class, 'edit'])->name('transaction.edit'); 
+Route::put('/transaction/edit/{transaction_id}', [TransactionController::class, 'update'])->name('transaction.update');
+Route::delete('/transaction/delete/{transaction_id}', [TransactionController::class, 'destroy'])->name('transaction.destroy');
 
 
 

@@ -16,21 +16,31 @@ const Index = ({ transactions }) => {
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this customer?")) {
             setData("id", id);
-            destroy(route("staff.destroy", id));
+            destroy(route("transaction.destroy", id));
         }
     };
+
+    console.log("transactions: ", transactions);
 
     return (
         <AuthenticatedLayout>
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Staffs</h3>
-                    <Link
-                        href="/staff/create"
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
-                    >
-                        Create
-                    </Link>
+                    <h3 className="text-xl font-semibold">Transactions</h3>
+                    <div className="flex gap-2">
+                        <Link
+                            href="/transaction/create?type=add_money"
+                            className="bg-blue-500 text-white p-1 px-2 rounded"
+                        >
+                            Add money
+                        </Link>
+                        <Link
+                            href="/transaction/create?type=expense"
+                            className="bg-red-500 text-white p-1 px-2 rounded"
+                        >
+                            Add expenses
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="bg-white p-4 rounded">
@@ -39,30 +49,30 @@ const Index = ({ transactions }) => {
                             <tr>
                                 <th>SI</th>
                                 <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Address</th>
-                                <th>Salary</th>
+                                <th>Payment method</th>
+                                <th>Transaction type</th>
+                                <th>source</th>
+                                <th>amount</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {staffs.map((staff, index) => (
+                            {transactions.map((transaction, index) => (
                                 <tr
                                     key={index}
-                                    className="text-center bg-gray-50"
+                                    className={`text-center ${transaction?.transaction_type === "add_money" ? "bg-green-100" : "bg-red-100"}`}
                                 >
                                     <td>{index + 1}</td>
-                                    <td>{staff.name}</td>
-                                    <td>{staff.email}</td>
-                                    <td>{staff.phone}</td>
-                                    <td>{staff.address}</td>
-                                    <td>{staff.salary}</td>
+                                    <td>{transaction.name}</td>
+                                    <td>{transaction.payment_method}</td>
+                                    <td>{transaction.transaction_type == "add_money" ? "Add money" : "Expense"}</td>
+                                    <td>{transaction.source}</td>
+                                    <td>{transaction.amount}</td>
                                     <td>
                                         <Link
                                             href={route(
-                                                "staff.edit",
-                                                staff.id
+                                                "transaction.edit",
+                                                transaction.id
                                             )}
                                             className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
                                         >
@@ -70,7 +80,7 @@ const Index = ({ transactions }) => {
                                         </Link>
                                         <button
                                             onClick={() =>
-                                                handleDelete(staff.id)
+                                                handleDelete(transaction.id)
                                             }
                                             className="bg-red-500 text-white py-1 px-2 rounded"
                                         >
