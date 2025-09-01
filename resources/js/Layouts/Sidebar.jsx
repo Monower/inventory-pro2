@@ -50,6 +50,13 @@ const Sidebar = ({url}) => {
                         </div>
                     </SidebarDropdown>
 
+                    <Link
+                        href="/transactions"
+                        className={  url.includes('transaction') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
+                    >
+                        <span className="sidebar-text">Transaction tracker</span>
+                    </Link>
+
 
                     {/* <Link href="#" className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700" onClick="showPage('categories', this)">
                         <i className="fas fa-tags text-gray-500 w-6 mr-3"></i>
