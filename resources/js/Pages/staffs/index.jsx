@@ -1,7 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm } from "@inertiajs/react";
+import { Link, useForm, usePage } from "@inertiajs/react";
 
 const Index = ({ staffs }) => {
+    const { auth } = usePage().props;
+    const canCreateStaff = auth?.user?.permissions.includes("create staff");
     const {
         data,
         setData,
@@ -20,17 +22,17 @@ const Index = ({ staffs }) => {
         }
     };
 
+    console.log("can create staff: ", canCreateStaff);
+
     return (
         <AuthenticatedLayout>
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Staffs</h3>
-                    <Link
-                        href="/staff/create"
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
-                    >
-                        Create
-                    </Link>
+
+                    {
+                        canCreateStaff && <Link href="/staff/create" className="bg-blue-500 text-white p-1 px-2 rounded">Create</Link>
+                    }
                 </div>
 
                 <div className="bg-white p-4 rounded">

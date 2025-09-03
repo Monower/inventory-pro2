@@ -1,9 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import DashboardCard from '../Components/DasboardCard/DashboardCard';
+import { usePage } from '@inertiajs/react';
 
 export default function Dashboard({data}) {
     console.log('total product count: ',data);
+
+    const { auth } = usePage().props;
+
+    console.log('auth: ', auth?.);
+
     return (
         <AuthenticatedLayout
             /* header={

@@ -33,20 +33,29 @@ const Sidebar = ({url}) => {
                     </Link>
                     <SidebarDropdown
                         title="Categories"
-                        iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
+                        // iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
                     >
-                        <div className="flex flex-col ml-10 mt-2 space-y-2">
+                        <div className="flex flex-col mt-2 space-y-2">
                             <Link href="/categories">List</Link>
                             <Link href="/categories/create">Create</Link>
                         </div>
                     </SidebarDropdown>
                     <SidebarDropdown
                         title="Sub Categories"
-                        iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
+                        // iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
                     >
-                        <div className="flex flex-col ml-10 mt-2 space-y-2">
+                        <div className="flex flex-col mt-2 space-y-2">
                             <Link href="/sub-categories">List</Link>
                             <Link href="/sub-categories/create">Create</Link>
+                        </div>
+                    </SidebarDropdown>
+                    <SidebarDropdown
+                        title="User management"
+                        // iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
+                    >
+                        <div className="flex flex-col mt-2 space-y-2">
+                            <Link href="/sub-categories">User role</Link>
+                            <Link href="/sub-categories/create">User list</Link>
                         </div>
                     </SidebarDropdown>
 

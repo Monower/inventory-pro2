@@ -14,9 +14,9 @@ export default function SidebarDropdown({ title, iconClass, children }) {
         onClick={toggleDropdown}
         className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700 w-full text-left"
       >
-        <i className={`${iconClass} text-gray-500 w-6 mr-3`}></i>
+        {/* <i className={`${iconClass} text-gray-500 w-6 mr-3`}></i> */}
         <span className="sidebar-text flex-1">{title}</span>
-        <i className={`fas fa-chevron-down transition-transform ${isOpen ? 'rotate-180' : ''}`}></i>
+        {/* <i className={`fas fa-chevron-down transition-transform ${isOpen ? 'rotate-180' : ''}`}></i> */}
       </button>
 
       {/* Dropdown Content */}
