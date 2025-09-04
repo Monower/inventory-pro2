@@ -14,7 +14,7 @@ export default function AuthenticatedLayout({ header, children }) {
         useState(false);
 
 
-    console.log('url: ',url);
+    // console.log('url: ',url);
 
     return (
         <div className="min-h-screen bg-gray-100">
