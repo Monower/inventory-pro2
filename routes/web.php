@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\RoleController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -85,6 +86,15 @@ Route::post('/transaction/create', [TransactionController::class, 'store'])->nam
 Route::get('/transaction/edit/{transaction_id}', [TransactionController::class, 'edit'])->name('transaction.edit'); 
 Route::put('/transaction/edit/{transaction_id}', [TransactionController::class, 'update'])->name('transaction.update');
 Route::delete('/transaction/delete/{transaction_id}', [TransactionController::class, 'destroy'])->name('transaction.destroy');
+
+
+
+Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+Route::get('/role/create', [RoleController::class, 'create'])->name('role.create');
+Route::post('/role/create', [RoleController::class, 'store'])->name('role.store');
+Route::get('/role/edit/{user_id}', [RoleController::class, 'edit'])->name('role.edit'); 
+Route::put('/role/edit/{user_id}', [RoleController::class, 'update'])->name('role.update');
+Route::delete('/role/delete/{user_id}', [RoleController::class, 'destroy'])->name('role.destroy');
 
 
 
