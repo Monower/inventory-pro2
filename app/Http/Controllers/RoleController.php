@@ -24,7 +24,8 @@ class RoleController extends Controller
      */
     public function create()
     {
-        return Inertia::render('role/create');
+        $permissions = Permission::all();
+        return Inertia::render('role/create', compact('permissions'));
     }
 
     /**
@@ -32,6 +33,7 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $validated = $request->validate([
             'name' => 'required',
             'permissions' => 'required',
@@ -56,22 +58,28 @@ class RoleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($user_id)
+    public function edit($role_id)
     {
-        $user = User::find($user_id)->with('roles')->first();
-        $user->all_permissions = $user->getAllPermissions()->pluck('name');
+        $role = Role::find($role_id)->load('permissions');
         $permissions = Permission::all();
-
-        return Inertia::render('role/edit', compact('user', 'permissions'));
+        return Inertia::render('role/edit', compact('role', 'permissions'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $user_id)
+    public function update(Request $request, $role_id)
     {
-        $user = User::find($user_id);
-        $user->syncRoles($request->roles);
+        $validated = $request->validate([
+            'name' => 'required',
+            'permissions' => 'required',
+        ]);
+
+
+        $role = Role::find($role_id);
+        $role->update(['name' => $validated['name']]);
+        $role->syncPermissions($validated['permissions'] ?? []);
+
         return to_route('roles.index');
     }
 

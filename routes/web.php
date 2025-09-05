@@ -92,9 +92,9 @@ Route::delete('/transaction/delete/{transaction_id}', [TransactionController::cl
 Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
 Route::get('/role/create', [RoleController::class, 'create'])->name('role.create');
 Route::post('/role/create', [RoleController::class, 'store'])->name('role.store');
-Route::get('/role/edit/{user_id}', [RoleController::class, 'edit'])->name('role.edit'); 
-Route::put('/role/edit/{user_id}', [RoleController::class, 'update'])->name('role.update');
-Route::delete('/role/delete/{user_id}', [RoleController::class, 'destroy'])->name('role.destroy');
+Route::get('/role/edit/{role_id}', [RoleController::class, 'edit'])->name('role.edit'); 
+Route::put('/role/edit/{role_id}', [RoleController::class, 'update'])->name('role.update');
+Route::delete('/role/delete/{role_id}', [RoleController::class, 'destroy'])->name('role.destroy');
 
 
 

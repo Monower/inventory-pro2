@@ -2,8 +2,8 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, usePage } from "@inertiajs/react";
 
 const Index = ({ roles }) => {
-    /* const { auth } = usePage().props;
-    const canCreateStaff = auth?.user?.permissions.includes("create staff");
+    // const { auth } = usePage().props;
+    // const canCreateStaff = auth?.user?.permissions.includes("create staff");
     const {
         data,
         setData,
@@ -13,16 +13,16 @@ const Index = ({ roles }) => {
         delete: destroy,
     } = useForm({
         id: null,
-    }); */
+    });
 
-    /* const handleDelete = (id) => {
-        if (confirm("Are you sure you want to delete this customer?")) {
+    const handleDelete = (id) => {
+        if (confirm("Are you sure you want to delete this role?")) {
             setData("id", id);
-            destroy(route("staff.destroy", id));
+            destroy(route("role.destroy", id));
         }
     };
 
-    console.log("can create staff: ", canCreateStaff); */
+    // console.log("can create staff: ", canCreateStaff);
 
     console.log("roles: ", roles);
 
@@ -41,9 +41,9 @@ const Index = ({ roles }) => {
                 </div>
 
                 <div className="bg-white p-4 rounded">
-                    <table className="w-full border-separate border-spacing-y-2">
-                        <thead>
-                            <tr>
+                    <table className="w-full text-left border-collapse border">
+                        <thead className="border-b">
+                            <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">
                                 <th>SI</th>
                                 <th>Role name</th>
                                 <th className="w-[40vw]">Permissions</th>
@@ -54,7 +54,7 @@ const Index = ({ roles }) => {
                             {roles.map((role, index) => (
                                 <tr
                                     key={index}
-                                    className="text-center bg-gray-50"
+                                    className="[&>td]:border [&>td]:py-1 [&>td]:px-2"
                                 >
                                     <td>{index + 1}</td>
                                     <td>{role.name}</td>
@@ -79,20 +79,27 @@ const Index = ({ roles }) => {
                                         </div>
                                     </td>
                                     <td>
-                                        <Link
-                                            href={route("role.edit", role.id)}
-                                            className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
-                                        >
-                                            Edit
-                                        </Link>
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(role.id)
-                                            }
-                                            className="bg-red-500 text-white py-1 px-2 rounded"
-                                        >
-                                            Delete
-                                        </button>
+                                        {role?.name !== "admin" && (
+                                            <>
+                                                <Link
+                                                    href={route(
+                                                        "role.edit",
+                                                        role.id
+                                                    )}
+                                                    className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
+                                                >
+                                                    Edit
+                                                </Link>
+                                                <button
+                                                    onClick={() =>
+                                                        handleDelete(role.id)
+                                                    }
+                                                    className="bg-red-500 text-white py-1 px-2 rounded"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
