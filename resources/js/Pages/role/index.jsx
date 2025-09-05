@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, usePage } from "@inertiajs/react";
 
-const Index = ({ users, roles }) => {
+const Index = ({ roles }) => {
     /* const { auth } = usePage().props;
     const canCreateStaff = auth?.user?.permissions.includes("create staff");
     const {
@@ -24,8 +24,7 @@ const Index = ({ users, roles }) => {
 
     console.log("can create staff: ", canCreateStaff); */
 
-
-    console.log('roles: ', roles);
+    console.log("roles: ", roles);
 
     return (
         <AuthenticatedLayout>
@@ -33,7 +32,12 @@ const Index = ({ users, roles }) => {
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Roles</h3>
 
-                    <Link href="/role/create" className="bg-blue-500 text-white p-1 px-2 rounded">Create</Link>
+                    <Link
+                        href="/role/create"
+                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                    >
+                        Create
+                    </Link>
                 </div>
 
                 <div className="bg-white p-4 rounded">
@@ -41,42 +45,49 @@ const Index = ({ users, roles }) => {
                         <thead>
                             <tr>
                                 <th>SI</th>
-                                <th>Name</th>
-                                <th>Role</th>
-                                <th>Permissions</th>
+                                <th>Role name</th>
+                                <th className="w-[40vw]">Permissions</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map((user, index) => (
+                            {roles.map((role, index) => (
                                 <tr
                                     key={index}
                                     className="text-center bg-gray-50"
                                 >
                                     <td>{index + 1}</td>
-                                    <td>{user.name}</td>
-                                    <td>{user?.roles[0]?.name}</td>
+                                    <td>{role.name}</td>
                                     <td>
-                                        {
-                                            user?.all_permissions?.splice(0,2)?.join(", ") 
-                                        }
-                                        {
-                                            user?.all_permissions?.length > 2 && "..."
-                                        }
+                                        <div className="flex flex-wrap gap-2">
+                                            {role?.permissions?.map(
+                                                (item, index) => {
+                                                    return (
+                                                        <span
+                                                            key={index}
+                                                            className="bg-green-700 text-white py-1 px-2 rounded"
+                                                        >
+                                                            {item.name}
+                                                        </span>
+                                                    );
+                                                }
+                                            )}
+
+                                            {/* {
+                                                role?.permissions?.length > 4 && <span className="bg-green-400 text-white py-1 px-2 rounded">...</span>
+                                            } */}
+                                        </div>
                                     </td>
                                     <td>
                                         <Link
-                                            href={route(
-                                                "role.edit",
-                                                user.id
-                                            )}
+                                            href={route("role.edit", role.id)}
                                             className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
                                         >
                                             Edit
                                         </Link>
                                         <button
                                             onClick={() =>
-                                                handleDelete(user.id)
+                                                handleDelete(role.id)
                                             }
                                             className="bg-red-500 text-white py-1 px-2 rounded"
                                         >

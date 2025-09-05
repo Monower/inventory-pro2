@@ -16,12 +16,7 @@ class RoleController extends Controller
     public function index()
     {
         $roles = Role::with('permissions')->get();
-        $users = User::with('roles')->get()->map(function ($user) {
-            $user->all_permissions = $user->getAllPermissions()->pluck('name');
-            return $user;
-        });
-
-        return Inertia::render('role/index', compact('users', 'roles'));
+        return Inertia::render('role/index', compact('roles'));
     }
 
     /**
