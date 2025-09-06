@@ -58,7 +58,16 @@ const Index = ({ users }) => {
                                     className="[&>td]:border [&>td]:py-1 [&>td]:px-2"
                                 >
                                     <td>{index + 1}</td>
-                                    <td>{user.avatar ?? "N/A"}</td>
+                                    <td>
+                                        {
+                                            user?.avatar ? (
+                                                <img src={"/storage/" + user.avatar} alt="avatar" className="w-8 h-8 rounded-full" />
+                                            ) : (
+                                                "N/A"
+                                            )
+                                        }
+                                    </td>
+                                    {/* <td>{user.avatar ?? "N/A"}</td> */}
                                     <td>{user.name}</td>
                                     <td>{user.email}</td>
                                     <td>{user.phone ?? "N/A"}</td>

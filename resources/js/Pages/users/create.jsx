@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
+import { useState, useEffect, useRef } from "react";
 
 const Create = ({ roles }) => {
     const { data, setData, post, errors } = useForm({
@@ -11,13 +12,33 @@ const Create = ({ roles }) => {
         role: "",
     });
 
+    const [preview, setPreview] = useState(null);
+    const fileInputRef = useRef(null); // ref to reset file input
+
+    // Update preview whenever image changes
+    useEffect(() => {
+        if (data.image) {
+            const objectUrl = URL.createObjectURL(data.image);
+            setPreview(objectUrl);
+
+            return () => URL.revokeObjectURL(objectUrl);
+        } else {
+            setPreview(null);
+        }
+    }, [data.image]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
         post(route("user.store"));
     };
 
-    console.log("data: ", data);
-    console.log("errors: ", errors);
+    const removeImage = () => {
+        setData("image", null);
+        setPreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = null; // reset file input
+        }
+    };
 
     return (
         <AuthenticatedLayout>
@@ -123,28 +144,6 @@ const Create = ({ roles }) => {
                                 )}
                             </fieldset>
 
-                            {/* Image */}
-                            <fieldset className="border border-gray-300 bg-white p-2">
-                                <legend className="text-sm mx-2">
-                                    <label>Image</label>
-                                </legend>
-                                <input
-                                    type="file"
-                                    name="image"
-                                    accept="image/*" // ✅ only allow images in file picker
-                                    onChange={(e) =>
-                                        setData("image", e.target.files[0])
-                                    }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm ml-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
-                                />
-
-                                {errors.image && (
-                                    <p className="text-red-500 text-xs mt-1">
-                                        {errors.image}
-                                    </p>
-                                )}
-                            </fieldset>
-
                             {/* Role */}
                             <fieldset className="border border-gray-300 bg-white p-2">
                                 <legend className="text-sm mx-2">
@@ -166,14 +165,56 @@ const Create = ({ roles }) => {
                                         </option>
                                     ))}
                                 </select>
-
                                 {errors.role && (
                                     <p className="text-red-500 text-xs mt-1">
                                         {errors.role}
                                     </p>
                                 )}
                             </fieldset>
+
+                            {/* Image */}
+                            <fieldset className="border border-gray-300 bg-white p-2">
+                                <legend className="text-sm mx-2">
+                                    <label>Image</label>
+                                </legend>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    name="image"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        setData("image", e.target.files[0])
+                                    }
+                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm ml-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                                />
+                                {errors.image && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {errors.image}
+                                    </p>
+                                )}
+                            </fieldset>
                         </div>
+
+                        {/* Image Preview Section */}
+
+                        {preview && (
+                            <div className="w-full flex justify-end">
+                                <div className="relative inline-block mb-4">
+                                    <img
+                                        src={preview}
+                                        alt="Preview"
+                                        className="w-24 h-24 object-cover rounded border"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={removeImage}
+                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         <div>
                             <button

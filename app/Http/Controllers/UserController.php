@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -56,6 +57,8 @@ class UserController extends Controller
             $imagePath = $file->storeAs('avatars', $filename, 'public');
         }
 
+        // dd($imagePath);
+
         // ✅ Create user
         $user = User::create([
             'name'     => $validated['name'],
@@ -86,8 +89,9 @@ class UserController extends Controller
      */
     public function edit($user_id)
     {
-        $user = User::find($user_id);
-        return Inertia::render('users/edit', ['user' => $user]);
+        $user = User::with('roles')->find($user_id);
+        $roles = Role::where('name', '!=', 'admin')->get();
+        return Inertia::render('users/edit', ['user' => $user, 'roles' => $roles]);
     }
 
     /**
@@ -95,11 +99,52 @@ class UserController extends Controller
      */
     public function update(Request $request, $user_id)
     {
-        $user = User::find($user_id);
-        $user->name = $request->name;
-        $user->email = $request->email;
+
+        // dd($request->all());
+        $user = User::findOrFail($user_id);
+
+        // Validate request
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8',
+            'phone'    => 'nullable|string|max:20',
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'role'     => 'required|exists:roles,name',
+            'remove_image' => 'nullable|boolean',
+        ]);
+
+        // Handle image
+        if ($request->hasFile('image')) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $file = $request->file('image');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $user->avatar = $file->storeAs('avatars', $filename, 'public');
+        } elseif (!empty($validated['remove_image'])) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $user->avatar = null;
+        }
+
+        // Update user fields
+        $user->name = $validated['name'] ?? $user->name;
+        $user->email = $validated['email'] ?? $user->email;
+        $user->phone = $validated['phone'] ?? $user->phone;
+
+        if (!empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
+        }
+
         $user->save();
-        return redirect()->route('users.index');
+
+        // Update role
+        $user->syncRoles([$validated['role']]);
+
+        return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
 
     /**
