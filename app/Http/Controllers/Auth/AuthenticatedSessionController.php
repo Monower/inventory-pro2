@@ -31,10 +31,21 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Check if the authenticated user has 'can login' permission
+        if (!auth()->user()->can('can login')) {
+            // Optionally, log out the user or handle unauthorized access as needed,
+            // then redirect back with an error message
+            auth()->logout();
+            return redirect()->route('login')->withErrors([
+                'permission' => 'You do not have permission to log in.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
+
 
     /**
      * Destroy an authenticated session.
