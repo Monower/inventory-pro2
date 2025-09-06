@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -27,7 +28,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render('users/create');
+        $roles = Role::where('name', '!=', 'admin')->get();
+        return Inertia::render('users/create', ['roles' => $roles]);
     }
 
     /**
@@ -35,13 +37,41 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = bcrypt($request->password);
-        $user->save();
-        return redirect()->route('users.index');
+        // ✅ Validate request
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'phone'    => 'nullable|string|max:20',
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'role'     => 'required|exists:roles,name',
+        ]);
+
+        $imagePath = null;
+
+        // ✅ Handle image upload with timestamp name
+        if ($request->hasFile('image')) {
+            $file     = $request->file('image');
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $imagePath = $file->storeAs('avatars', $filename, 'public');
+        }
+
+        // ✅ Create user
+        $user = User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'phone'    => $validated['phone'] ?? null,
+            'avatar'   => $imagePath, // stored with timestamp name
+        ]);
+
+        // ✅ Assign role (Spatie Permissions)
+        $user->assignRole($validated['role']);
+
+        return redirect()->route('users.index')->with('success', 'User created successfully!');
     }
+
+
 
     /**
      * Display the specified resource.

@@ -30,14 +30,20 @@ const Index = ({ users }) => {
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Users</h3>
 
-                    <Link href="/user/create" className="bg-blue-500 text-white p-1 px-2 rounded">Create</Link>
+                    <Link
+                        href="/user/create"
+                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                    >
+                        Create
+                    </Link>
                 </div>
 
-                {/* <div className="bg-white p-4 rounded">
-                    <table className="w-full border-separate border-spacing-y-2">
-                        <thead>
-                            <tr>
+                <div className="bg-white p-4 rounded">
+                    <table className="w-full text-left border-collapse border">
+                        <thead className="border-b">
+                            <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">
                                 <th>SI</th>
+                                <th>Avatar</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
@@ -49,27 +55,35 @@ const Index = ({ users }) => {
                             {users.map((user, index) => (
                                 <tr
                                     key={index}
-                                    className="text-center bg-gray-50"
+                                    className="[&>td]:border [&>td]:py-1 [&>td]:px-2"
                                 >
                                     <td>{index + 1}</td>
+                                    <td>{user.avatar ?? "N/A"}</td>
                                     <td>{user.name}</td>
                                     <td>{user.email}</td>
-                                    <td>{user.phone}</td>
-                                    <td>{user.role}</td>
-                                    <td>{staff.salary}</td>
+                                    <td>{user.phone ?? "N/A"}</td>
+                                    <td>
+                                        {user?.roles?.map((role) => {
+                                            return (
+                                                <span
+                                                    key={index}
+                                                    className="bg-green-700 text-white py-1 px-2 rounded"
+                                                >
+                                                    {role.name}
+                                                </span>
+                                            );
+                                        })}
+                                    </td>
                                     <td>
                                         <Link
-                                            href={route(
-                                                "staff.edit",
-                                                staff.id
-                                            )}
+                                            href={route("user.edit", user.id)}
                                             className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
                                         >
                                             Edit
                                         </Link>
                                         <button
                                             onClick={() =>
-                                                handleDelete(staff.id)
+                                                handleDelete(user.id)
                                             }
                                             className="bg-red-500 text-white py-1 px-2 rounded"
                                         >
@@ -80,7 +94,7 @@ const Index = ({ users }) => {
                             ))}
                         </tbody>
                     </table>
-                </div> */}
+                </div>
             </section>
         </AuthenticatedLayout>
     );
