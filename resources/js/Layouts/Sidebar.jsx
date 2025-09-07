@@ -1,7 +1,11 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import SidebarDropdown from "@/Components/SidebarDropdown";
 
 const Sidebar = ({url}) => {
+
+    const { auth } = usePage().props;
+    const permissions = auth.user?.permissions || [];
+
     return (
         <div className="sidebar bg-white shadow-md flex flex-col">
 
@@ -33,7 +37,6 @@ const Sidebar = ({url}) => {
                     </Link>
                     <SidebarDropdown
                         title="Categories"
-                        // iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
                     >
                         <div className="flex flex-col mt-2 space-y-2">
                             <Link href="/categories">List</Link>
@@ -42,7 +45,6 @@ const Sidebar = ({url}) => {
                     </SidebarDropdown>
                     <SidebarDropdown
                         title="Sub Categories"
-                        // iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
                     >
                         <div className="flex flex-col mt-2 space-y-2">
                             <Link href="/sub-categories">List</Link>
@@ -51,7 +53,6 @@ const Sidebar = ({url}) => {
                     </SidebarDropdown>
                     <SidebarDropdown
                         title="User management"
-                        // iconClass="fas fa-tachometer-alt text-gray-500 w-6 mr-3"
                     >
                         <div className="flex flex-col mt-2 space-y-2">
                             <Link href="/roles">User role</Link>
@@ -65,69 +66,6 @@ const Sidebar = ({url}) => {
                     >
                         <span className="sidebar-text">Transaction tracker</span>
                     </Link>
-
-
-                    {/* <Link href="#" className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700" onClick="showPage('categories', this)">
-                        <i className="fas fa-tags text-gray-500 w-6 mr-3"></i>
-                        <span className="sidebar-text">Categories</span>
-                    </Link> */}
-                    {/* <a
-                        href="#"
-                        className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                    >
-                        <i className="fas fa-truck text-gray-500 w-6 mr-3"></i>
-                        <span className="sidebar-text">Suppliers</span>
-                    </a>
-                    <a
-                        href="#"
-                        className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                    >
-                        <i className="fas fa-shopping-cart text-gray-500 w-6 mr-3"></i>
-                        <span className="sidebar-text">Purchases</span>
-                    </a>
-                    <a
-                        href="#"
-                        className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                    >
-                        <i className="fas fa-cash-register text-gray-500 w-6 mr-3"></i>
-                        <span className="sidebar-text">Sales</span>
-                    </a>
-                    <a
-                        href="#"
-                        className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                    >
-                        <i className="fas fa-warehouse text-gray-500 w-6 mr-3"></i>
-                        <span className="sidebar-text">Inventory</span>
-                    </a>
-                    <a
-                        href="#"
-                        className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                    >
-                        <i className="fas fa-chart-bar text-gray-500 w-6 mr-3"></i>
-                        <span className="sidebar-text">Reports</span>
-                    </a> */}
-
-                    {/* <div id="admin-links">
-                        <div className="px-4 py-2 mt-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Administration
-                        </div>
-                        <a
-                            href="#"
-                            className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        >
-                            <i className="fas fa-users-cog text-gray-500 w-6 mr-3"></i>
-                            <span className="sidebar-text">
-                                User Management
-                            </span>
-                        </a>
-                        <a
-                            href="#"
-                            className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                        >
-                            <i className="fas fa-cog text-gray-500 w-6 mr-3"></i>
-                            <span className="sidebar-text">Settings</span>
-                        </a>
-                    </div> */}
                 </div>
             </div>
 
