@@ -22,33 +22,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/sub-categories', [SubcategoriesController::class, 'index'])->name('subcategories.index');
-Route::get('/sub-categories/create', [SubcategoriesController::class, 'create'])->name('subcategories.create');
-Route::post('/sub-categories/store', [SubcategoriesController::class, 'store'])->name('subcategories.store');
-Route::get('/sub-categories/edit/{subcategory_id}', [SubcategoriesController::class, 'edit'])->name('subcategories.edit');
-Route::put('/sub-categories/edit/{subcategory}', [SubcategoriesController::class, 'update'])->name('subcategories.update');
-Route::delete('/sub-categories/delete/{subcategory_id}', [SubcategoriesController::class, 'destroy'])->name('subcategories.destroy');
-
-Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
-Route::get('/customer/create', [CustomerController::class, 'create'])->name('customer.create');
-Route::post('/customer/create', [CustomerController::class, 'store'])->name('customer.store');
-Route::get('/customer/edit/{customer_id}', [CustomerController::class, 'edit'])->name('customer.edit');
-Route::put('/customer/edit/{customer_id}', [CustomerController::class, 'update'])->name('customer.update');
-Route::delete('/customer/delete/{customer_id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
-
-Route::get('/staffs', [StaffController::class, 'index'])->name('staffs.index');
-Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
-Route::post('/staff/create', [StaffController::class, 'store'])->name('staff.store');
-Route::get('/staff/edit/{staff_id}', [StaffController::class, 'edit'])->name('staff.edit');
-Route::put('/staff/edit/{staff_id}', [StaffController::class, 'update'])->name('staff.update');
-Route::delete('/staff/delete/{staff_id}', [StaffController::class, 'destroy'])->name('staff.destroy');
-
-Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
-Route::get('/transaction/create', [TransactionController::class, 'create'])->name('transaction.create');
-Route::post('/transaction/create', [TransactionController::class, 'store'])->name('transaction.store');
-Route::get('/transaction/edit/{transaction_id}', [TransactionController::class, 'edit'])->name('transaction.edit');
-Route::put('/transaction/edit/{transaction_id}', [TransactionController::class, 'update'])->name('transaction.update');
-Route::delete('/transaction/delete/{transaction_id}', [TransactionController::class, 'destroy'])->name('transaction.destroy');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:view dashboard');
@@ -79,16 +52,46 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/edit/{category}', 'update')->name('categories.update')->middleware('permission:edit category');
         Route::delete('/delete/{category}', 'destroy')->name('categories.destroy')->middleware('permission:delete category');
     });
+
+    Route::prefix('sub-categories')->controller(SubcategoriesController::class)->group(function () {
+        Route::get('/', 'index')->name('subcategories.index')->middleware('permission:view subcategory');
+        Route::get('/create', 'create')->name('subcategories.create')->middleware('permission:create subcategory');
+        Route::post('/create', 'store')->name('subcategories.store')->middleware('permission:create subcategory');
+        Route::get('/edit/{subcategory}', 'edit')->name('subcategories.edit')->middleware('permission:edit subcategory');
+        Route::put('/edit/{subcategory}', 'update')->name('subcategories.update')->middleware('permission:edit subcategory');
+        Route::delete('/delete/{subcategory}', 'destroy')->name('subcategories.destroy')->middleware('permission:delete subcategory');
+    });
+
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index')->middleware('permission:view customer');
+    Route::get('/customer/create', [CustomerController::class, 'create'])->name('customer.create')->middleware('permission:create customer');
+    Route::post('/customer/create', [CustomerController::class, 'store'])->name('customer.store')->middleware('permission:create customer');
+    Route::get('/customer/edit/{customer_id}', [CustomerController::class, 'edit'])->name('customer.edit')->middleware('permission:edit customer');
+    Route::put('/customer/edit/{customer_id}', [CustomerController::class, 'update'])->name('customer.update')->middleware('permission:edit customer');
+    Route::delete('/customer/delete/{customer_id}', [CustomerController::class, 'destroy'])->name('customer.destroy')->middleware('permission:delete customer');
+
+
+    Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('permission:view user');
+    Route::get('/user/create', [UserController::class, 'create'])->name('user.create')->middleware('permission:create user');
+    Route::post('/user/create', [UserController::class, 'store'])->name('user.store')->middleware('permission:create user');
+    Route::get('/user/edit/{user_id}', [UserController::class, 'edit'])->name('user.edit')->middleware('permission:edit user');
+    Route::put('/user/edit/{user_id}', [UserController::class, 'update'])->name('user.update')->middleware('permission:edit user');
+    Route::delete('/user/delete/{user_id}', [UserController::class, 'destroy'])->name('user.destroy')->middleware('permission:delete user');
+
+
+    Route::get('/staffs', [StaffController::class, 'index'])->name('staffs.index')->middleware('permission:view staff');
+    Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create')->middleware('permission:create staff');
+    Route::post('/staff/create', [StaffController::class, 'store'])->name('staff.store')->middleware('permission:create staff');
+    Route::get('/staff/edit/{staff_id}', [StaffController::class, 'edit'])->name('staff.edit')->middleware('permission:edit staff');
+    Route::put('/staff/edit/{staff_id}', [StaffController::class, 'update'])->name('staff.update')->middleware('permission:edit staff');
+    Route::delete('/staff/delete/{staff_id}', [StaffController::class, 'destroy'])->name('staff.destroy')->middleware('permission:delete staff');
+
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index')->middleware('permission:view transaction');
+    Route::get('/transaction/create', [TransactionController::class, 'create'])->name('transaction.create')->middleware('permission:create transaction');
+    Route::post('/transaction/create', [TransactionController::class, 'store'])->name('transaction.store')->middleware('permission:create transaction');
+    Route::get('/transaction/edit/{transaction_id}', [TransactionController::class, 'edit'])->name('transaction.edit')->middleware('permission:edit transaction');
+    Route::put('/transaction/edit/{transaction_id}', [TransactionController::class, 'update'])->name('transaction.update')->middleware('permission:edit transaction');
+    Route::delete('/transaction/delete/{transaction_id}', [TransactionController::class, 'destroy'])->name('transaction.destroy')->middleware('permission:delete transaction');
 });
-
-Route::get('/users', [UserController::class, 'index'])->name('users.index');
-Route::get('/user/create', [UserController::class, 'create'])->name('user.create');
-Route::post('/user/create', [UserController::class, 'store'])->name('user.store');
-Route::get('/user/edit/{user_id}', [UserController::class, 'edit'])->name('user.edit');
-Route::put('/user/edit/{user_id}', [UserController::class, 'update'])->name('user.update');
-Route::delete('/user/delete/{user_id}', [UserController::class, 'destroy'])->name('user.destroy');
-
-
 
 
 require __DIR__ . '/auth.php';
