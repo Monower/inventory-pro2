@@ -1,71 +1,116 @@
 import { Link, usePage } from "@inertiajs/react";
 import SidebarDropdown from "@/Components/SidebarDropdown";
 
-const Sidebar = ({url}) => {
-
+const Sidebar = ({ url }) => {
     const { auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
 
+    console.log("permissions: ", permissions);
+
     return (
         <div className="sidebar bg-white shadow-md flex flex-col">
-
             <div className="flex-1 overflow-y-auto py-4 px-2">
                 <div className="space-y-1">
-                    <Link
-                        href="/dashboard"
-                        className={ url == '/dashboard' ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
-                    >
-                        <span className="sidebar-text">Dashboard</span>
-                    </Link>
-                    <Link
-                        href="/products"
-                        className={  url.includes('product') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
-                    >
-                        <span className="sidebar-text">Products</span>
-                    </Link>
-                    <Link
-                        href="/customers"
-                        className={  url.includes('customer') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
-                    >
-                        <span className="sidebar-text">Customer</span>
-                    </Link>
-                    <Link
-                        href="/staffs"
-                        className={  url.includes('staff') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
-                    >
-                        <span className="sidebar-text">Staffs</span>
-                    </Link>
-                    <SidebarDropdown
-                        title="Categories"
-                    >
-                        <div className="flex flex-col mt-2 space-y-2">
-                            <Link href="/categories">List</Link>
-                            <Link href="/categories/create">Create</Link>
-                        </div>
-                    </SidebarDropdown>
-                    <SidebarDropdown
-                        title="Sub Categories"
-                    >
-                        <div className="flex flex-col mt-2 space-y-2">
-                            <Link href="/sub-categories">List</Link>
-                            <Link href="/sub-categories/create">Create</Link>
-                        </div>
-                    </SidebarDropdown>
-                    <SidebarDropdown
-                        title="User management"
-                    >
-                        <div className="flex flex-col mt-2 space-y-2">
-                            <Link href="/roles">User role</Link>
-                            <Link href="/users">User list</Link>
-                        </div>
-                    </SidebarDropdown>
+                    {permissions.includes("view dashboard") && (
+                        <Link
+                            href="/dashboard"
+                            className={
+                                url == "/dashboard"
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
+                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
+                            }
+                        >
+                            <span className="sidebar-text">Dashboard</span>
+                        </Link>
+                    )}
 
-                    <Link
-                        href="/transactions"
-                        className={  url.includes('transaction') ? 'flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200' : 'sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700'}
-                    >
-                        <span className="sidebar-text">Transaction tracker</span>
-                    </Link>
+                    {permissions.includes("view product") && (
+                        <Link
+                            href="/products"
+                            className={
+                                url.includes("product")
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
+                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
+                            }
+                        >
+                            <span className="sidebar-text">Products</span>
+                        </Link>
+                    )}
+
+                    {permissions.includes("view customer") && (
+                        <Link
+                            href="/customers"
+                            className={
+                                url.includes("customer")
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
+                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
+                            }
+                        >
+                            <span className="sidebar-text">Customer</span>
+                        </Link>
+                    )}
+
+                    {permissions.includes("view staff") && (
+                        <Link
+                            href="/staffs"
+                            className={
+                                url.includes("staff")
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
+                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
+                            }
+                        >
+                            <span className="sidebar-text">Staffs</span>
+                        </Link>
+                    )}
+
+                    {permissions.includes("view category") && (
+                        <SidebarDropdown title="Categories">
+                            <div className="flex flex-col mt-2 space-y-2">
+                                <Link href="/categories">List</Link>
+                                <Link href="/categories/create">Create</Link>
+                            </div>
+                        </SidebarDropdown>
+                    )}
+
+                    {permissions.includes("view subcategory") && (
+                        <SidebarDropdown title="Sub Categories">
+                            <div className="flex flex-col mt-2 space-y-2">
+                                <Link href="/sub-categories">List</Link>
+                                <Link href="/sub-categories/create">
+                                    Create
+                                </Link>
+                            </div>
+                        </SidebarDropdown>
+                    )}
+
+                    {(permissions.includes("view role") ||
+                        permissions.includes("view user")) && (
+                        <SidebarDropdown title="User management">
+                            <div className="flex flex-col mt-2 space-y-2">
+                                {permissions.includes("view role") && (
+                                    <Link href="/roles">User role</Link>
+                                )}
+                                {permissions.includes("view user") && (
+                                    <Link href="/users">User list</Link>
+                                )}
+                            </div>
+                        </SidebarDropdown>
+                    )}
+
+                    {permissions.includes("view transaction") && (
+                        <Link
+                            href="/transactions"
+                            className={
+                                url.includes("transaction")
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
+                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
+                            }
+                        >
+                            <span className="sidebar-text">
+                                Transaction tracker
+                            </span>
+                        </Link>
+                    )}
                 </div>
             </div>
 
