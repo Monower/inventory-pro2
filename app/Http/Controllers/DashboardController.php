@@ -10,6 +10,7 @@ class DashboardController extends Controller
 {
     public function index(){
         $total_product_count = Product::count();
+        $total_product_price = Product::sum('price');
 
         $data = [
             [
@@ -19,7 +20,7 @@ class DashboardController extends Controller
             ],
             [
                 "title" => "Total Product price",
-                "heading" => 0,
+                "heading" => $total_product_price,
                 "icon" => "FaProductHunt"
             ],
             [

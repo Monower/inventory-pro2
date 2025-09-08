@@ -6,8 +6,8 @@ const Create = ({categories}) => {
         productName: "",
         description: "",
         price: "",
-        category: categories[0].id,
-        subCategory: categories[0].sub_categories[0].id,
+        category: categories[0]?.id,
+        subCategory: categories[0]?.sub_categories[0]?.id,
     });
 
     const submit = (e) =>{

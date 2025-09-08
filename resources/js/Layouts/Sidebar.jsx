@@ -1,14 +1,20 @@
 import { Link, usePage } from "@inertiajs/react";
 import SidebarDropdown from "@/Components/SidebarDropdown";
+import { MdOutlineDashboard } from "react-icons/md";
+import { FaUsers } from "react-icons/fa";
+import { FaUserTie } from "react-icons/fa6";
+import { BsBoxes } from "react-icons/bs";
+import { BsPersonBoundingBox } from "react-icons/bs";
+import { AiOutlineBorderlessTable } from "react-icons/ai";
+import { CiDollar } from "react-icons/ci";
+import { PiGearSixLight } from "react-icons/pi";
 
 const Sidebar = ({ url }) => {
     const { auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
 
-    console.log("permissions: ", permissions);
-
     return (
-        <div className="sidebar bg-white shadow-md flex flex-col">
+        <div className="bg-white shadow-md flex flex-col min-w-[250px] max-w-[250px] h-screen">
             <div className="flex-1 overflow-y-auto py-4 px-2">
                 <div className="space-y-1">
                     {permissions.includes("view dashboard") && (
@@ -16,15 +22,44 @@ const Sidebar = ({ url }) => {
                             href="/dashboard"
                             className={
                                 url == "/dashboard"
-                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
-                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
+                                    : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
                             }
                         >
+                            <MdOutlineDashboard />
                             <span className="sidebar-text">Dashboard</span>
                         </Link>
                     )}
 
-                    {permissions.includes("view product") && (
+                    {permissions.includes("view customer") && (
+                        <Link
+                            href="/customers"
+                            className={
+                                url.includes("customer")
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
+                                    : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                            }
+                        >
+                            <FaUsers />
+                            <span className="sidebar-text">Customer</span>
+                        </Link>
+                    )}
+
+                    {permissions.includes("view staff") && (
+                        <Link
+                            href="/staffs"
+                            className={
+                                url.includes("staff")
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
+                                    : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                            }
+                        >
+                            <FaUserTie />
+                            <span className="sidebar-text">Staffs</span>
+                        </Link>
+                    )}
+
+                    {/* {permissions.includes("view product") && (
                         <Link
                             href="/products"
                             className={
@@ -35,35 +70,102 @@ const Sidebar = ({ url }) => {
                         >
                             <span className="sidebar-text">Products</span>
                         </Link>
+                    )} */}
+
+                    {(permissions.includes("view product") ||
+                        permissions.includes("create product") ||
+                        permissions.includes("view category") ||
+                        permissions.includes("view subcategory") ||
+                        permissions.includes("view attribute") ||
+                        permissions.includes("view attribute value")) && (
+                        <SidebarDropdown title="Product" icon={<BsBoxes />}>
+                            <div className="flex flex-col mt-2 space-y-2">
+                                {permissions.includes("view product") && (
+                                    <Link href="/products">Product list</Link>
+                                )}
+                                {permissions.includes("create product") && (
+                                    <Link href="/products/create">
+                                        Create product
+                                    </Link>
+                                )}
+                                {permissions.includes("view category") && (
+                                    <Link href="/categories">
+                                        Category list
+                                    </Link>
+                                )}
+                                {permissions.includes("view subcategory") && (
+                                    <Link href="/sub-categories">
+                                        Sub-category list
+                                    </Link>
+                                )}
+                                {permissions.includes("view attribute") && (
+                                    <Link href="/attributes">
+                                        Attribute list
+                                    </Link>
+                                )}
+                                {permissions.includes(
+                                    "view attribute value"
+                                ) && (
+                                    <Link href="/attribute-values">
+                                        Attribute value list
+                                    </Link>
+                                )}
+                            </div>
+                        </SidebarDropdown>
                     )}
 
-                    {permissions.includes("view customer") && (
-                        <Link
-                            href="/customers"
-                            className={
-                                url.includes("customer")
-                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
-                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                            }
-                        >
-                            <span className="sidebar-text">Customer</span>
-                        </Link>
-                    )}
-
-                    {permissions.includes("view staff") && (
-                        <Link
-                            href="/staffs"
-                            className={
-                                url.includes("staff")
-                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
-                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                            }
-                        >
-                            <span className="sidebar-text">Staffs</span>
-                        </Link>
+                    {(permissions.includes("view role") ||
+                        permissions.includes("view user")) && (
+                        <SidebarDropdown title="User management" icon={<BsPersonBoundingBox />}>
+                            <div className="flex flex-col mt-2 space-y-2">
+                                {permissions.includes("view role") && (
+                                    <Link href="/roles">User role</Link>
+                                )}
+                                {permissions.includes("view user") && (
+                                    <Link href="/users">User list</Link>
+                                )}
+                            </div>
+                        </SidebarDropdown>
                     )}
 
                     {permissions.includes("view category") && (
+                        <SidebarDropdown title="Order" icon={<AiOutlineBorderlessTable />}>
+                            <div className="flex flex-col mt-2 space-y-2">
+                                <Link href="/categories">List</Link>
+                                <Link href="/categories/create">Create</Link>
+                            </div>
+                        </SidebarDropdown>
+                    )}
+
+                    {permissions.includes("view transaction") && (
+                        <Link
+                            href="/transactions"
+                            className={
+                                url.includes("transaction")
+                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
+                                    : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                            }
+                        >
+                            <CiDollar />
+                            <span className="sidebar-text">
+                                Transaction tracker
+                            </span>
+                        </Link>
+                    )}
+
+
+                    {permissions.includes("view category") && (
+                        <SidebarDropdown title="Settings" icon={<PiGearSixLight />}>
+                            <div className="flex flex-col mt-2 space-y-2">
+                                <Link href="/categories">List</Link>
+                                <Link href="/categories/create">Create</Link>
+                            </div>
+                        </SidebarDropdown>
+                    )}
+
+
+
+                    {/* {permissions.includes("view category") && (
                         <SidebarDropdown title="Categories">
                             <div className="flex flex-col mt-2 space-y-2">
                                 <Link href="/categories">List</Link>
@@ -81,53 +183,11 @@ const Sidebar = ({ url }) => {
                                 </Link>
                             </div>
                         </SidebarDropdown>
-                    )}
+                    )} */}
 
-                    {(permissions.includes("view role") ||
-                        permissions.includes("view user")) && (
-                        <SidebarDropdown title="User management">
-                            <div className="flex flex-col mt-2 space-y-2">
-                                {permissions.includes("view role") && (
-                                    <Link href="/roles">User role</Link>
-                                )}
-                                {permissions.includes("view user") && (
-                                    <Link href="/users">User list</Link>
-                                )}
-                            </div>
-                        </SidebarDropdown>
-                    )}
-
-                    {permissions.includes("view transaction") && (
-                        <Link
-                            href="/transactions"
-                            className={
-                                url.includes("transaction")
-                                    ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200"
-                                    : "sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700"
-                            }
-                        >
-                            <span className="sidebar-text">
-                                Transaction tracker
-                            </span>
-                        </Link>
-                    )}
+                    
                 </div>
             </div>
-
-            {/* <div className="p-4 border-t border-gray-200">
-                <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                        <img id="user-avatar" className="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=fff" alt="User" />
-                    </div>
-                    <div className="ml-3 sidebar-text">
-                        <p id="user-name" className="text-sm font-medium text-gray-700">User Name</p>
-                        <p id="user-role" className="text-xs text-gray-500">Administrator</p>
-                    </div>
-                    <button onClick="logout()" className="ml-auto text-gray-400 hover:text-gray-500">
-                        <i className="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div> */}
         </div>
     );
 };
