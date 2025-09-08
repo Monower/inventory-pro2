@@ -131,8 +131,9 @@ const Sidebar = ({ url }) => {
                     {permissions.includes("view category") && (
                         <SidebarDropdown title="Order" icon={<AiOutlineBorderlessTable />}>
                             <div className="flex flex-col mt-2 space-y-2">
-                                <Link href="/categories">List</Link>
-                                <Link href="/categories/create">Create</Link>
+                                <Link href="/banks">Bank list</Link>
+                                <Link href="/orders/create">Create order</Link>
+                                <Link href="/orders">Order list</Link>
                             </div>
                         </SidebarDropdown>
                     )}
