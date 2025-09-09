@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class BankController extends Controller
 {
@@ -12,7 +13,10 @@ class BankController extends Controller
      */
     public function index()
     {
-        //
+        $banks = Bank::all();
+        return Inertia::render('bank/index', [
+            'banks' => $banks,
+        ]);
     }
 
     /**
@@ -20,7 +24,7 @@ class BankController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('bank/create');
     }
 
     /**
@@ -28,7 +32,14 @@ class BankController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            "name" => "required|string|max:255|unique:banks,name",
+        ]);
+
+        Bank::create($validated);
+
+        return redirect()->route('banks.index')
+            ->with('success', 'Bank created successfully.');
     }
 
     /**
@@ -36,7 +47,9 @@ class BankController extends Controller
      */
     public function show(Bank $bank)
     {
-        //
+        return Inertia::render('bank/show', [
+            'bank' => $bank,
+        ]);
     }
 
     /**
@@ -44,7 +57,9 @@ class BankController extends Controller
      */
     public function edit(Bank $bank)
     {
-        //
+        return Inertia::render('bank/edit', [
+            'bank' => $bank,
+        ]);
     }
 
     /**
@@ -52,7 +67,14 @@ class BankController extends Controller
      */
     public function update(Request $request, Bank $bank)
     {
-        //
+        $validated = $request->validate([
+            "name" => "required|string|max:255|unique:banks,name," . $bank->id,
+        ]);
+
+        $bank->update($validated);
+
+        return redirect()->route('banks.index')
+            ->with('success', 'Bank updated successfully.');
     }
 
     /**
@@ -60,6 +82,9 @@ class BankController extends Controller
      */
     public function destroy(Bank $bank)
     {
-        //
+        $bank->delete();
+
+        return redirect()->route('banks.index')
+            ->with('success', 'Bank deleted successfully.');
     }
 }
