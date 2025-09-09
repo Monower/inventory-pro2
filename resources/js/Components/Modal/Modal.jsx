@@ -1,37 +1,41 @@
-"use client"
+"use client";
 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
-
-export default function Modal({ 
-  open, 
-  onOpenChange, 
-  title, 
-  description, 
-  children, 
-  footer 
+export default function Modal({
+  open,
+  onOpenChange,
+  title,
+  description,
+  trigger,
+  children,
+  footer,
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           {title && <DialogTitle>{title}</DialogTitle>}
-          {description && <DialogDescription>{description}</DialogDescription>}
+          {description && (
+            <DialogDescription>{description}</DialogDescription>
+          )}
         </DialogHeader>
 
-        <div className="py-4">
-          {children}
-        </div>
+        <div className="py-4">{children}</div>
 
         {footer && <DialogFooter>{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>
-  )
+  );
 }
