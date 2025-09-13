@@ -12,6 +12,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BankController;
+use App\Http\Controllers\AttributeController;
+use App\Http\Controllers\AttributeValueController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -101,6 +103,37 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/banks/edit/{bank}', [BankController::class, 'update'])->name('banks.update')->middleware('permission:edit bank');
     Route::delete('/banks/delete/{bank}', [BankController::class, 'destroy'])->name('banks.destroy')->middleware('permission:delete bank');
 
+    Route::get('/attributes', [AttributeController::class, 'index'])->name('attributes.index')->middleware('permission:view attribute');
+    Route::get('/attributes/create', [AttributeController::class, 'create'])->name('attributes.create')->middleware('permission:create attribute');
+    Route::post('/attributes/create', [AttributeController::class, 'store'])->name('attributes.store')->middleware('permission:create attribute');
+    Route::get('/attributes/edit/{attribute}', [AttributeController::class, 'edit'])->name('attributes.edit')->middleware('permission:edit attribute');
+    Route::put('/attributes/edit/{attribute}', [AttributeController::class, 'update'])->name('attributes.update')->middleware('permission:edit attribute');
+    Route::delete('/attributes/delete/{attribute}', [AttributeController::class, 'destroy'])->name('attributes.destroy')->middleware('permission:delete attribute');
+
+
+    Route::get('/attribute-values', [AttributeValueController::class, 'index'])
+        ->name('attributeValues.index')
+        ->middleware('permission:view attribute value');
+
+    Route::get('/attribute-values/create', [AttributeValueController::class, 'create'])
+        ->name('attributeValues.create')
+        ->middleware('permission:create attribute value');
+
+    Route::post('/attribute-values/create', [AttributeValueController::class, 'store'])
+        ->name('attributeValues.store')
+        ->middleware('permission:create attribute value');
+
+    Route::get('/attribute-values/edit/{attributeValue}', [AttributeValueController::class, 'edit'])
+        ->name('attributeValues.edit')
+        ->middleware('permission:edit attribute value');
+
+    Route::put('/attribute-values/edit/{attributeValue}', [AttributeValueController::class, 'update'])
+        ->name('attributeValues.update')
+        ->middleware('permission:edit attribute value');
+
+    Route::delete('/attribute-values/delete/{attributeValue}', [AttributeValueController::class, 'destroy'])
+        ->name('attributeValues.destroy')
+        ->middleware('permission:delete attribute value');
 });
 
 
