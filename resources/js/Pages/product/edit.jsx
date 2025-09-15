@@ -1,27 +1,41 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { Head, useForm } from "@inertiajs/react";
+import { useState } from "react";
 
-const Edit = ({ product, categories, attributes, selectedAttributes }) => {
-    const { data, setData, put, errors } = useForm({
-        productName: product.name || "",
-        description: product.description || "",
-        sellingPrice: product.selling_price || "",
-        buyingPrice: product.buying_price || "",
+export default function Edit({ product, attributes }) {
+    // inertia form state
+    const { data, setData, put, processing, errors } = useForm({
+        name: product.name || "",
+        selling_price: product.selling_price || "",
+        buying_price: product.buying_price || "",
         stock: product.stock || "",
         unit: product.unit || "",
-        category: product.sub_category?.category_id || categories[0]?.id,
-        subCategory: product.sub_category_id || categories[0]?.sub_categories[0]?.id,
-        attributes: selectedAttributes || [], // [{ attribute_id, attribute_value_ids: [] }]
+        description: product.description || "",
+        sub_category_id: product.sub_category_id || "",
+        productImage: null,
+        attribute_id: "",
+        attribute_value_ids: [],
     });
 
-    const addAttributeField = () => {
-        setData("attributes", [...data.attributes, { attribute_id: "", attribute_value_ids: [] }]);
+    // for preview of new image
+    const [previewImage, setPreviewImage] = useState(null);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        setData("productImage", file);
+        if (file) {
+            setPreviewImage(URL.createObjectURL(file));
+        }
     };
 
-    const handleAttributeChange = (index, field, value) => {
-        const updated = [...data.attributes];
-        updated[index][field] = value;
-        setData("attributes", updated);
+    const handleAttributeChange = (e) => {
+        setData("attribute_id", e.target.value);
+        setData("attribute_value_ids", []); // reset values when attribute changes
+    };
+
+    const handleValueChange = (e) => {
+        const selected = Array.from(e.target.selectedOptions, (option) => option.value);
+        setData("attribute_value_ids", selected);
     };
 
     const handleSubmit = (e) => {
@@ -29,178 +43,114 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
         put(route("products.update", product.id));
     };
 
+    // find selected attribute's values
+    const selectedAttr = attributes.find((attr) => attr.id == data.attribute_id);
+
     return (
         <AuthenticatedLayout>
-            <section>
-                <h3 className="text-xl font-semibold mb-4">Edit Product</h3>
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-3 gap-2 mb-4">
+            <Head title="Edit Product" />
 
-                        {/* Product Name */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Product Name</legend>
-                            <input
-                                type="text"
-                                value={data.productName}
-                                onChange={(e) => setData("productName", e.target.value)}
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter product name"
-                            />
-                            {errors.productName && <p className="text-red-500 text-xs">{errors.productName}</p>}
-                        </fieldset>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                    {/* Product Name */}
+                    <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+                        <legend className="text-sm mx-2">Name</legend>
+                        <input
+                            type="text"
+                            value={data.name}
+                            onChange={(e) => setData("name", e.target.value)}
+                            className="border-none w-full focus:outline-none focus:ring-0 text-sm"
+                        />
+                        {errors.name && (
+                            <p className="text-red-500 text-sm">{errors.name}</p>
+                        )}
+                    </fieldset>
 
-                        {/* Selling Price */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Selling Price</legend>
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={data.sellingPrice}
-                                onChange={(e) => setData("sellingPrice", e.target.value)}
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter selling price"
-                            />
-                        </fieldset>
+                    {/* Sub Category */}
+                    <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+                        <legend className="text-sm mx-2">Sub Category</legend>
+                        <select
+                            value={data.sub_category_id}
+                            onChange={(e) =>
+                                setData("sub_category_id", e.target.value)
+                            }
+                            className="border-none w-full focus:outline-none focus:ring-0 text-sm"
+                        >
+                            <option value="">Select sub category</option>
+                            {/* pass subCategories as prop if you have them */}
+                        </select>
+                    </fieldset>
 
-                        {/* Buying Price */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Buying Price</legend>
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={data.buyingPrice}
-                                onChange={(e) => setData("buyingPrice", e.target.value)}
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter buying price"
-                            />
-                        </fieldset>
+                    {/* Attributes */}
+                    <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+                        <legend className="text-sm mx-2">Attribute</legend>
+                        <select
+                            value={data.attribute_id}
+                            onChange={handleAttributeChange}
+                            className="border-none w-full focus:outline-none focus:ring-0 text-sm"
+                        >
+                            <option value="">Select Attribute</option>
+                            {attributes.map((attr) => (
+                                <option key={attr.id} value={attr.id}>
+                                    {attr.name}
+                                </option>
+                            ))}
+                        </select>
+                    </fieldset>
 
-                        {/* Stock */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Stock</legend>
-                            <input
-                                type="number"
-                                value={data.stock}
-                                onChange={(e) => setData("stock", e.target.value)}
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter stock quantity"
-                            />
-                        </fieldset>
-
-                        {/* Unit */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Unit</legend>
-                            <input
-                                type="text"
-                                value={data.unit}
-                                onChange={(e) => setData("unit", e.target.value)}
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="e.g. pcs, kg"
-                            />
-                        </fieldset>
-
-                        {/* Category */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Category</legend>
+                    {/* Attribute Values */}
+                    {selectedAttr && (
+                        <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+                            <legend className="text-sm mx-2">Attribute Values</legend>
                             <select
-                                value={data.category}
-                                onChange={(e) => setData("category", e.target.value)}
+                                multiple
+                                value={data.attribute_value_ids}
+                                onChange={handleValueChange}
                                 className="border-none w-full focus:outline-none focus:ring-0 text-sm"
                             >
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                {selectedAttr.values.map((val) => (
+                                    <option key={val.id} value={val.id}>
+                                        {val.value}
+                                    </option>
                                 ))}
                             </select>
                         </fieldset>
+                    )}
 
-                        {/* Sub Category */}
-                        {data.category && (
-                            <fieldset className="border border-gray-300 bg-white p-2">
-                                <legend className="text-sm mx-2">Sub Category</legend>
-                                <select
-                                    value={data.subCategory}
-                                    onChange={(e) => setData("subCategory", e.target.value)}
-                                    className="border-none w-full focus:outline-none focus:ring-0 text-sm"
-                                >
-                                    {categories.find((c) => c.id == data.category)?.sub_categories.map((sub) => (
-                                        <option key={sub.id} value={sub.id}>{sub.name}</option>
-                                    ))}
-                                </select>
-                            </fieldset>
-                        )}
+                    {/* Image */}
+                    <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+                        <legend className="text-sm mx-2">Product Image</legend>
+                        <input
+                            type="file"
+                            onChange={handleImageChange}
+                            className="border-none w-full focus:outline-none focus:ring-0 text-sm"
+                        />
+                        <div className="mt-2">
+                            {previewImage ? (
+                                <img
+                                    src={previewImage}
+                                    alt="Preview"
+                                    className="h-32 w-32 object-cover rounded"
+                                />
+                            ) : product.product_image ? (
+                                <img
+                                    src={`/storage/${product.product_image}`}
+                                    alt="Current Product"
+                                    className="h-32 w-32 object-cover rounded"
+                                />
+                            ) : null}
+                        </div>
+                    </fieldset>
+                </div>
 
-                        {/* Description */}
-                        <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
-                            <legend className="text-sm mx-2">Description</legend>
-                            <textarea
-                                value={data.description}
-                                onChange={(e) => setData("description", e.target.value)}
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                rows="2"
-                                placeholder="Enter product description"
-                            />
-                        </fieldset>
-
-                        {/* Product Image */}
-                        <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
-                            <legend className="text-sm mx-2">Product Image</legend>
-                            <input
-                                type="file"
-                                onChange={(e) => setData("productImage", e.target.files[0])}
-                                className="border-none w-full focus:outline-none focus:ring-0 text-sm"
-                            />
-                        </fieldset>
-
-                        {/* Attributes */}
-                        <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
-                            <legend className="text-sm mx-2 font-semibold">Attributes</legend>
-
-                            {data.attributes.map((attr, index) => (
-                                <div key={index} className="flex gap-2 mb-2">
-                                    {/* Attribute Select */}
-                                    <select
-                                        value={attr.attribute_id}
-                                        onChange={(e) => handleAttributeChange(index, "attribute_id", e.target.value)}
-                                        className="border border-gray-300 rounded w-1/2 text-sm"
-                                    >
-                                        <option value="">Select Attribute</option>
-                                        {attributes.map((a) => (
-                                            <option key={a.id} value={a.id}>{a.name}</option>
-                                        ))}
-                                    </select>
-
-                                    {/* Attribute Values Multi-Select */}
-                                    <select
-                                        multiple
-                                        value={attr.attribute_value_ids || []}
-                                        onChange={(e) => {
-                                            const selectedValues = Array.from(e.target.selectedOptions, (option) => option.value);
-                                            handleAttributeChange(index, "attribute_value_ids", selectedValues);
-                                        }}
-                                        className="border border-gray-300 rounded w-1/2 text-sm"
-                                    >
-                                        {attributes.find((a) => a.id == attr.attribute_id)?.values.map((val) => (
-                                            <option key={val.id} value={val.id}>{val.value}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            ))}
-
-                            <button
-                                type="button"
-                                onClick={addAttributeField}
-                                className="mt-2 bg-green-500 text-white px-2 py-1 rounded text-sm"
-                            >
-                                Add Attribute
-                            </button>
-                        </fieldset>
-                    </div>
-
-                    <button className="bg-blue-500 text-white p-2 rounded mt-2">Update</button>
-                </form>
-            </section>
+                <button
+                    type="submit"
+                    disabled={processing}
+                    className="bg-blue-500 text-white p-2 px-4 rounded"
+                >
+                    Update Product
+                </button>
+            </form>
         </AuthenticatedLayout>
     );
-};
-
-export default Edit;
+}

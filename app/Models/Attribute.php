@@ -17,11 +17,12 @@ class Attribute extends Model
         return $this->hasMany(AttributeValue::class);
     }
 
-    // If products are linked via pivot
+    // If products are linked via pivo
     public function products()
-    {
-        return $this->belongsToMany(Product::class, 'attribute_product')
-                    ->withPivot('attribute_value_id')
-                    ->withTimestamps();
-    }
+{
+    return $this->belongsToMany(Product::class, 'attribute_product')
+                ->withPivot('attribute_value_id')
+                ->withTimestamps();
+}
+
 }

@@ -9,7 +9,9 @@ const Index = ({ products }) => {
             setData("id", id);
             destroy(route("products.destroy", id));
         }
-    }
+    };
+
+    console.log('products: ',products);
 
     return (
         <AuthenticatedLayout>
@@ -29,7 +31,7 @@ const Index = ({ products }) => {
                     <thead>
                         <tr>
                             <th>SI</th>
-                            <th>name</th>
+                            <th>Name</th>
                             <th>Category</th>
                             <th>Sub-category</th>
                             <th>Actions</th>
@@ -43,8 +45,8 @@ const Index = ({ products }) => {
                             >
                                 <td>{index + 1}</td>
                                 <td>{product.name}</td>
-                                <td>{product.category.name}</td>
-                                <td>{product.sub_category.name}</td>
+                                <td>{product.subCategory?.category?.name || "-"}</td>
+                                <td>{product.subCategory?.name || "-"}</td>
                                 <td>
                                     <Link
                                         href={`/products/edit/${product.id}`}
