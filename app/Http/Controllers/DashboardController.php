@@ -13,7 +13,8 @@ class DashboardController extends Controller
 {
     public function index(){
         $total_product_count = Product::count();
-        $total_product_price = Product::sum('price');
+        $total_product_price = 0;
+        // $total_product_price = Product::sum('price');
         $total_customer_count = Customer::count();
         $total_staff_count = Staff::count();
         $total_added_money = Transaction::where(['transaction_type'=>'add_money'])->sum('amount');
