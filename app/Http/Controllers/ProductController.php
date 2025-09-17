@@ -124,6 +124,8 @@ class ProductController extends Controller
 
     public function update($id, Request $request)
     {
+        // dd($request->all(), $id);
+
         $request->validate([
             'productName'   => 'required|string|max:255',
             'sellingPrice'  => 'required|numeric',
