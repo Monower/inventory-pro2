@@ -38,15 +38,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/delete/{role_id}', 'destroy')->name('role.destroy')->middleware('permission:delete role');
     });
 
-    Route::prefix('products')->controller(ProductController::class)->group(function () {
-        Route::get('/', 'index')->name('products.index')->middleware('permission:view product');
-        Route::get('/create', 'create')->name('products.create')->middleware('permission:create product');
-        Route::post('/create', 'store')->name('products.store')->middleware('permission:create product');
-        Route::get('/edit/{product_id}', 'edit')->name('products.edit')->middleware('permission:edit product');
-        Route::put('/edit/{product_id}', 'update')->name('products.update')->middleware('permission:edit product');
-        Route::delete('/delete/{product_id}', 'destroy')->name('products.destroy')->middleware('permission:delete product');
-    });
-
     Route::prefix('categories')->controller(CategoriesController::class)->group(function () {
         Route::get('/', 'index')->name('categories.index')->middleware('permission:view category');
         Route::get('/create', 'create')->name('categories.create')->middleware('permission:create category');
@@ -103,37 +94,24 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/banks/edit/{bank}', [BankController::class, 'update'])->name('banks.update')->middleware('permission:edit bank');
     Route::delete('/banks/delete/{bank}', [BankController::class, 'destroy'])->name('banks.destroy')->middleware('permission:delete bank');
 
-    Route::get('/attributes', [AttributeController::class, 'index'])->name('attributes.index')->middleware('permission:view attribute');
-    Route::get('/attributes/create', [AttributeController::class, 'create'])->name('attributes.create')->middleware('permission:create attribute');
-    Route::post('/attributes/create', [AttributeController::class, 'store'])->name('attributes.store')->middleware('permission:create attribute');
-    Route::get('/attributes/edit/{attribute}', [AttributeController::class, 'edit'])->name('attributes.edit')->middleware('permission:edit attribute');
-    Route::put('/attributes/edit/{attribute}', [AttributeController::class, 'update'])->name('attributes.update')->middleware('permission:edit attribute');
-    Route::delete('/attributes/delete/{attribute}', [AttributeController::class, 'destroy'])->name('attributes.destroy')->middleware('permission:delete attribute');
 
+    Route::prefix('products')->name('products.')->middleware('auth')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('index')->middleware('permission:view product');
+        Route::get('/create', [ProductController::class, 'create'])->name('create')->middleware('permission:create product');
+        Route::post('/', [ProductController::class, 'store'])->name('store')->middleware('permission:create product');
+        Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit')->middleware('permission:edit product');
+        Route::put('/{product}', [ProductController::class, 'update'])->name('update')->middleware('permission:edit product');
+        Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy')->middleware('permission:delete product');
+    });
 
-    Route::get('/attribute-values', [AttributeValueController::class, 'index'])
-        ->name('attributeValues.index')
-        ->middleware('permission:view attribute value');
-
-    Route::get('/attribute-values/create', [AttributeValueController::class, 'create'])
-        ->name('attributeValues.create')
-        ->middleware('permission:create attribute value');
-
-    Route::post('/attribute-values/create', [AttributeValueController::class, 'store'])
-        ->name('attributeValues.store')
-        ->middleware('permission:create attribute value');
-
-    Route::get('/attribute-values/edit/{attributeValue}', [AttributeValueController::class, 'edit'])
-        ->name('attributeValues.edit')
-        ->middleware('permission:edit attribute value');
-
-    Route::put('/attribute-values/edit/{attributeValue}', [AttributeValueController::class, 'update'])
-        ->name('attributeValues.update')
-        ->middleware('permission:edit attribute value');
-
-    Route::delete('/attribute-values/delete/{attributeValue}', [AttributeValueController::class, 'destroy'])
-        ->name('attributeValues.destroy')
-        ->middleware('permission:delete attribute value');
+    Route::prefix('attributes')->name('attributes.')->middleware(['auth'])->group(function () {
+        Route::get('/', [AttributeController::class, 'index'])->name('index')->middleware('permission:view attribute');
+        Route::get('/create', [AttributeController::class, 'create'])->name('create')->middleware('permission:create attribute');
+        Route::post('/', [AttributeController::class, 'store'])->name('store')->middleware('permission:create attribute');
+        Route::get('/{attribute}/edit', [AttributeController::class, 'edit'])->name('edit')->middleware('permission:edit attribute');
+        Route::put('/{attribute}', [AttributeController::class, 'update'])->name('update')->middleware('permission:edit attribute');
+        Route::delete('/{attribute}', [AttributeController::class, 'destroy'])->name('destroy')->middleware('permission:delete attribute');
+    });
 });
 
 

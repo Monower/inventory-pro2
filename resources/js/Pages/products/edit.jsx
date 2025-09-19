@@ -2,103 +2,137 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 
-const Create = ({ categories, attributes }) => {
-  const { data, setData, post, errors } = useForm({
-    productName: "",
-    description: "",
-    sellingPrice: "",
-    buyingPrice: "",
-    stock: "",
-    unit: "",
-    category: categories[0]?.id || "",
-    subCategory: categories[0]?.sub_categories[0]?.id || "",
-    productImage: "",
-    attribute_id: "",
-    attribute_value_ids: [],
+const Edit = ({ product, categories, attributes }) => {
+  const imageBaseUrl = "/storage/";
+
+  console.log('attributes: ',attributes);
+  console.log('products: ',product);
+
+  const { data, setData, put, errors, processing } = useForm({
+    name: product.name || "",
+    description: product.description || "",
+    selling_price: product.selling_price || "",
+    buying_price: product.buying_price || "",
+    stock: product.stock || "",
+    unit: product.unit || "",
+    category: product.subCategory?.category_id || (categories[0]?.id || ""),
+    sub_category_id: product.sub_category_id || (categories[0]?.sub_categories[0]?.id || ""),
+    product_image: null,
+    attribute_id: product.attributeValue?.attribute_id || "",
+    attribute_value_ids: product.attribute_value_id ? [product.attribute_value_id] : [],
   });
 
-  // local UI state
-  const [selectedAttribute, setSelectedAttribute] = useState("");
-  const [selectedValues, setSelectedValues] = useState([]); // chips
-  const [dropdownValues, setDropdownValues] = useState([]); // current dropdown options
+  const [selectedAttribute, setSelectedAttribute] = useState(data.attribute_id);
+  const [selectedValues, setSelectedValues] = useState(data.attribute_value_ids);
+  const [dropdownValues, setDropdownValues] = useState([]);
   const [currentDropdownValue, setCurrentDropdownValue] = useState("");
+  const [imagePreview, setImagePreview] = useState(
+    product.product_image ? imageBaseUrl + product.product_image : null
+  );
 
-  // when attribute changes reset chips & dropdown
+  // Sync selectedAttribute with form data
+  useEffect(() => {
+    setData("attribute_id", selectedAttribute || "");
+  }, [selectedAttribute]);
+
+  // Sync selectedValues with form data
+  useEffect(() => {
+    setData("attribute_value_ids", selectedValues || []);
+  }, [selectedValues]);
+
+  // When selectedAttribute changes, adjust dropdownValues and selectedValues accordingly
   useEffect(() => {
     if (selectedAttribute) {
       const attr = attributes.find((a) => a.id == selectedAttribute);
-      setDropdownValues(attr?.values || []);
+      const validValueIds = (attr?.values || []).map((v) => v.id);
+      const filteredSelected = selectedValues.filter((v) => validValueIds.includes(v));
+      setSelectedValues(filteredSelected);
+      setDropdownValues(attr?.values.filter((v) => !filteredSelected.includes(v.id)) || []);
     } else {
+      setSelectedValues([]);
       setDropdownValues([]);
     }
-    setSelectedValues([]);
     setCurrentDropdownValue("");
-    setData("attribute_id", selectedAttribute);
-    setData("attribute_value_ids", []);
   }, [selectedAttribute]);
 
-  // keep form data in sync with chips
-  useEffect(() => {
-    setData("attribute_value_ids", selectedValues);
-  }, [selectedValues]);
+  // Image change handler with preview
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setData("product_image", file);
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    } else {
+      setImagePreview(product.product_image ? imageBaseUrl + product.product_image : null);
+    }
+  };
 
+  // Remove image preview and clear file input
+  const removeImage = () => {
+    setData("product_image", null);
+    setImagePreview(null);
+  };
+
+  // Add attribute value selected from dropdown
   const handleAddValue = (valueId) => {
-    if (!valueId) return;
-    if (selectedValues.includes(valueId)) return; // prevent duplicates
+    if (!valueId || selectedValues.includes(valueId)) return;
 
     const newSelected = [...selectedValues, valueId];
     setSelectedValues(newSelected);
 
-    // recompute dropdown immediately
     if (selectedAttribute) {
       const attr = attributes.find((a) => a.id == selectedAttribute);
-      const remaining = (attr?.values || []).filter(
-        (v) => !newSelected.includes(v.id)
-      );
+      const remaining = (attr?.values || []).filter((v) => !newSelected.includes(v.id));
       setDropdownValues(remaining);
     }
-
-    setCurrentDropdownValue(""); // reset dropdown select
+    setCurrentDropdownValue("");
   };
 
+  // Remove an attribute value chip
   const handleRemoveValue = (valueId) => {
     const newSelected = selectedValues.filter((v) => v !== valueId);
     setSelectedValues(newSelected);
 
-    // recompute dropdown after removal
     if (selectedAttribute) {
       const attr = attributes.find((a) => a.id == selectedAttribute);
-      const remaining = (attr?.values || []).filter(
-        (v) => !newSelected.includes(v.id)
-      );
+      const remaining = (attr?.values || []).filter((v) => !newSelected.includes(v.id));
       setDropdownValues(remaining);
     }
   };
 
+  // Handle changing category and update sub_category_id accordingly
+  const handleCategoryChange = (categoryId) => {
+    setData("category", categoryId);
+    const firstSubCat = categories.find((c) => c.id == categoryId)?.sub_categories[0]?.id || "";
+    setData("sub_category_id", firstSubCat);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    post(route("products.store"));
+    if (!data.attribute_value_ids.length) {
+      alert("Please select at least one attribute value.");
+      return;
+    }
+    put(route("products.update", product.id));
   };
 
   return (
     <AuthenticatedLayout>
       <section>
-        <h3 className="text-xl font-semibold mb-4">Add New Product</h3>
-        <form onSubmit={handleSubmit}>
+        <h3 className="text-xl font-semibold mb-4">Edit Product</h3>
+        <form onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="grid grid-cols-3 gap-2 mb-4">
             {/* Product Name */}
             <fieldset className="border border-gray-300 bg-white p-2">
               <legend className="text-sm mx-2">Product Name</legend>
               <input
                 type="text"
-                value={data.productName}
-                onChange={(e) => setData("productName", e.target.value)}
+                value={data.name}
+                onChange={(e) => setData("name", e.target.value)}
                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
                 placeholder="Enter product name"
               />
-              {errors.productName && (
-                <p className="text-red-500 text-xs">{errors.productName}</p>
-              )}
+              {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
             </fieldset>
 
             {/* Selling Price */}
@@ -107,11 +141,12 @@ const Create = ({ categories, attributes }) => {
               <input
                 type="number"
                 step="0.01"
-                value={data.sellingPrice}
-                onChange={(e) => setData("sellingPrice", e.target.value)}
+                value={data.selling_price}
+                onChange={(e) => setData("selling_price", e.target.value)}
                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
                 placeholder="Enter selling price"
               />
+              {errors.selling_price && <p className="text-red-500 text-xs">{errors.selling_price}</p>}
             </fieldset>
 
             {/* Buying Price */}
@@ -120,11 +155,12 @@ const Create = ({ categories, attributes }) => {
               <input
                 type="number"
                 step="0.01"
-                value={data.buyingPrice}
-                onChange={(e) => setData("buyingPrice", e.target.value)}
+                value={data.buying_price}
+                onChange={(e) => setData("buying_price", e.target.value)}
                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
                 placeholder="Enter buying price"
               />
+              {errors.buying_price && <p className="text-red-500 text-xs">{errors.buying_price}</p>}
             </fieldset>
 
             {/* Stock */}
@@ -137,6 +173,7 @@ const Create = ({ categories, attributes }) => {
                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
                 placeholder="Enter stock quantity"
               />
+              {errors.stock && <p className="text-red-500 text-xs">{errors.stock}</p>}
             </fieldset>
 
             {/* Unit */}
@@ -149,6 +186,7 @@ const Create = ({ categories, attributes }) => {
                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
                 placeholder="e.g. pcs, kg"
               />
+              {errors.unit && <p className="text-red-500 text-xs">{errors.unit}</p>}
             </fieldset>
 
             {/* Category */}
@@ -156,14 +194,7 @@ const Create = ({ categories, attributes }) => {
               <legend className="text-sm mx-2">Category</legend>
               <select
                 value={data.category}
-                onChange={(e) => {
-                  const selectedCat = e.target.value;
-                  setData("category", selectedCat);
-                  const firstSub =
-                    categories.find((c) => c.id == selectedCat)
-                      ?.sub_categories[0]?.id || "";
-                  setData("subCategory", firstSub);
-                }}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="border-none w-full focus:outline-none focus:ring-0 text-sm"
               >
                 {categories.map((cat) => (
@@ -172,6 +203,7 @@ const Create = ({ categories, attributes }) => {
                   </option>
                 ))}
               </select>
+              {errors.category && <p className="text-red-500 text-xs">{errors.category}</p>}
             </fieldset>
 
             {/* Sub Category */}
@@ -179,8 +211,8 @@ const Create = ({ categories, attributes }) => {
               <fieldset className="border border-gray-300 bg-white p-2">
                 <legend className="text-sm mx-2">Sub Category</legend>
                 <select
-                  value={data.subCategory}
-                  onChange={(e) => setData("subCategory", e.target.value)}
+                  value={data.sub_category_id}
+                  onChange={(e) => setData("sub_category_id", e.target.value)}
                   className="border-none w-full focus:outline-none focus:ring-0 text-sm"
                 >
                   {categories
@@ -191,6 +223,7 @@ const Create = ({ categories, attributes }) => {
                       </option>
                     ))}
                 </select>
+                {errors.sub_category_id && <p className="text-red-500 text-xs">{errors.sub_category_id}</p>}
               </fieldset>
             )}
 
@@ -204,6 +237,7 @@ const Create = ({ categories, attributes }) => {
                 rows="2"
                 placeholder="Enter product description"
               />
+              {errors.description && <p className="text-red-500 text-xs">{errors.description}</p>}
             </fieldset>
 
             {/* Product Image */}
@@ -211,9 +245,24 @@ const Create = ({ categories, attributes }) => {
               <legend className="text-sm mx-2">Product Image</legend>
               <input
                 type="file"
-                onChange={(e) => setData("productImage", e.target.files[0])}
+                accept="image/*"
+                onChange={handleImageChange}
                 className="border-none w-full focus:outline-none focus:ring-0 text-sm"
               />
+              {imagePreview && (
+                <div className="relative mt-2 max-w-xs">
+                  <img src={imagePreview} alt="Preview" className="w-full h-auto rounded" />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-2 py-0.5 font-bold"
+                    aria-label="Remove image preview"
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
+              {errors.product_image && <p className="text-red-500 text-xs">{errors.product_image}</p>}
             </fieldset>
 
             {/* Attribute & Values */}
@@ -237,13 +286,16 @@ const Create = ({ categories, attributes }) => {
                 <>
                   <select
                     value={currentDropdownValue}
-                    onChange={(e) => handleAddValue(e.target.value)}
+                    onChange={(e) => {
+                      setCurrentDropdownValue(e.target.value);
+                      handleAddValue(e.target.value);
+                    }}
                     className="border border-gray-300 rounded w-full text-sm"
                   >
                     <option value="">Select Value</option>
                     {dropdownValues.map((val) => (
                       <option key={val.id} value={val.id}>
-                        {val.value}
+                        {val.name || val.value}
                       </option>
                     ))}
                   </select>
@@ -258,7 +310,7 @@ const Create = ({ categories, attributes }) => {
                           key={valId}
                           className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center"
                         >
-                          {valObj?.value}
+                          {valObj?.name || valObj?.value}
                           <button
                             type="button"
                             onClick={() => handleRemoveValue(valId)}
@@ -275,8 +327,12 @@ const Create = ({ categories, attributes }) => {
             </fieldset>
           </div>
 
-          <button className="bg-blue-500 text-white p-2 rounded mt-2">
-            Save
+          <button
+            type="submit"
+            disabled={processing}
+            className="bg-blue-500 text-white p-2 rounded mt-2"
+          >
+            Update
           </button>
         </form>
       </section>
@@ -284,4 +340,4 @@ const Create = ({ categories, attributes }) => {
   );
 };
 
-export default Create;
+export default Edit;
