@@ -3,90 +3,101 @@ import { useForm } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 
 const Edit = ({ product, categories, attributes, selectedAttributes }) => {
-    // preload the product info
-    const { data, setData, post, errors, put } = useForm({
+    const { data, setData, put, errors } = useForm({
         productName: product.name || "",
         description: product.description || "",
         sellingPrice: product.selling_price || "",
         buyingPrice: product.buying_price || "",
         stock: product.stock || "",
         unit: product.unit || "",
-        category: product.subCategory?.category?.id || "",
-        subCategory: product.subCategory?.id || "",
-        productImage: null, // new file only
-        // one attribute at a time UI:
+        category: product.subCategory?.category?.id || categories[0]?.id || "",
+        subCategory:
+            product.subCategory?.id ||
+            categories[0]?.sub_categories[0]?.id ||
+            "",
+        productImage: null,
         attribute_id: "",
         attribute_value_ids: [],
     });
 
-    // state for UI attribute adding (same as create)
+    console.log("selectedAttributes", selectedAttributes);
+
+    // local UI state
     const [selectedAttribute, setSelectedAttribute] = useState("");
-    const [selectedValues, setSelectedValues] = useState([]);
-    const [dropdownValues, setDropdownValues] = useState([]);
+    const [selectedValues, setSelectedValues] = useState([]); // chips
+    const [dropdownValues, setDropdownValues] = useState([]); // current dropdown options
     const [currentDropdownValue, setCurrentDropdownValue] = useState("");
 
-    // on attribute select
+    // On mount, select first attribute with values if any
+    useEffect(() => {
+        // Initialize selected values if any attributes already exist
+        if (selectedAttributes && Object.keys(selectedAttributes).length > 0) {
+            const firstAttrId = Object.keys(selectedAttributes)[0];
+            setSelectedAttribute(firstAttrId);
+            setSelectedValues(selectedAttributes[firstAttrId]);
+        }
+    }, []);
+
+    // Update dropdown values when attribute changes
     useEffect(() => {
         if (selectedAttribute) {
             const attr = attributes.find((a) => a.id == selectedAttribute);
-            // load already selected values if exist from selectedAttributes prop
-            const preSelected = selectedAttributes[selectedAttribute] || [];
-            setSelectedValues(preSelected);
-            setDropdownValues(
-                (attr?.values || []).filter((v) => !preSelected.includes(v.id))
+            // Filter out already selected values from dropdown options
+            const remaining = (attr?.values || []).filter(
+                (v) => !selectedValues.includes(v.id)
             );
+            setDropdownValues(remaining);
+            setData("attribute_id", selectedAttribute);
+            setData("attribute_value_ids", selectedValues);
         } else {
             setDropdownValues([]);
-            setSelectedValues([]);
+            setData("attribute_id", "");
+            setData("attribute_value_ids", []);
         }
         setCurrentDropdownValue("");
-        setData("attribute_id", selectedAttribute);
-        setData("attribute_value_ids", []);
     }, [selectedAttribute]);
 
-    // sync chips to form
+    // Keep form data in sync with chips changes
     useEffect(() => {
         setData("attribute_value_ids", selectedValues);
+        // Update dropdown values when selected values change
+        if (selectedAttribute) {
+            const attr = attributes.find((a) => a.id == selectedAttribute);
+            const remaining = (attr?.values || []).filter(
+                (v) => !selectedValues.includes(v.id)
+            );
+            setDropdownValues(remaining);
+        }
     }, [selectedValues]);
 
     const handleAddValue = (valueId) => {
         if (!valueId) return;
         if (selectedValues.includes(valueId)) return;
+
         const newSelected = [...selectedValues, valueId];
         setSelectedValues(newSelected);
-
-        if (selectedAttribute) {
-            const attr = attributes.find((a) => a.id == selectedAttribute);
-            const remaining = (attr?.values || []).filter(
-                (v) => !newSelected.includes(v.id)
-            );
-            setDropdownValues(remaining);
-        }
         setCurrentDropdownValue("");
     };
 
     const handleRemoveValue = (valueId) => {
         const newSelected = selectedValues.filter((v) => v !== valueId);
         setSelectedValues(newSelected);
+    };
 
-        if (selectedAttribute) {
-            const attr = attributes.find((a) => a.id == selectedAttribute);
-            const remaining = (attr?.values || []).filter(
-                (v) => !newSelected.includes(v.id)
-            );
-            setDropdownValues(remaining);
-        }
+    // Handle category change, update subcategory too
+    const handleCategoryChange = (e) => {
+        const selectedCat = e.target.value;
+        setData("category", selectedCat);
+        const firstSub =
+            categories.find((c) => c.id == selectedCat)?.sub_categories[0]
+                ?.id || "";
+        setData("subCategory", firstSub);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route("products.update", product.id)); // real PUT request
+        put(route("products.update", product.id));
     };
-
-    console.log("Errors:", errors);
-    console.log("Product:", product);
-    console.log("Categories:", categories);
-    
 
     return (
         <AuthenticatedLayout>
@@ -106,6 +117,7 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                     setData("productName", e.target.value)
                                 }
                                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
+                                placeholder="Enter product name"
                             />
                             {errors.productName && (
                                 <p className="text-red-500 text-xs">
@@ -127,7 +139,13 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                     setData("sellingPrice", e.target.value)
                                 }
                                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
+                                placeholder="Enter selling price"
                             />
+                            {errors.sellingPrice && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.sellingPrice}
+                                </p>
+                            )}
                         </fieldset>
 
                         {/* Buying Price */}
@@ -143,7 +161,13 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                     setData("buyingPrice", e.target.value)
                                 }
                                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
+                                placeholder="Enter buying price"
                             />
+                            {errors.buyingPrice && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.buyingPrice}
+                                </p>
+                            )}
                         </fieldset>
 
                         {/* Stock */}
@@ -156,7 +180,13 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                     setData("stock", e.target.value)
                                 }
                                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
+                                placeholder="Enter stock quantity"
                             />
+                            {errors.stock && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.stock}
+                                </p>
+                            )}
                         </fieldset>
 
                         {/* Unit */}
@@ -169,7 +199,13 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                     setData("unit", e.target.value)
                                 }
                                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
+                                placeholder="e.g. pcs, kg"
                             />
+                            {errors.unit && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.unit}
+                                </p>
+                            )}
                         </fieldset>
 
                         {/* Category */}
@@ -177,15 +213,7 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                             <legend className="text-sm mx-2">Category</legend>
                             <select
                                 value={data.category}
-                                onChange={(e) => {
-                                    const selectedCat = e.target.value;
-                                    setData("category", selectedCat);
-                                    const firstSub =
-                                        categories.find(
-                                            (c) => c.id == selectedCat
-                                        )?.sub_categories[0]?.id || "";
-                                    setData("subCategory", firstSub);
-                                }}
+                                onChange={handleCategoryChange}
                                 className="border-none w-full focus:outline-none focus:ring-0 text-sm"
                             >
                                 {categories.map((cat) => (
@@ -194,6 +222,11 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                     </option>
                                 ))}
                             </select>
+                            {errors.category && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.category}
+                                </p>
+                            )}
                         </fieldset>
 
                         {/* Sub Category */}
@@ -217,6 +250,11 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                             </option>
                                         ))}
                                 </select>
+                                {errors.subCategory && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.subCategory}
+                                    </p>
+                                )}
                             </fieldset>
                         )}
 
@@ -232,7 +270,13 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                                 }
                                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
                                 rows="2"
+                                placeholder="Enter product description"
                             />
+                            {errors.description && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.description}
+                                </p>
+                            )}
                         </fieldset>
 
                         {/* Product Image */}
@@ -250,9 +294,14 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                             {product.product_image && (
                                 <img
                                     src={`/storage/${product.product_image}`}
-                                    alt="Product"
-                                    className="w-24 mt-2"
+                                    alt={product.name}
+                                    className="mt-2 max-h-40"
                                 />
+                            )}
+                            {errors.productImage && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.productImage}
+                                </p>
                             )}
                         </fieldset>
 
@@ -261,6 +310,7 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                             <legend className="text-sm mx-2 font-semibold">
                                 Attribute
                             </legend>
+
                             <select
                                 value={selectedAttribute}
                                 onChange={(e) =>
@@ -329,6 +379,7 @@ const Edit = ({ product, categories, attributes, selectedAttributes }) => {
                             )}
                         </fieldset>
                     </div>
+
                     <button className="bg-blue-500 text-white p-2 rounded mt-2">
                         Update
                     </button>

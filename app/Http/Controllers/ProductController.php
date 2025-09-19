@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\SubCategory;
 use App\Models\Attribute;
+use App\Models\AttributeValue;
 
 class ProductController extends Controller
 {
@@ -104,9 +105,14 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $product    = Product::with(['subCategory.category', 'attributes'])->findOrFail($id);
+        $product    = Product::with(['subCategory.category', 'attributes', 'attributes.values'])->findOrFail($id);
+
+        
         $categories = Category::with('subCategories')->get();
         $attributes = Attribute::with('values')->get();
+        $attributeValues = AttributeValue::all();
+
+        dd($attributeValues);
 
         // format selected attributes for frontend
         $selectedAttributes = [];
