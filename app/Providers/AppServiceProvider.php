@@ -25,16 +25,18 @@ class AppServiceProvider extends ServiceProvider
         Vite::prefetch(concurrency: 3);
 
         Inertia::share([
-        'auth' => function () {
-            $user = Auth::user();
-            return $user ? [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'roles' => $user->getRoleNames(),
-                'permissions' => $user->getAllPermissions()->pluck('name'),
-            ] : null;
-        },
-    ]);
+            'auth' => function () {
+                $user = Auth::user();
+                return $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'avatar' => $user->avatar,   // new
+                    'phone' => $user->phone,     // new
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                ] : null;
+            },
+        ]);
     }
 }

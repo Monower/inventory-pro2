@@ -155,14 +155,13 @@ const Sidebar = ({ url }) => {
                     )}
 
 
-                    {permissions.includes("view category") && (
+                    {/* {permissions.includes("view category") && ( */}
                         <SidebarDropdown title="Settings" icon={<PiGearSixLight />}>
                             <div className="flex flex-col mt-2 space-y-2">
-                                <Link href="/categories">List</Link>
-                                <Link href="/categories/create">Create</Link>
+                                <Link href="/profile">Profile</Link>
                             </div>
                         </SidebarDropdown>
-                    )}
+                    {/* )} */}
 
 
 
