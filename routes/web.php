@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\AttributeValueController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -112,6 +113,18 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{attribute}', [AttributeController::class, 'update'])->name('update')->middleware('permission:edit attribute');
         Route::delete('/{attribute}', [AttributeController::class, 'destroy'])->name('destroy')->middleware('permission:delete attribute');
     });
+
+
+    Route::prefix('orders')->name('orders.')->middleware(['auth'])->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('index')->middleware('permission:view order');
+        Route::get('/create', [OrderController::class, 'create'])->name('create')->middleware('permission:create order');
+        Route::post('/', [OrderController::class, 'store'])->name('store')->middleware('permission:create order');
+        Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit')->middleware('permission:edit order');
+        Route::put('/{order}', [OrderController::class, 'update'])->name('update')->middleware('permission:edit order');
+        Route::delete('/{order}', [OrderController::class, 'destroy'])->name('destroy')->middleware('permission:delete order');
+    });
+
+
 });
 
 
