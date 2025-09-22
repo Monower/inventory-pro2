@@ -26,7 +26,7 @@ const DashboardCard = ({ heading, title, icon }) => {
 
 
     return (
-        <div className="w-[23%] flex flex-col gap-2 items-center bg-white p-4 rounded-lg">
+        <div className="w-full flex flex-col gap-2 items-center bg-white p-4 rounded-lg">
             <Icon className="text-4xl text-gray-800" />
             <p className="text-[14px] text-gray-500">{ heading }</p>
             <p className="text-20 text-gray-800">{ title }</p>

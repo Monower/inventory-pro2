@@ -126,5 +126,9 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
+Route::fallback(function () {
+    return to_route('login');
+});
+
 
 require __DIR__ . '/auth.php';

@@ -7,7 +7,7 @@ const Sidebar = ({ url }) => {
 
     return (
         <div
-            className={`relative bg-white shadow-md flex flex-col h-screen transition-all duration-300 ${
+            className={`hidden lg:block relative bg-white shadow-md flex flex-col h-screen transition-all duration-300 ${
                 collapsed ? "min-w-[10px] max-w-[10px]" : "min-w-[250px] max-w-[250px]"
             }`}
         >
