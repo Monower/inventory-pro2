@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class PermissionSeeder extends Seeder
 {
@@ -73,7 +74,9 @@ class PermissionSeeder extends Seeder
             'edit settings',
             'delete settings',
             'can login',
-            'can register'
+            'can register',
+            'view profile',
+            'edit profile',
         ];
 
         // Create permissions if they don't exist
@@ -87,9 +90,20 @@ class PermissionSeeder extends Seeder
         // Give all permissions to admin
         $adminRole->syncPermissions(Permission::all());
 
-        // Assign admin role to first user (optional)
+        // Check if there is at least one user
         $user = User::first();
-        if ($user && !$user->hasRole('admin')) {
+
+        if (!$user) {
+            // Create default admin user
+            $user = User::create([
+                'name' => 'Admin',
+                'email' => 'admin@gmail.com',
+                'password' => '12345678', // hash the password
+            ]);
+        }
+
+        // Assign admin role if not already assigned
+        if (!$user->hasRole('admin')) {
             $user->assignRole($adminRole);
         }
     }

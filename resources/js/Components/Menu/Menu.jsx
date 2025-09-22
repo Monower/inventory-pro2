@@ -135,11 +135,17 @@ const Menu = ({ url }) => {
                 </Link>
             )}
 
-            <SidebarDropdown title="Settings" icon={<PiGearSixLight />}>
-                <div className="flex flex-col mt-2 space-y-2">
-                    <Link href="/profile">Profile</Link>
-                </div>
-            </SidebarDropdown>
+            {(permissions.includes("view settings") ||
+                permissions.includes("view profile")) && (
+                    <SidebarDropdown title="Settings" icon={<PiGearSixLight />}>
+                        <div className="flex flex-col mt-2 space-y-2">
+                            <Link href="/profile">Profile</Link>
+                        </div>
+                        <div className="flex flex-col mt-2 space-y-2">
+                            <Link href="/settings">General settings</Link>
+                        </div>
+                    </SidebarDropdown>
+                )}
         </>
     );
 };

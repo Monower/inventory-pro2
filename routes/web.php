@@ -13,16 +13,17 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\AttributeController;
-use App\Http\Controllers\AttributeValueController;
+// use App\Http\Controllers\AttributeValueController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\SettingController;
 
 Route::get('/', function () {
     return to_route('login');
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('permission:edit profile');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update')->middleware('permission:edit profile');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -123,6 +124,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit')->middleware('permission:edit order');
         Route::put('/{order}', [OrderController::class, 'update'])->name('update')->middleware('permission:edit order');
         Route::delete('/{order}', [OrderController::class, 'destroy'])->name('destroy')->middleware('permission:delete order');
+    });
+
+    Route::prefix('settings')->name('settings.')->middleware(['auth'])->group(function () {
+        Route::get('/', [SettingController::class, 'index'])
+            ->name('index')
+            ->middleware('permission:view settings');
+        // Update without parameter
+        Route::post('/', [SettingController::class, 'update'])
+            ->name('update')
+            ->middleware('permission:edit settings');
     });
 });
 
