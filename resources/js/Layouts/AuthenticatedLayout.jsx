@@ -9,8 +9,6 @@ import Sidebar from "./Sidebar";
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const { settings } = usePage().props;
-    console.log('from auth layout: ',settings.company_name, settings.logo_url);
-
     const { url } = usePage();
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -129,7 +127,8 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
                     </div>
                 </div>
-
+                
+                {/* Mobile menu */}
                 <div
                     className={
                         (showingNavigationDropdown ? "block" : "hidden") +
