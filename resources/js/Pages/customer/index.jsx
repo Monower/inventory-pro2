@@ -24,7 +24,7 @@ const Index = ({ customers }) => {
                     <Link href="/customer/create" className="bg-blue-500 text-white p-1 px-2 rounded">Create</Link>
                 </div>
 
-                <div className="bg-white p-4 rounded">
+                <div className="bg-white p-4 rounded overflow-x-auto">
                     <table className="w-full border-separate border-spacing-y-2">
                         <thead>
                             <tr>

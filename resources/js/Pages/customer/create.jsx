@@ -23,7 +23,7 @@ const Create = () => {
 
                 <div>
                     <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
                             <fieldset className="border border-gray-300 bg-white">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">Name</label>
@@ -81,7 +81,7 @@ const Create = () => {
                             </fieldset>
                         </div>
 
-                        <div>
+                        <div className="w-full flex justify-end">
                             <button className="bg-blue-500 text-white p-1 px-2 rounded">
                                 Save
                             </button>
