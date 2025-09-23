@@ -5,11 +5,22 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import Sidebar from "./Sidebar";
+import SidebarDropdown from "@/Components/SidebarDropdown";
+import { MdOutlineDashboard } from "react-icons/md";
+import { FaUsers } from "react-icons/fa";
+import { FaUserTie } from "react-icons/fa6";
+import { BsBoxes } from "react-icons/bs";
+import { BsPersonBoundingBox } from "react-icons/bs";
+import { AiOutlineBorderlessTable } from "react-icons/ai";
+import { CiDollar } from "react-icons/ci";
+import { PiGearSixLight } from "react-icons/pi";
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const { settings } = usePage().props;
     const { url } = usePage();
+    const { auth } = usePage().props;
+    const permissions = auth.user?.permissions || [];
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -21,7 +32,10 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/" className="flex items-center gap-2">
+                                <Link
+                                    href="/"
+                                    className="flex items-center gap-2"
+                                >
                                     <ApplicationLogo logo={settings.logo_url} />
                                     {/* {
                                         settings.company_name &&
@@ -127,7 +141,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Mobile menu */}
                 <div
                     className={
@@ -143,11 +157,117 @@ export default function AuthenticatedLayout({ header, children }) {
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            href={route("dashboard")}
+                            href={"/customers"}
                             active={route().current("dashboard")}
                         >
-                            Dashboard 2
+                            Customer
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={"/staffs"}
+                            active={route().current("dashboard")}
+                        >
+                            Staffs
+                        </ResponsiveNavLink>
+
+                        <SidebarDropdown title="Product" icon={<BsBoxes />}>
+                            <div className="flex flex-col mt-2 space-y-2">
+                                {permissions.includes("view product") && (
+                                    <Link href="/products">Product list</Link>
+                                )}
+                                {permissions.includes("create product") && (
+                                    <Link href="/products/create">
+                                        Create product
+                                    </Link>
+                                )}
+                                {permissions.includes("view category") && (
+                                    <Link href="/categories">
+                                        Category list
+                                    </Link>
+                                )}
+                                {permissions.includes("view subcategory") && (
+                                    <Link href="/sub-categories">
+                                        Sub-category list
+                                    </Link>
+                                )}
+                                {permissions.includes("view attribute") && (
+                                    <Link href="/attributes">
+                                        Attribute list
+                                    </Link>
+                                )}
+                                {permissions.includes(
+                                    "view attribute value"
+                                ) && (
+                                    <Link href="/attribute-values">
+                                        Attribute value list
+                                    </Link>
+                                )}
+                            </div>
+                        </SidebarDropdown>
+
+                        {(permissions.includes("view role") ||
+                            permissions.includes("view user")) && (
+                            <SidebarDropdown
+                                title="User management"
+                                icon={<BsPersonBoundingBox />}
+                            >
+                                <div className="flex flex-col mt-2 space-y-2">
+                                    {permissions.includes("view role") && (
+                                        <Link href="/roles">User role</Link>
+                                    )}
+                                    {permissions.includes("view user") && (
+                                        <Link href="/users">User list</Link>
+                                    )}
+                                </div>
+                            </SidebarDropdown>
+                        )}
+
+                        {permissions.includes("view category") && (
+                            <SidebarDropdown
+                                title="Order"
+                                icon={<AiOutlineBorderlessTable />}
+                            >
+                                <div className="flex flex-col mt-2 space-y-2">
+                                    <Link href="/banks">Bank list</Link>
+                                    <Link href="/orders/create">
+                                        Create order
+                                    </Link>
+                                    <Link href="/orders">Order list</Link>
+                                </div>
+                            </SidebarDropdown>
+                        )}
+
+                        {permissions.includes("view transaction") && (
+                            <Link
+                                href="/transactions"
+                                className={
+                                    url.includes("transaction")
+                                        ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
+                                        : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                                }
+                            >
+                                <CiDollar />
+                                <span className="sidebar-text">
+                                    Transaction tracker
+                                </span>
+                            </Link>
+                        )}
+
+                        {(permissions.includes("view settings") ||
+                            permissions.includes("view profile")) && (
+                            <SidebarDropdown
+                                title="Settings"
+                                icon={<PiGearSixLight />}
+                            >
+                                <div className="flex flex-col mt-2 space-y-2">
+                                    <Link href="/profile">Profile</Link>
+                                </div>
+                                <div className="flex flex-col mt-2 space-y-2">
+                                    <Link href="/settings">
+                                        General settings
+                                    </Link>
+                                </div>
+                            </SidebarDropdown>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
