@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = () => {
     const { data, setData, post, errors } = useForm({
@@ -17,7 +18,8 @@ const Create = () => {
     return (
         <AuthenticatedLayout>
             <section>
-                <div>
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"customers.index"} />
                     <h3 className="text-xl font-semibold">Add new customer</h3>
                 </div>
 

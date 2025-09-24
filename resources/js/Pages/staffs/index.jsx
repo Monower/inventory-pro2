@@ -35,7 +35,7 @@ const Index = ({ staffs }) => {
                     }
                 </div>
 
-                <div className="bg-white p-4 rounded">
+                <div className="bg-white p-4 rounded overflow-x-auto">
                     <table className="w-full border-separate border-spacing-y-2">
                         <thead>
                             <tr>

@@ -96,7 +96,7 @@ const Create = ({ categories, attributes }) => {
       <section>
         <h3 className="text-xl font-semibold mb-4">Add New Product</h3>
         <form onSubmit={handleSubmit} encType="multipart/form-data">
-          <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="grid  grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
             {/* Product Name */}
             <fieldset className="border border-gray-300 bg-white p-2">
               <legend className="text-sm mx-2">Product Name</legend>
@@ -224,7 +224,7 @@ const Create = ({ categories, attributes }) => {
             )}
 
             {/* Description */}
-            <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+            <fieldset className="border border-gray-300 bg-white p-2 lg:col-span-3">
               <legend className="text-sm mx-2">Description</legend>
               <textarea
                 value={data.description}
@@ -239,7 +239,7 @@ const Create = ({ categories, attributes }) => {
             </fieldset>
 
             {/* Product Image */}
-            <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+            <fieldset className="border border-gray-300 bg-white p-2 lg:col-span-3">
               <legend className="text-sm mx-2">Product Image</legend>
               <input
                 type="file"
@@ -270,7 +270,7 @@ const Create = ({ categories, attributes }) => {
             </fieldset>
 
             {/* Attribute & Values */}
-            <fieldset className="border border-gray-300 bg-white p-2 col-span-3">
+            <fieldset className="border border-gray-300 bg-white p-2 lg:col-span-3">
               <legend className="text-sm mx-2 font-semibold">Attribute</legend>
               <select
                 value={selectedAttribute}

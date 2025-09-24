@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ customer }) => {
     const { data, setData, post, processing, errors, put: update } = useForm({
@@ -18,7 +19,8 @@ const Edit = ({ customer }) => {
     return (
         <AuthenticatedLayout>
             <div>
-                <div>
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"customers.index"} />
                     <h1 className="text-xl font-semibold">Update Customer</h1>
                 </div>
 

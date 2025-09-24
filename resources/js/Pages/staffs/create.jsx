@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = () => {
     const { data, setData, post, errors } = useForm({
@@ -18,13 +19,14 @@ const Create = () => {
     return (
         <AuthenticatedLayout>
             <section>
-                <div className="mb-4">
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"staffs.index"} />
                     <h3 className="text-xl font-semibold">Add new staff</h3>
                 </div>
 
                 <div>
                     <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
                             <fieldset className="border border-gray-300 bg-white">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
@@ -105,7 +107,7 @@ const Create = () => {
                             </fieldset>
                         </div>
 
-                        <div>
+                        <div className="flex justify-end">
                             <button className="bg-blue-500 text-white p-1 px-2 rounded">
                                 Save
                             </button>
