@@ -7,13 +7,11 @@ use App\Http\Controllers\SubcategoriesController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\AttributeController;
-// use App\Http\Controllers\AttributeValueController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingController;
 
@@ -73,13 +71,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/user/edit/{user_id}', [UserController::class, 'update'])->name('user.update')->middleware('permission:edit user');
     Route::delete('/user/delete/{user_id}', [UserController::class, 'destroy'])->name('user.destroy')->middleware('permission:delete user');
 
-
-    Route::get('/staffs', [StaffController::class, 'index'])->name('staffs.index')->middleware('permission:view staff');
-    Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create')->middleware('permission:create staff');
-    Route::post('/staff/create', [StaffController::class, 'store'])->name('staff.store')->middleware('permission:create staff');
-    Route::get('/staff/edit/{staff_id}', [StaffController::class, 'edit'])->name('staff.edit')->middleware('permission:edit staff');
-    Route::put('/staff/edit/{staff_id}', [StaffController::class, 'update'])->name('staff.update')->middleware('permission:edit staff');
-    Route::delete('/staff/delete/{staff_id}', [StaffController::class, 'destroy'])->name('staff.destroy')->middleware('permission:delete staff');
 
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index')->middleware('permission:view transaction');
     Route::get('/transaction/create', [TransactionController::class, 'create'])->name('transaction.create')->middleware('permission:create transaction');

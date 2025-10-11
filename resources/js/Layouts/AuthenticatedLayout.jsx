@@ -162,12 +162,12 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Customer
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink
+                        {/* <ResponsiveNavLink
                             href={"/staffs"}
                             active={route().current("dashboard")}
                         >
                             Staffs
-                        </ResponsiveNavLink>
+                        </ResponsiveNavLink> */}
 
                         <SidebarDropdown title="Product" icon={<BsBoxes />}>
                             <div className="flex flex-col mt-2 space-y-2">

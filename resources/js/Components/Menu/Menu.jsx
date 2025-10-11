@@ -43,7 +43,7 @@ const Menu = ({ url }) => {
                 </Link>
             )}
 
-            {permissions.includes("view staff") && (
+            {/* {permissions.includes("view staff") && (
                 <Link
                     href="/staffs"
                     className={
@@ -55,7 +55,7 @@ const Menu = ({ url }) => {
                     <FaUserTie />
                     <span className="sidebar-text">Staffs</span>
                 </Link>
-            )}
+            )} */}
 
             {(permissions.includes("view product") ||
                 permissions.includes("create product") ||

@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\Customer;
-use App\Models\Staff;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
@@ -18,7 +17,6 @@ class DashboardController extends Controller
         $total_product_count = Product::count();
         $total_product_price = Product::select(DB::raw('SUM(selling_price * stock) as total'))->value('total');
         $total_customer_count = Customer::count();
-        $total_staff_count = Staff::count();
         $total_added_money = Transaction::where(['transaction_type' => 'add_money'])->sum('amount');
         $total_expenses = Transaction::where(['transaction_type' => 'expense'])->sum('amount');
         $total_order_count = Transaction::count();
@@ -49,11 +47,6 @@ class DashboardController extends Controller
                 "title" => "Total customer Count",
                 "heading" => $total_customer_count,
                 "icon" => "FaRegUserCircle"
-            ],
-            [
-                "title" => "Total staff Count",
-                "heading" => $total_staff_count,
-                "icon" => "FaUserFriends"
             ],
             [
                 "title" => "Total added money",
