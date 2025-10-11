@@ -9,51 +9,60 @@ use App\Models\SubCategory;
 
 class SubcategoriesController extends Controller
 {
+    /**
+     * Display a listing of the subcategories.
+     */
     public function index()
     {
-        $subcategories = new SubCategory();
-        $subcategories = $subcategories->with('category')->get();
-        return Inertia::render('subcategories/index', compact('subcategories'));
+        $subcategories = SubCategory::with('category')->latest()->get();
+        $categories = Category::select('id', 'name')->get();
+
+        // Pass both subcategories and categories for the modal create/edit
+        return Inertia::render('subcategories/index', [
+            'subcategories' => $subcategories,
+            'categories' => $categories,
+        ]);
     }
 
-    public function create()
-    {
-        $categories = Category::all();
-        return Inertia::render('subcategories/create', compact('categories'));
-    }
-
-
+    /**
+     * Store a newly created subcategory.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required',
-            'category_id' => 'required',
+            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', 'exists:categories,id'],
         ]);
 
         SubCategory::create($validated);
 
-
-        return to_route('subcategories.index');
+        return redirect()->route('subcategories.index')->with('success', 'Subcategory created successfully.');
     }
 
-
-    public function edit($subcategory_id)
+    /**
+     * Update an existing subcategory.
+     */
+    public function update(Request $request, $id)
     {
-        $subcategory = SubCategory::with('category')->find($subcategory_id);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', 'exists:categories,id'],
+        ]);
 
-        return Inertia::render('subcategories/edit', compact('subcategory'));
+        $subcategory = SubCategory::findOrFail($id);
+        $subcategory->update($validated);
 
-        // $categories = Category::all();
-
-
-        // $categories = Category::all();
-        // return Inertia::render('subcategories/edit', compact('subcategory', 'categories'));
+        return redirect()->route('subcategories.index')->with('success', 'Subcategory updated successfully.');
     }
 
-
-    public function destroy($subcategory_id)
+    /**
+     * Remove the specified subcategory from storage.
+     */
+    public function destroy($id)
     {
-        SubCategory::find($subcategory_id)->delete();
-        return to_route('subcategories.index');
+        $subcategory = SubCategory::findOrFail($id);
+        $subcategory->delete();
+
+        return redirect()->route('subcategories.index')->with('success', 'Subcategory deleted successfully.');
     }
 }

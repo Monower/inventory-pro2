@@ -1,11 +1,14 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ role, permissions }) => {
     // Initialize with role data
     const { data, setData, put, errors } = useForm({
         name: role.name || "",
-        permissions: role.permissions ? role.permissions.map(p => p.name) : [], // pre-check permissions
+        permissions: role.permissions
+            ? role.permissions.map((p) => p.name)
+            : [], // pre-check permissions
     });
 
     const handleSubmit = (e) => {
@@ -28,7 +31,9 @@ const Edit = ({ role, permissions }) => {
 
     // Handle "Select All" for a category
     const handleCategorySelectAll = (resource, perms) => {
-        const allSelected = perms.every(p => data.permissions.includes(p.name));
+        const allSelected = perms.every((p) =>
+            data.permissions.includes(p.name)
+        );
         if (allSelected) {
             // Deselect all
             setData(
@@ -40,7 +45,9 @@ const Edit = ({ role, permissions }) => {
         } else {
             // Select all
             const namesToAdd = perms.map((p) => p.name);
-            const newPermissions = Array.from(new Set([...data.permissions, ...namesToAdd]));
+            const newPermissions = Array.from(
+                new Set([...data.permissions, ...namesToAdd])
+            );
             setData("permissions", newPermissions);
         }
     };
@@ -57,7 +64,8 @@ const Edit = ({ role, permissions }) => {
     return (
         <AuthenticatedLayout>
             <section>
-                <div className="mb-4">
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"roles.index"} />
                     <h3 className="text-xl font-semibold">Edit Role</h3>
                 </div>
 
@@ -74,7 +82,9 @@ const Edit = ({ role, permissions }) => {
                                 type="text"
                                 name="name"
                                 value={data.name}
-                                onChange={(e) => setData("name", e.target.value)}
+                                onChange={(e) =>
+                                    setData("name", e.target.value)
+                                }
                                 className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm p-0"
                                 placeholder="Enter role name"
                             />
@@ -90,44 +100,61 @@ const Edit = ({ role, permissions }) => {
 
                     {/* Grouped permissions */}
                     <div className="mb-4">
-                        {Object.entries(groupedPermissions).map(([resource, perms]) => (
-                            <fieldset
-                                key={resource}
-                                className="border border-gray-300 bg-white p-2 rounded mb-3"
-                            >
-                                <legend className="text-sm font-semibold mx-2 capitalize">
-                                    {resource}
-                                </legend>
+                        {Object.entries(groupedPermissions).map(
+                            ([resource, perms]) => (
+                                <fieldset
+                                    key={resource}
+                                    className="border border-gray-300 bg-white p-2 rounded mb-3"
+                                >
+                                    <legend className="text-sm font-semibold mx-2 capitalize">
+                                        {resource}
+                                    </legend>
 
-                                <div className="grid grid-cols-2 gap-2 mt-1">
-                                    {/* "Select All" checkbox */}
-                                    <label className="flex items-center space-x-2 font-semibold">
-                                        <input
-                                            type="checkbox"
-                                            checked={perms.every(p => data.permissions.includes(p.name))}
-                                            onChange={() => handleCategorySelectAll(resource, perms)}
-                                        />
-                                        <span>Select All</span>
-                                    </label>
-
-                                    {/* Individual permission checkboxes */}
-                                    {perms.map((permission) => (
-                                        <label
-                                            key={permission.id}
-                                            className="flex items-center space-x-2"
-                                        >
+                                    <div className="grid grid-cols-2 gap-2 mt-1">
+                                        {/* "Select All" checkbox */}
+                                        <label className="flex items-center space-x-2 font-semibold">
                                             <input
                                                 type="checkbox"
-                                                value={permission.name}
-                                                checked={data.permissions.includes(permission.name)}
-                                                onChange={handleCheckboxChange}
+                                                checked={perms.every((p) =>
+                                                    data.permissions.includes(
+                                                        p.name
+                                                    )
+                                                )}
+                                                onChange={() =>
+                                                    handleCategorySelectAll(
+                                                        resource,
+                                                        perms
+                                                    )
+                                                }
                                             />
-                                            <span className="capitalize">{permission.name}</span>
+                                            <span>Select All</span>
                                         </label>
-                                    ))}
-                                </div>
-                            </fieldset>
-                        ))}
+
+                                        {/* Individual permission checkboxes */}
+                                        {perms.map((permission) => (
+                                            <label
+                                                key={permission.id}
+                                                className="flex items-center space-x-2"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    value={permission.name}
+                                                    checked={data.permissions.includes(
+                                                        permission.name
+                                                    )}
+                                                    onChange={
+                                                        handleCheckboxChange
+                                                    }
+                                                />
+                                                <span className="capitalize">
+                                                    {permission.name}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </fieldset>
+                            )
+                        )}
                         {errors.permissions && (
                             <p className="text-red-500 text-sm mt-1">
                                 {errors.permissions}

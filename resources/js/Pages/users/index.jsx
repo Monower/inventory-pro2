@@ -22,7 +22,6 @@ const Index = ({ users }) => {
         }
     };
 
-    console.log("users: ", users);
 
     return (
         <AuthenticatedLayout>

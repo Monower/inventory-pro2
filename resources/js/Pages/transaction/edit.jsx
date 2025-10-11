@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage } from "@inertiajs/react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ transaction }) => {
     const { url } = usePage();
@@ -21,7 +22,8 @@ const Edit = ({ transaction }) => {
     return (
         <AuthenticatedLayout>
             <section>
-                <div className="mb-4">
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"transactions.index"} />
                     <h3 className="text-xl font-semibold">Update transaction</h3>
                 </div>
 

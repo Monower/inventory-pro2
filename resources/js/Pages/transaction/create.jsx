@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage } from "@inertiajs/react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = () => {
     const { url } = usePage();
@@ -17,13 +18,11 @@ const Create = () => {
         post(route("transaction.store"));
     };
 
-
-    console.log('transaction data: ',data)
-
     return (
         <AuthenticatedLayout>
             <section>
-                <div className="mb-4">
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"transactions.index"} />
                     <h3 className="text-xl font-semibold">Add new transaction</h3>
                 </div>
 

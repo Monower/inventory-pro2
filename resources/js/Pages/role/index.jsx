@@ -22,10 +22,6 @@ const Index = ({ roles }) => {
         }
     };
 
-    // console.log("can create staff: ", canCreateStaff);
-
-    console.log("roles: ", roles);
-
     return (
         <AuthenticatedLayout>
             <section>
@@ -33,7 +29,7 @@ const Index = ({ roles }) => {
                     <h3 className="text-xl font-semibold">Roles</h3>
 
                     <Link
-                        href="/role/create"
+                        href="/roles/create"
                         className="bg-blue-500 text-white p-1 px-2 rounded"
                     >
                         Create

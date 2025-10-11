@@ -1,5 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = ({ permissions }) => {
     const { data, setData, post, errors } = useForm({
@@ -56,7 +57,8 @@ const Create = ({ permissions }) => {
     return (
         <AuthenticatedLayout>
             <section>
-                <div className="mb-4">
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"roles.index"} />
                     <h3 className="text-xl font-semibold">Create new role</h3>
                 </div>
 
