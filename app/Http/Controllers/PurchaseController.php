@@ -8,13 +8,24 @@ use App\Models\PurchaseItem;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PurchaseController extends Controller
 {
     public function index()
     {
         $purchases = Purchase::with('items.product')->latest()->get();
-        return response()->json($purchases);
+        return Inertia::render('Purchase/Index', [
+            'purchases' => $purchases
+        ]);
+    }
+
+    public function create()
+    {
+        $products = Product::select('id', 'name', 'buying_price', 'stock')->get();
+        return Inertia::render('Purchase/Create', [
+            'products' => $products
+        ]);
     }
 
     public function store(Request $request)
@@ -53,7 +64,6 @@ class PurchaseController extends Controller
                     'total' => $lineTotal,
                 ]);
 
-                // Update product stock and buying price
                 $product = Product::find($item['product_id']);
                 $product->increment('stock', $item['quantity']);
                 $product->update(['buying_price' => $item['buying_price']]);
@@ -61,7 +71,6 @@ class PurchaseController extends Controller
 
             $purchase->update(['total_amount' => $totalAmount]);
 
-            // Log transaction (expense)
             Transaction::create([
                 'name' => 'Product Purchase - ' . $purchase->invoice_no,
                 'payment_method' => 'cash',
@@ -71,6 +80,83 @@ class PurchaseController extends Controller
             ]);
         });
 
-        return response()->json(['message' => 'Purchase recorded successfully.'], 201);
+        return redirect()->route('purchases.index')->with('success', 'Purchase recorded successfully.');
+    }
+
+    public function edit(Purchase $purchase)
+    {
+        $purchase->load('items.product');
+        $products = Product::select('id', 'name', 'buying_price')->get();
+        return Inertia::render('Purchase/Edit', [
+            'purchase' => $purchase,
+            'products' => $products
+        ]);
+    }
+
+    public function update(Request $request, Purchase $purchase)
+    {
+        $validated = $request->validate([
+            'supplier_name' => 'nullable|string|max:255',
+            'purchase_date' => 'required|date',
+            'payment_status' => 'required|string',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.buying_price' => 'required|numeric|min:0',
+        ]);
+
+        DB::transaction(function () use ($validated, $purchase) {
+            $totalAmount = 0;
+
+            // Revert previous stock
+            foreach ($purchase->items as $oldItem) {
+                $product = Product::find($oldItem->product_id);
+                $product->decrement('stock', $oldItem->quantity);
+            }
+
+            $purchase->items()->delete();
+
+            // Add updated items
+            foreach ($validated['items'] as $item) {
+                $lineTotal = $item['quantity'] * $item['buying_price'];
+                $totalAmount += $lineTotal;
+
+                $purchase->items()->create([
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'buying_price' => $item['buying_price'],
+                    'total' => $lineTotal,
+                ]);
+
+                $product = Product::find($item['product_id']);
+                $product->increment('stock', $item['quantity']);
+                $product->update(['buying_price' => $item['buying_price']]);
+            }
+
+            $purchase->update([
+                'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
+                'purchase_date' => $validated['purchase_date'],
+                'payment_status' => $validated['payment_status'],
+                'total_amount' => $totalAmount,
+            ]);
+        });
+
+        return redirect()->route('purchases.index')->with('success', 'Purchase updated successfully.');
+    }
+
+    public function destroy(Purchase $purchase)
+    {
+        DB::transaction(function () use ($purchase) {
+            // revert stock
+            foreach ($purchase->items as $item) {
+                $product = Product::find($item->product_id);
+                $product->decrement('stock', $item->quantity);
+            }
+
+            $purchase->items()->delete();
+            $purchase->delete();
+        });
+
+        return redirect()->route('purchases.index')->with('success', 'Purchase deleted successfully.');
     }
 }

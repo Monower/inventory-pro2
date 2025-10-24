@@ -137,8 +137,7 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:edit settings');
     });
 
-    Route::get('/purchases', [PurchaseController::class, 'index']);
-    Route::post('/purchases', [PurchaseController::class, 'store']);
+    Route::resource('purchases', PurchaseController::class);
 });
 
 Route::fallback(function () {
