@@ -16,6 +16,7 @@ use App\Http\Controllers\AttributeController;
 // use App\Http\Controllers\AttributeValueController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\PurchaseController;
 
 Route::get('/', function () {
     return to_route('login');
@@ -135,6 +136,9 @@ Route::middleware(['auth'])->group(function () {
             ->name('update')
             ->middleware('permission:edit settings');
     });
+
+    Route::get('/purchases', [PurchaseController::class, 'index']);
+    Route::post('/purchases', [PurchaseController::class, 'store']);
 });
 
 Route::fallback(function () {

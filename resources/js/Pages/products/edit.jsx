@@ -1,12 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
 import { useState, useEffect } from "react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ product, categories, attributes }) => {
     const imageBaseUrl = "/storage/";
-
-    console.log("attributes: ", attributes);
-    console.log("products: ", product);
 
     const { data, setData, put, errors, processing } = useForm({
         name: product.name || "",
