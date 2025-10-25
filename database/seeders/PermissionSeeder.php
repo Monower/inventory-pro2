@@ -77,6 +77,10 @@ class PermissionSeeder extends Seeder
             'can register',
             'view profile',
             'edit profile',
+            'view purchase',
+            'create purchase',
+            'edit purchase',
+            'delete purchase',
         ];
 
         // Create permissions if they don't exist

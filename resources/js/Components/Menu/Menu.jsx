@@ -82,12 +82,12 @@ const Menu = ({ url }) => {
                         {permissions.includes("view attribute") && (
                             <Link href="/attributes">Attribute list</Link>
                         )}
-                        {permissions.includes("view attribute value") && (
+                        {/* {permissions.includes("view attribute value") && (
                             <Link href="/attribute-values">
                                 Attribute value list
                             </Link>
-                        )}
-                        {permissions.includes("view attribute value") && (
+                        )} */}
+                        {permissions.includes("view purchase") && (
                             <Link href="/purchases">
                                 Purchases
                             </Link>

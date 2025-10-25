@@ -194,15 +194,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                         Attribute list
                                     </Link>
                                 )}
-                                {permissions.includes(
+                                {/* {permissions.includes(
                                     "view attribute value"
                                 ) && (
                                     <Link href="/attribute-values">
                                         Attribute value list
                                     </Link>
-                                )}
+                                )} */}
                                 {permissions.includes(
-                                    "view attribute value"
+                                    "view purchase"
                                 ) && <Link href="/purchases">Purchases</Link>}
                             </div>
                         </SidebarDropdown>
