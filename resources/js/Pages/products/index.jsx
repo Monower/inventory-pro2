@@ -24,13 +24,13 @@ const Index = () => {
           </Link>
         </div>
 
-        <input
+        {/* <input
           type="text"
           placeholder="Search products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 mb-4 w-full max-w-md mx-auto block"
-        />
+        /> */}
 
         <div className="overflow-x-auto max-w-5xl mx-auto">
           <table className="table-auto w-full border-collapse border border-gray-200">
@@ -92,7 +92,7 @@ const Index = () => {
         </div>
 
         {/* Pagination */}
-        {products.links && (
+        {/* {products.links && (
           <div className="mt-4 max-w-5xl mx-auto flex justify-center space-x-2">
             {products.links.map((link, index) => (
               <Link
@@ -107,7 +107,7 @@ const Index = () => {
               />
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </AuthenticatedLayout>
   );
