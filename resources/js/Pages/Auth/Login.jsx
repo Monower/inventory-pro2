@@ -6,6 +6,7 @@ import { Head, useForm } from "@inertiajs/react";
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
+        phone: "",
         email: "",
         password: "",
         remember: false,
@@ -38,6 +39,23 @@ export default function Login({ status, canResetPassword }) {
 
             <form onSubmit={submit}>
                 <div>
+                    <InputLabel htmlFor="phone" value="Phone" />
+
+                    <input
+                        id="phone"
+                        type="text"
+                        name="phone"
+                        value={data.phone}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        autoComplete={false}
+                        autoFocus
+                        onChange={(e) => setData("phone", e.target.value)}
+                    />
+
+                    <InputError message={errors.phone} className="mt-2" />
+                </div>
+
+                {/* <div>
                     <InputLabel htmlFor="email" value="Email" />
 
                     <input
@@ -52,7 +70,7 @@ export default function Login({ status, canResetPassword }) {
                     />
 
                     <InputError message={errors.email} className="mt-2" />
-                </div>
+                </div> */}
 
                 <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password" />

@@ -101,7 +101,7 @@ class PermissionSeeder extends Seeder
             // Create default admin user
             $user = User::create([
                 'name' => 'Admin',
-                'email' => 'admin@gmail.com',
+                'phone' => '01111111111',
                 'password' => '12345678', // hash the password
             ]);
         }

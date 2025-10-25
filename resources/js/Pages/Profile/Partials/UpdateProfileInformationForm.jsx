@@ -14,6 +14,8 @@ export default function UpdateProfileInformation({
     const user = usePage().props.auth.user;
     const [avatarPreview, setAvatarPreview] = useState(user.avatar || "");
 
+    console.log("user: ", user);
+
     const {
         data,
         setData,
@@ -91,6 +93,20 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.name} />
                 </div>
 
+                {/* Phone */}
+                <div>
+                    <InputLabel htmlFor="phone" value="Phone" />
+                    <TextInput
+                        id="phone"
+                        type="text"
+                        className="mt-1 block w-full"
+                        value={data.phone}
+                        onChange={(e) => setData("phone", e.target.value)}
+                        autoComplete="tel"
+                    />
+                    <InputError className="mt-2" message={errors.phone} />
+                </div>
+
                 {/* Email */}
                 <div>
                     <InputLabel htmlFor="email" value="Email" />
@@ -104,20 +120,6 @@ export default function UpdateProfileInformation({
                         autoComplete="username"
                     />
                     <InputError className="mt-2" message={errors.email} />
-                </div>
-
-                {/* Phone */}
-                <div>
-                    <InputLabel htmlFor="phone" value="Phone" />
-                    <TextInput
-                        id="phone"
-                        type="text"
-                        className="mt-1 block w-full"
-                        value={data.phone}
-                        onChange={(e) => setData("phone", e.target.value)}
-                        autoComplete="tel"
-                    />
-                    <InputError className="mt-2" message={errors.phone} />
                 </div>
 
                 {/* Avatar */}
