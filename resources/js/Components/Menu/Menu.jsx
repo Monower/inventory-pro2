@@ -43,7 +43,27 @@ const Menu = ({ url }) => {
                 </Link>
             )}
 
-            {permissions.includes("view staff") && (
+            {(permissions.includes("view staff") ||
+                permissions.includes("view staff")) && (
+                <SidebarDropdown
+                    title="Employee management"
+                    icon={<FaUserTie />}
+                >
+                    <div className="flex flex-col mt-2 space-y-2">
+                        {permissions.includes("view staff") && (
+                            <Link href="/staffs">Employees</Link>
+                        )}
+                        {permissions.includes("view staff") && (
+                            <Link href="/salaries">Salaries</Link>
+                        )}
+                        {permissions.includes("view staff") && (
+                            <Link href="/advance-salaries">Advance salaries</Link>
+                        )}
+                    </div>
+                </SidebarDropdown>
+            )}
+
+            {/* {permissions.includes("view staff") && (
                 <Link
                     href="/staffs"
                     className={
@@ -55,7 +75,7 @@ const Menu = ({ url }) => {
                     <FaUserTie />
                     <span className="sidebar-text">Staffs</span>
                 </Link>
-            )}
+            )} */}
 
             {(permissions.includes("view product") ||
                 permissions.includes("create product") ||
@@ -88,9 +108,7 @@ const Menu = ({ url }) => {
                             </Link>
                         )} */}
                         {permissions.includes("view purchase") && (
-                            <Link href="/purchases">
-                                Purchases
-                            </Link>
+                            <Link href="/purchases">Purchases</Link>
                         )}
                     </div>
                 </SidebarDropdown>
@@ -142,15 +160,15 @@ const Menu = ({ url }) => {
 
             {(permissions.includes("view settings") ||
                 permissions.includes("view profile")) && (
-                    <SidebarDropdown title="Settings" icon={<PiGearSixLight />}>
-                        <div className="flex flex-col mt-2 space-y-2">
-                            <Link href="/profile">Profile</Link>
-                        </div>
-                        <div className="flex flex-col mt-2 space-y-2">
-                            <Link href="/settings">General settings</Link>
-                        </div>
-                    </SidebarDropdown>
-                )}
+                <SidebarDropdown title="Settings" icon={<PiGearSixLight />}>
+                    <div className="flex flex-col mt-2 space-y-2">
+                        <Link href="/profile">Profile</Link>
+                    </div>
+                    <div className="flex flex-col mt-2 space-y-2">
+                        <Link href="/settings">General settings</Link>
+                    </div>
+                </SidebarDropdown>
+            )}
         </>
     );
 };
