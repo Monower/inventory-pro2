@@ -36,6 +36,15 @@ const Index = ({ customers }) => {
                                 <th>Actions</th>
                             </tr>
                         </thead>
+                        {
+                            customers.length === 0 && (
+                                <tbody>
+                                    <tr>
+                                        <td colSpan="6" className="text-center text-sm text-gray-500">No data found</td>
+                                    </tr>
+                                </tbody>
+                            )
+                        }
                         <tbody>
                             {
                                 customers.map((customer, index) => (

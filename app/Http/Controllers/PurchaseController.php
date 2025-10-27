@@ -15,9 +15,15 @@ class PurchaseController extends Controller
     public function index()
     {
         $purchases = Purchase::with('items.product')->latest()->get();
+        $purchase_items = PurchaseItem::with(['purchase', 'product'])->latest()->get();
+
+        // dd($purchase_items);
         return Inertia::render('Purchase/Index', [
-            'purchases' => $purchases
+            'purchase_items' => $purchase_items
         ]);
+        // return Inertia::render('Purchase/Index', [
+        //     'purchases' => $purchases
+        // ]);
     }
 
     public function create()
