@@ -18,10 +18,10 @@ const Create = () => {
 
     return (
         <AuthenticatedLayout>
-            <section>
+            <section className="px-4">
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"staffs.index"} />
-                    <h3 className="text-xl font-semibold">Add new staff</h3>
+                    <h3 className="heading">Add new employee</h3>
                 </div>
 
                 <div>
