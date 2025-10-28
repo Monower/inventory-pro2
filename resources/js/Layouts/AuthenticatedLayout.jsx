@@ -3,7 +3,6 @@ import Dropdown from "@/Components/Dropdown";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
-import { useState } from "react";
 import Sidebar from "./Sidebar";
 import SidebarDropdown from "@/Components/SidebarDropdown";
 import { MdOutlineDashboard } from "react-icons/md";
@@ -14,6 +13,9 @@ import { BsPersonBoundingBox } from "react-icons/bs";
 import { AiOutlineBorderlessTable } from "react-icons/ai";
 import { CiDollar } from "react-icons/ci";
 import { PiGearSixLight } from "react-icons/pi";
+import { useState, useEffect } from "react";
+import { X, Sun, Moon } from "lucide-react";
+
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -21,9 +23,24 @@ export default function AuthenticatedLayout({ header, children }) {
     const { url } = usePage();
     const { auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
+    // 🌗 Theme state
+    const [theme, setTheme] = useState(
+        () => localStorage.getItem("theme") || "light"
+    );
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    // Toggle handler
+    const toggleTheme = () => {
+        setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    };
+
+    // Apply theme to <html>
+    useEffect(() => {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+    }, [theme]);
 
     return (
         <div className="min-h-screen bg-background">
@@ -36,7 +53,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                     href="/"
                                     className="flex items-center gap-2"
                                 >
-                                    <ApplicationLogo logo={settings.logo_url ?? "/images/demo_image.jpg"} />
+                                    <ApplicationLogo
+                                        logo={
+                                            settings.logo_url ??
+                                            "/images/demo_image.jpg"
+                                        }
+                                    />
                                     {/* {
                                         settings.company_name &&
                                         <span className="text-lg font-semibold leading-6 text-gray-900">{settings.company_name}</span>
@@ -55,6 +77,25 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden lg:ms-6 lg:flex lg:items-center">
+                            {/* 🌙 Theme Toggle Button */}
+                            <button
+                                type="button"
+                                onClick={toggleTheme}
+                                className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+                                title="Toggle Theme"
+                            >
+                                {theme === "light" ? (
+                                    <Moon
+                                        className="text-foreground"
+                                        size={20}
+                                    />
+                                ) : (
+                                    <Sun
+                                        className="text-foreground"
+                                        size={20}
+                                    />
+                                )}
+                            </button>
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -201,9 +242,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                         Attribute value list
                                     </Link>
                                 )} */}
-                                {permissions.includes(
-                                    "view purchase"
-                                ) && <Link href="/purchases">Purchases</Link>}
+                                {permissions.includes("view purchase") && (
+                                    <Link href="/purchases">Purchases</Link>
+                                )}
                             </div>
                         </SidebarDropdown>
 

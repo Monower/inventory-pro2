@@ -53,39 +53,39 @@ const Index = ({ customers }) => {
                     <h3 className="heading">Customers</h3>
                     <Link
                         href="/customer/create"
-                        className="bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2 rounded-md hover:opacity-90 transition"
+                        className="create-button"
                     >
                         Create
                     </Link>
                 </div>
 
                 {/* Table */}
-                <div className="p-4 rounded-md bg-[hsl(var(--card))] border border-[hsl(var(--border))] overflow-x-auto">
+                <div className="table-div">
                     {customers.length === 0 ? (
                         <NoDataFound />
                     ) : (
-                        <table className="w-full border-separate border-spacing-y-2">
-                            <thead className="bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]">
+                        <table className="custom-table">
+                            <thead className="custom-thead">
                                 <tr>
-                                    <th className="py-2 px-3 text-left rounded-l-md">
+                                    <th className="custom-th rounded-l-md">
                                         SI
                                     </th>
                                     <th
                                         onClick={() => handleSort("name")}
-                                        className="py-2 px-3 text-left cursor-pointer select-none"
+                                        className="custom-th cursor-pointer select-none"
                                     >
                                         Name {renderSortIcon("name")}
                                     </th>
                                     <th
                                         onClick={() => handleSort("email")}
-                                        className="py-2 px-3 text-left cursor-pointer select-none"
+                                        className="custom-th cursor-pointer select-none"
                                     >
                                         Email {renderSortIcon("email")}
                                     </th>
-                                    <th className="py-2 px-3 text-left">
+                                    <th className="custom-th">
                                         Phone
                                     </th>
-                                    <th className="py-2 px-3 text-left">
+                                    <th className="custom-th">
                                         Address
                                     </th>
                                     <th className="py-2 px-3 text-center rounded-r-md">
@@ -97,33 +97,33 @@ const Index = ({ customers }) => {
                                 {sortedCustomers.map((customer, index) => (
                                     <tr
                                         key={customer.id}
-                                        className="text-[hsl(var(--foreground))] bg-[hsl(var(--background))] hover:bg-[hsl(var(--muted))] transition rounded-md"
+                                        className="custom-body-tr"
                                     >
-                                        <td className="py-2 px-3 border-t border-[hsl(var(--border))]">
+                                        <td className="custom-body-td">
                                             {index + 1}
                                         </td>
-                                        <td className="py-2 px-3 border-t border-[hsl(var(--border))]">
+                                        <td className="custom-body-td">
                                             {customer.name}
                                         </td>
-                                        <td className="py-2 px-3 border-t border-[hsl(var(--border))]">
+                                        <td className="custom-body-td">
                                             {customer.email}
                                         </td>
-                                        <td className="py-2 px-3 border-t border-[hsl(var(--border))]">
+                                        <td className="custom-body-td">
                                             {customer.phone}
                                         </td>
-                                        <td className="py-2 px-3 border-t border-[hsl(var(--border))]">
+                                        <td className="custom-body-td">
                                             {customer.address}
                                         </td>
-                                        <td className="py-2 px-3 border-t border-[hsl(var(--border))] text-center flex justify-center items-center gap-2">
+                                        <td className="custom-body-td text-center flex justify-center items-center gap-2">
                                             <Link
                                                 href={route("customer.edit", customer.id)}
-                                                className="bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] py-1 px-3 rounded-md hover:opacity-90 transition"
+                                                className="edit-button"
                                             >
                                                 <EditIcon className="w-4 h-4 inline" />
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(customer.id)}
-                                                className="bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] py-1 px-3 rounded-md hover:opacity-90 transition"
+                                                className="delete-button"
                                             >
                                                 <Trash2Icon className="w-4 h-4 inline" />
                                             </button>

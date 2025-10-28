@@ -69,4 +69,44 @@
   .heading {
     @apply text-xl font-semibold;
   }
+
+  .menu-sublink {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .create-button {
+    @apply bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-4 py-2 rounded-md hover:opacity-90 transition-colors duration-300 ease-in-out;
+  }
+
+  .edit-button {
+    @apply bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] py-1 px-3 rounded-md hover:opacity-90 transition
+  }
+
+  .delete-button {
+    @apply bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] py-1 px-3 rounded-md hover:opacity-90 transition
+  }
+
+  .table-div {
+    @apply p-4 rounded-md bg-[hsl(var(--card))] border border-[hsl(var(--border))] overflow-x-auto
+  }
+
+  .custom-table {
+    @apply w-full border-separate border-spacing-y-2
+  }
+
+  .custom-thead {
+    @apply bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]
+  }
+
+  .custom-th {
+    @apply py-2 px-3 text-left
+  }
+
+  .custom-body-tr {
+    @apply text-[hsl(var(--foreground))] bg-[hsl(var(--background))] hover:bg-[hsl(var(--muted))] transition rounded-md
+  }
+
+  .custom-body-td {
+    @apply py-2 px-3 border-t border-[hsl(var(--border))] text-sm
+  }
 }

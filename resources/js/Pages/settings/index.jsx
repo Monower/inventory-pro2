@@ -14,18 +14,18 @@ const Index = ({ settings }) => {
     const [notification, setNotification] = useState(null);
 
     // 🌗 Theme state
-    const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+    // const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
 
-    // Apply theme to <html>
-    useEffect(() => {
-        document.documentElement.setAttribute("data-theme", theme);
-        localStorage.setItem("theme", theme);
-    }, [theme]);
+    // // Apply theme to <html>
+    // useEffect(() => {
+    //     document.documentElement.setAttribute("data-theme", theme);
+    //     localStorage.setItem("theme", theme);
+    // }, [theme]);
 
-    // Toggle handler
-    const toggleTheme = () => {
-        setTheme((prev) => (prev === "light" ? "dark" : "light"));
-    };
+    // // Toggle handler
+    // const toggleTheme = () => {
+    //     setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    // };
 
     // Success notification
     useEffect(() => {
@@ -74,7 +74,7 @@ const Index = ({ settings }) => {
                     <h3 className="text-2xl font-semibold">General Settings</h3>
 
                     {/* 🌙 Theme Toggle Button */}
-                    <button
+                    {/* <button
                         type="button"
                         onClick={toggleTheme}
                         className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
@@ -85,7 +85,7 @@ const Index = ({ settings }) => {
                         ) : (
                             <Sun className="text-foreground" size={20} />
                         )}
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Notification */}

@@ -1,5 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, usePage } from "@inertiajs/react";
+import NoDataFound from "@/Components/NoDataFound/NoDataFound";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = ({ staffs }) => {
     const { auth } = usePage().props;
@@ -24,72 +26,68 @@ const Index = ({ staffs }) => {
 
     return (
         <AuthenticatedLayout>
-            <section>
+            <section className="px-4">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Employees</h3>
+                    <h3 className="heading">Employees</h3>
 
-                    {
-                        canCreateStaff && <Link href="/staff/create" className="bg-blue-500 text-white p-1 px-2 rounded">Create</Link>
-                    }
+                    {canCreateStaff && (
+                        <Link href="/staff/create" className="create-button">
+                            Create
+                        </Link>
+                    )}
                 </div>
 
-                <div className="bg-white p-4 rounded overflow-x-auto">
-                    <table className="w-full border-separate border-spacing-y-2">
-                        <thead>
-                            <tr>
-                                <th>SI</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Address</th>
-                                <th>Salary</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        {
-                            staffs.length === 0 && (
-                                <tbody>
-                                    <tr>
-                                        <td colSpan="6" className="text-center text-sm text-gray-500">No data found</td>
-                                    </tr>
-                                </tbody>
-                            )
-                        }
-                        <tbody>
-                            {staffs.map((staff, index) => (
-                                <tr
-                                    key={index}
-                                    className="text-center bg-gray-50"
-                                >
-                                    <td>{index + 1}</td>
-                                    <td>{staff.name}</td>
-                                    <td>{staff.email}</td>
-                                    <td>{staff.phone}</td>
-                                    <td>{staff.address}</td>
-                                    <td>{staff.salary}</td>
-                                    <td>
-                                        <Link
-                                            href={route(
-                                                "staff.edit",
-                                                staff.id
-                                            )}
-                                            className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
-                                        >
-                                            Edit
-                                        </Link>
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(staff.id)
-                                            }
-                                            className="bg-red-500 text-white py-1 px-2 rounded"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
+                <div className="table-div">
+                    {staffs?.length === 0 ? (
+                        <NoDataFound />
+                    ) : (
+                        <table className="custom-table">
+                            <thead className="custom-thead">
+                                <tr>
+                                    <th className="custom-th rounded-l-md">SI</th>
+                                    <th className="custom-th">Name</th>
+                                    <th className="custom-th">Email</th>
+                                    <th className="custom-th">Phone</th>
+                                    <th className="custom-th">Address</th>
+                                    <th className="custom-th">Salary</th>
+                                    <th className="py-2 px-3 text-center rounded-r-md">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {staffs.map((staff, index) => (
+                                    <tr
+                                        key={index}
+                                        className="custom-body-tr"
+                                    >
+                                        <td className="custom-body-td">{index + 1}</td>
+                                        <td className="custom-body-td">{staff.name}</td>
+                                        <td className="custom-body-td">{staff.email}</td>
+                                        <td className="custom-body-td">{staff.phone}</td>
+                                        <td className="custom-body-td">{staff.address}</td>
+                                        <td className="custom-body-td">{staff.salary}</td>
+                                        <td className="custom-body-td text-center flex justify-center items-center gap-2">
+                                            <Link
+                                                href={route(
+                                                    "staff.edit",
+                                                    staff.id
+                                                )}
+                                                className="edit-button"
+                                            >
+                                                <EditIcon className="w-4 h-4 inline" />
+                                            </Link>
+
+                                            <button
+                                                onClick={() => handleDelete(staff.id)}
+                                                className="delete-button"
+                                            >
+                                                <Trash2Icon className="w-4 h-4 inline" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </section>
         </AuthenticatedLayout>
