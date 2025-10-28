@@ -46,7 +46,7 @@ export default function Login({ status, canResetPassword }) {
                         type="text"
                         name="phone"
                         value={data.phone}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-accent focus:ring-opacity-50"
                         autoComplete={false}
                         autoFocus
                         onChange={(e) => setData("phone", e.target.value)}
@@ -80,7 +80,7 @@ export default function Login({ status, canResetPassword }) {
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-accent focus:ring-opacity-50"
                         autoComplete="current-password"
                         onChange={(e) => setData("password", e.target.value)}
                     />
@@ -113,11 +113,18 @@ export default function Login({ status, canResetPassword }) {
 
                     <button
                         type="submit"
-                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+                        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition"
                         disabled={processing}
                     >
                         Log in
                     </button>
+                    {/* <button
+                        type="submit"
+                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+                        disabled={processing}
+                    >
+                        Log in
+                    </button> */}
                 </div>
             </form>
         </GuestLayout>

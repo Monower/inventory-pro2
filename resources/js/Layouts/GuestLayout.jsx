@@ -11,10 +11,10 @@ export default function GuestLayout({ children }) {
                 </Link>
             )}
 
-            <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
+            <h2 className="heading text-primary mb-2">
                 {settings.company_name?.length > 0
                     ? settings.company_name
-                    : "Default Company Name"}
+                    : "Default company name."}
             </h2>
 
             <div className="mt-3 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg">
