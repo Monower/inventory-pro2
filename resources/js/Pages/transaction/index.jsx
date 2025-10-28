@@ -20,8 +20,6 @@ const Index = ({ transactions }) => {
         }
     };
 
-    console.log("transactions: ", transactions);
-
     return (
         <AuthenticatedLayout>
             <section>
@@ -56,16 +54,38 @@ const Index = ({ transactions }) => {
                                 <th>Actions</th>
                             </tr>
                         </thead>
+                        {transactions.length === 0 && (
+                            <tbody>
+                                <tr>
+                                    <td
+                                        colSpan="6"
+                                        className="text-center text-sm text-gray-500"
+                                    >
+                                        No data found
+                                    </td>
+                                </tr>
+                            </tbody>
+                        )}
                         <tbody>
                             {transactions.map((transaction, index) => (
                                 <tr
                                     key={index}
-                                    className={`text-center ${transaction?.transaction_type === "add_money" ? "bg-green-100" : "bg-red-100"}`}
+                                    className={`text-center ${
+                                        transaction?.transaction_type ===
+                                        "add_money"
+                                            ? "bg-green-100"
+                                            : "bg-red-100"
+                                    }`}
                                 >
                                     <td>{index + 1}</td>
                                     <td>{transaction.name}</td>
                                     <td>{transaction.payment_method}</td>
-                                    <td>{transaction.transaction_type == "add_money" ? "Add money" : "Expense"}</td>
+                                    <td>
+                                        {transaction.transaction_type ==
+                                        "add_money"
+                                            ? "Add money"
+                                            : "Expense"}
+                                    </td>
                                     <td>{transaction.source}</td>
                                     <td>{transaction.amount}</td>
                                     <td>

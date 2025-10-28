@@ -39,14 +39,26 @@ export default function SalaryIndex() {
 
                 <table className="min-w-full bg-white shadow rounded">
                     <thead>
-                        <tr className="bg-gray-100 text-left text-sm uppercase">
-                            <th className="p-2">Staff</th>
+                        <tr className="bg-gray-100 text-left text-sm">
+                            <th className="p-2">Employee</th>
                             <th className="p-2">Month</th>
                             <th className="p-2">Net Salary</th>
                             <th className="p-2">Status</th>
                             <th className="p-2">Action</th>
                         </tr>
                     </thead>
+                    {salaries.length === 0 && (
+                        <tbody>
+                            <tr>
+                                <td
+                                    colSpan="6"
+                                    className="text-center text-sm text-gray-500"
+                                >
+                                    No data found
+                                </td>
+                            </tr>
+                        </tbody>
+                    )}
                     <tbody>
                         {salaries.map((s) => (
                             <tr

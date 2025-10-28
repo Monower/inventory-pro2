@@ -39,6 +39,18 @@ export default function Index() {
                             <th className="border p-2">Actions</th>
                         </tr>
                     </thead>
+                    {purchase_items.length === 0 && (
+                        <tbody>
+                            <tr>
+                                <td
+                                    colSpan="6"
+                                    className="text-center text-sm text-gray-500"
+                                >
+                                    No data found
+                                </td>
+                            </tr>
+                        </tbody>
+                    )}
                     <tbody>
                         {purchase_items.map((p) => (
                             <tr key={p.id}>

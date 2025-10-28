@@ -36,6 +36,18 @@ export default function AdvanceIndex() {
                             <th className="p-2">Status</th>
                         </tr>
                     </thead>
+                    {advances.length === 0 && (
+                        <tbody>
+                            <tr>
+                                <td
+                                    colSpan="6"
+                                    className="text-center text-sm text-gray-500"
+                                >
+                                    No data found
+                                </td>
+                            </tr>
+                        </tbody>
+                    )}
                     <tbody>
                         {advances.map((a) => (
                             <tr key={a.id} className="border-b">

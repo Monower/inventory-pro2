@@ -22,13 +22,11 @@ const Index = ({ staffs }) => {
         }
     };
 
-    console.log("can create staff: ", canCreateStaff);
-
     return (
         <AuthenticatedLayout>
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Staffs</h3>
+                    <h3 className="text-xl font-semibold">Employees</h3>
 
                     {
                         canCreateStaff && <Link href="/staff/create" className="bg-blue-500 text-white p-1 px-2 rounded">Create</Link>
@@ -48,6 +46,15 @@ const Index = ({ staffs }) => {
                                 <th>Actions</th>
                             </tr>
                         </thead>
+                        {
+                            staffs.length === 0 && (
+                                <tbody>
+                                    <tr>
+                                        <td colSpan="6" className="text-center text-sm text-gray-500">No data found</td>
+                                    </tr>
+                                </tbody>
+                            )
+                        }
                         <tbody>
                             {staffs.map((staff, index) => (
                                 <tr

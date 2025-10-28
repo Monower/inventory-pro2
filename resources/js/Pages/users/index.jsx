@@ -68,7 +68,7 @@ const Index = ({ users }) => {
                                     </td>
                                     {/* <td>{user.avatar ?? "N/A"}</td> */}
                                     <td>{user.name}</td>
-                                    <td>{user.email}</td>
+                                    <td>{user.email ?? "N/A"}</td>
                                     <td>{user.phone ?? "N/A"}</td>
                                     <td>
                                         {user?.roles?.map((role) => {

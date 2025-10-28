@@ -202,7 +202,7 @@ const Index = ({ banks }) => {
                                         colSpan={3}
                                         className="text-center text-gray-500 py-4"
                                     >
-                                        No banks found.
+                                        No data found.
                                     </td>
                                 </tr>
                             )}
