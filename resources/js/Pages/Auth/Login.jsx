@@ -38,7 +38,7 @@ export default function Login({ status, canResetPassword }) {
             )}
 
             <form onSubmit={submit}>
-                <div>
+                <div className="relative">
                     <InputLabel htmlFor="phone" value="Phone" />
 
                     <input
@@ -46,11 +46,17 @@ export default function Login({ status, canResetPassword }) {
                         type="text"
                         name="phone"
                         value={data.phone}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-accent focus:ring-opacity-50"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-accent focus:ring-opacity-50 pr-12" // extra padding for counter
                         autoComplete={false}
                         autoFocus
+                        maxLength={11} // limit input
                         onChange={(e) => setData("phone", e.target.value)}
                     />
+
+                    {/* Character counter positioned to the right */}
+                    <span className="absolute top-[69%] right-3 transform -translate-y-1/2 text-sm text-gray-500">
+                        {data.phone.length}/11
+                    </span>
 
                     <InputError message={errors.phone} className="mt-2" />
                 </div>
