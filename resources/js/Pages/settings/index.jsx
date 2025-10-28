@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
 import { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Sun, Moon } from "lucide-react";
 
 const Index = ({ settings }) => {
     const { data, setData, post, processing, errors, wasSuccessful } = useForm({
@@ -12,6 +12,20 @@ const Index = ({ settings }) => {
     const [logoPreview, setLogoPreview] = useState(settings?.logo_url || null);
     const fileInputRef = useRef(null);
     const [notification, setNotification] = useState(null);
+
+    // 🌗 Theme state
+    const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+
+    // Apply theme to <html>
+    useEffect(() => {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("theme", theme);
+    }, [theme]);
+
+    // Toggle handler
+    const toggleTheme = () => {
+        setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    };
 
     // Success notification
     useEffect(() => {
@@ -50,15 +64,28 @@ const Index = ({ settings }) => {
         const formData = new FormData();
         formData.append("company_name", data.company_name);
         if (data.logo) formData.append("logo", data.logo);
-
         post(route("settings.update"), formData, { forceFormData: true });
     };
 
     return (
         <AuthenticatedLayout>
-            <section className="max-w-2xl mx-auto bg-white shadow-md rounded-2xl p-6">
+            <section className="max-w-2xl mx-auto bg-card text-card-foreground shadow-md rounded-2xl p-6 transition-colors duration-300">
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-2xl font-semibold text-gray-800">General Settings</h3>
+                    <h3 className="text-2xl font-semibold">General Settings</h3>
+
+                    {/* 🌙 Theme Toggle Button */}
+                    <button
+                        type="button"
+                        onClick={toggleTheme}
+                        className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+                        title="Toggle Theme"
+                    >
+                        {theme === "light" ? (
+                            <Moon className="text-foreground" size={20} />
+                        ) : (
+                            <Sun className="text-foreground" size={20} />
+                        )}
+                    </button>
                 </div>
 
                 {/* Notification */}
@@ -77,14 +104,12 @@ const Index = ({ settings }) => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Company Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Company Name
-                        </label>
+                        <label className="block text-sm font-medium mb-1">Company Name</label>
                         <input
                             type="text"
                             value={data.company_name}
                             onChange={(e) => setData("company_name", e.target.value)}
-                            className="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-400 placeholder:text-sm"
+                            className="border border-input bg-background rounded-lg p-2.5 w-full focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-muted-foreground placeholder:text-sm"
                             placeholder="Enter company name"
                             required
                         />
@@ -95,20 +120,18 @@ const Index = ({ settings }) => {
 
                     {/* Logo Upload */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Company Logo
-                        </label>
+                        <label className="block text-sm font-medium mb-1">Company Logo</label>
                         <input
                             ref={fileInputRef}
                             type="file"
                             accept="image/*"
                             onChange={handleFileChange}
-                            className="block w-full text-sm text-gray-500 
+                            className="block w-full text-sm text-foreground 
                                        file:mr-4 file:py-2 file:px-4 
                                        file:rounded-lg file:border-0 
                                        file:text-sm file:font-semibold 
-                                       file:bg-blue-50 file:text-blue-600 
-                                       hover:file:bg-blue-100"
+                                       file:bg-primary/10 file:text-primary 
+                                       hover:file:bg-primary/20"
                         />
                         {errors.logo && (
                             <p className="text-sm text-red-500 mt-1">{errors.logo}</p>
@@ -125,7 +148,7 @@ const Index = ({ settings }) => {
                                 <button
                                     type="button"
                                     onClick={removeLogo}
-                                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow hover:bg-red-600"
+                                    className="absolute -top-2 -right-2 bg-destructive text-white p-1 rounded-full shadow hover:bg-red-600"
                                 >
                                     <X size={16} />
                                 </button>
@@ -146,7 +169,7 @@ const Index = ({ settings }) => {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="bg-blue-600 text-white font-medium py-2 px-6 rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+                            className="bg-primary text-primary-foreground font-medium py-2 px-6 rounded-lg shadow hover:bg-primary/90 disabled:opacity-50 transition-colors"
                         >
                             {processing ? "Saving..." : "Save Settings"}
                         </button>
