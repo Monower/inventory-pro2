@@ -22,14 +22,11 @@ const icons = {
 const DashboardCard = ({ heading, title, icon }) => {
     const Icon = icons[icon] || FiBox; // fallback to FiBox if not found
 
-
-
-
     return (
-        <div className="w-full flex flex-col gap-2 items-center bg-white p-4 rounded-lg">
-            <Icon className="text-4xl text-gray-800" />
-            <p className="text-[14px] text-gray-500">{ heading }</p>
-            <p className="text-20 text-gray-800">{ title }</p>
+        <div className="w-full flex flex-col gap-2 items-center bg-card p-4 rounded-lg border shadow-sm">
+            <Icon className="text-4xl text-primary" />
+            <p className="text-[14px] text-primary">{ heading }</p>
+            <p className="text-20 text-primary">{ title }</p>
         </div>
     );
 };
