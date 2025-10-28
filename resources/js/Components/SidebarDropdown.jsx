@@ -12,7 +12,7 @@ export default function SidebarDropdown({ title, icon, children }) {
       {/* Dropdown Trigger */}
       <button
         onClick={toggleDropdown}
-        className="sidebar-link flex items-center px-4 py-3 rounded-md text-gray-700 w-full text-left"
+        className="flex items-center px-4 py-3 rounded-md text-primary w-full text-left"
       >
         {icon && <span className="mr-2">{icon}</span>}
         <span className="sidebar-text flex-1">{title}</span>

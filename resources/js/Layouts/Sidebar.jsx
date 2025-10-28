@@ -7,14 +7,14 @@ const Sidebar = ({ url }) => {
 
     return (
         <div
-            className={`hidden lg:block relative bg-white shadow-md flex flex-col h-screen transition-all duration-300 ${
+            className={`hidden lg:block relative bg-background shadow-md flex flex-col h-screen transition-all duration-300 ${
                 collapsed ? "min-w-[10px] max-w-[10px]" : "min-w-[250px] max-w-[250px]"
             }`}
         >
             {/* Collapse Button */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="absolute -right-3 top-6 bg-gray-200 rounded-full p-1 shadow hover:bg-gray-300 transition"
+                className="absolute -right-3 top-6 rounded-full p-1 shadow bg-background transition"
             >
                 {collapsed ? <BiChevronRight size={20} /> : <BiChevronLeft size={20} />}
             </button>

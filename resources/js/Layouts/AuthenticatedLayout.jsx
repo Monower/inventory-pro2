@@ -27,7 +27,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-background">
-            <nav className="border-b border-gray-100 bg-white">
+            <nav className="bg-background">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -36,7 +36,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     href="/"
                                     className="flex items-center gap-2"
                                 >
-                                    <ApplicationLogo logo={settings.logo_url} />
+                                    <ApplicationLogo logo={settings.logo_url ?? "/images/demo_image.jpg"} />
                                     {/* {
                                         settings.company_name &&
                                         <span className="text-lg font-semibold leading-6 text-gray-900">{settings.company_name}</span>

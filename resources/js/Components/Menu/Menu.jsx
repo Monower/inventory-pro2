@@ -20,12 +20,12 @@ const Menu = ({ url }) => {
                     href="/dashboard"
                     className={
                         url == "/dashboard"
-                            ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
-                            : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                            ? "flex items-center px-4 py-3 rounded-md text-primary bg-primary-foreground gap-2"
+                            : "flex items-center px-4 py-3 rounded-md text-primary gap-2"
                     }
                 >
                     <MdOutlineDashboard />
-                    <span className="sidebar-text">Dashboard</span>
+                    <span>Dashboard</span>
                 </Link>
             )}
 
@@ -34,12 +34,12 @@ const Menu = ({ url }) => {
                     href="/customers"
                     className={
                         url.includes("customer")
-                            ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
-                            : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                            ? "flex items-center px-4 py-3 rounded-md text-primary bg-primary-foreground gap-2"
+                            : "flex items-center px-4 py-3 rounded-md text-primary gap-2"
                     }
                 >
                     <FaUsers />
-                    <span className="sidebar-text">Customer</span>
+                    <span>Customer</span>
                 </Link>
             )}
 
@@ -51,13 +51,13 @@ const Menu = ({ url }) => {
                 >
                     <div className="flex flex-col mt-2 space-y-2">
                         {permissions.includes("view staff") && (
-                            <Link href="/staffs">Employees</Link>
+                            <Link href="/staffs" className="text-primary">Employees</Link>
                         )}
                         {permissions.includes("view staff") && (
-                            <Link href="/salaries">Salaries</Link>
+                            <Link href="/salaries" className="text-primary">Salaries</Link>
                         )}
                         {permissions.includes("view staff") && (
-                            <Link href="/advance-salaries">Advance salaries</Link>
+                            <Link href="/advance-salaries" className="text-primary">Advance salaries</Link>
                         )}
                     </div>
                 </SidebarDropdown>
@@ -68,12 +68,12 @@ const Menu = ({ url }) => {
                     href="/staffs"
                     className={
                         url.includes("staff")
-                            ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
-                            : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                            ? "flex items-center px-4 py-3 rounded-md text-primary bg-primary-foreground gap-2"
+                            : "flex items-center px-4 py-3 rounded-md text-primary gap-2"
                     }
                 >
                     <FaUserTie />
-                    <span className="sidebar-text">Staffs</span>
+                    <span>Staffs</span>
                 </Link>
             )} */}
 
@@ -86,21 +86,21 @@ const Menu = ({ url }) => {
                 <SidebarDropdown title="Product" icon={<BsBoxes />}>
                     <div className="flex flex-col mt-2 space-y-2">
                         {permissions.includes("view product") && (
-                            <Link href="/products">Product list</Link>
+                            <Link href="/products" className="text-primary">Product list</Link>
                         )}
                         {permissions.includes("create product") && (
-                            <Link href="/products/create">Create product</Link>
+                            <Link href="/products/create" className="text-primary">Create product</Link>
                         )}
                         {permissions.includes("view category") && (
-                            <Link href="/categories">Category list</Link>
+                            <Link href="/categories" className="text-primary">Category list</Link>
                         )}
                         {permissions.includes("view subcategory") && (
-                            <Link href="/sub-categories">
+                            <Link href="/sub-categories" className="text-primary">
                                 Sub-category list
                             </Link>
                         )}
                         {permissions.includes("view attribute") && (
-                            <Link href="/attributes">Attribute list</Link>
+                            <Link href="/attributes" className="text-primary">Attribute list</Link>
                         )}
                         {/* {permissions.includes("view attribute value") && (
                             <Link href="/attribute-values">
@@ -108,7 +108,7 @@ const Menu = ({ url }) => {
                             </Link>
                         )} */}
                         {permissions.includes("view purchase") && (
-                            <Link href="/purchases">Purchases</Link>
+                            <Link href="/purchases" className="text-primary">Purchases</Link>
                         )}
                     </div>
                 </SidebarDropdown>
@@ -122,10 +122,10 @@ const Menu = ({ url }) => {
                 >
                     <div className="flex flex-col mt-2 space-y-2">
                         {permissions.includes("view role") && (
-                            <Link href="/roles">User role</Link>
+                            <Link href="/roles" className="text-primary">User role</Link>
                         )}
                         {permissions.includes("view user") && (
-                            <Link href="/users">User list</Link>
+                            <Link href="/users" className="text-primary">User list</Link>
                         )}
                     </div>
                 </SidebarDropdown>
@@ -137,9 +137,9 @@ const Menu = ({ url }) => {
                     icon={<AiOutlineBorderlessTable />}
                 >
                     <div className="flex flex-col mt-2 space-y-2">
-                        <Link href="/banks">Bank list</Link>
-                        <Link href="/orders/create">Create order</Link>
-                        <Link href="/orders">Order list</Link>
+                        <Link href="/banks" className="text-primary">Bank list</Link>
+                        <Link href="/orders/create" className="text-primary">Create order</Link>
+                        <Link href="/orders" className="text-primary">Order list</Link>
                     </div>
                 </SidebarDropdown>
             )}
@@ -149,12 +149,12 @@ const Menu = ({ url }) => {
                     href="/transactions"
                     className={
                         url.includes("transaction")
-                            ? "flex items-center px-4 py-3 rounded-md text-gray-700 bg-gray-200 gap-2"
-                            : "flex items-center px-4 py-3 rounded-md text-gray-700 gap-2"
+                            ? "flex items-center px-4 py-3 rounded-md text-primary bg-primary-foreground gap-2"
+                            : "flex items-center px-4 py-3 rounded-md text-primary gap-2"
                     }
                 >
                     <CiDollar />
-                    <span className="sidebar-text">Transaction tracker</span>
+                    <span>Transaction tracker</span>
                 </Link>
             )}
 
@@ -162,10 +162,10 @@ const Menu = ({ url }) => {
                 permissions.includes("view profile")) && (
                 <SidebarDropdown title="Settings" icon={<PiGearSixLight />}>
                     <div className="flex flex-col mt-2 space-y-2">
-                        <Link href="/profile">Profile</Link>
+                        <Link href="/profile" className="text-primary">Profile</Link>
                     </div>
                     <div className="flex flex-col mt-2 space-y-2">
-                        <Link href="/settings">General settings</Link>
+                        <Link href="/settings" className="text-primary">General settings</Link>
                     </div>
                 </SidebarDropdown>
             )}
