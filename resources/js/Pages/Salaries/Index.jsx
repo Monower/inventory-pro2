@@ -1,6 +1,8 @@
 import React from "react";
 import { Link, usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import NoDataFound from "@/Components/NoDataFound/NoDataFound";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 export default function SalaryIndex() {
     const { salaries, flash } = usePage().props;
@@ -20,12 +22,12 @@ export default function SalaryIndex() {
 
     return (
         <AuthenticatedLayout>
-            <div className="p-6">
+            <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">Salary Sheet</h1>
+                    <h1 className="heading">Salary Sheet</h1>
                     <Link
                         href={route("salaries.create")}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        className="create-button"
                     >
                         Generate Salary
                     </Link>
@@ -37,63 +39,59 @@ export default function SalaryIndex() {
                     </div>
                 )}
 
-                <table className="min-w-full bg-white shadow rounded">
-                    <thead>
-                        <tr className="bg-gray-100 text-left text-sm">
-                            <th className="p-2">Employee</th>
-                            <th className="p-2">Month</th>
-                            <th className="p-2">Net Salary</th>
-                            <th className="p-2">Status</th>
-                            <th className="p-2">Action</th>
-                        </tr>
-                    </thead>
-                    {salaries.length === 0 && (
-                        <tbody>
-                            <tr>
-                                <td
-                                    colSpan="6"
-                                    className="text-center text-sm text-gray-500"
-                                >
-                                    No data found
-                                </td>
-                            </tr>
-                        </tbody>
+                <div className="table-div">
+                    {salaries?.length === 0 ? (
+                        <NoDataFound />
+                    ) : (
+                        <table className="custom-table">
+                            <thead className="custom-thead">
+                                <tr>
+                                    <th className="custom-th rounded-l-md">Employee</th>
+                                    <th className="custom-th">Month</th>
+                                    <th className="custom-th">Net Salary</th>
+                                    <th className="custom-th">Status</th>
+                                    <th className="py-2 px-3 text-center rounded-r-md">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {salaries.map((s) => (
+                                    <tr
+                                        key={s.id}
+                                        className="custom-body-tr"
+                                    >
+                                        <td className="custom-body-td">{s.staff.name}</td>
+                                        <td className="custom-body-td">{s.month}</td>
+                                        <td className="custom-body-td">{s.net_salary}</td>
+                                        <td className="custom-body-td">
+                                            {s.is_paid ? (
+                                                <span className="text-green-600 font-semibold">
+                                                    Paid
+                                                </span>
+                                            ) : (
+                                                <span className="text-red-600 font-semibold">
+                                                    Unpaid
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {!s.is_paid && (
+                                                <button
+                                                    onClick={() =>
+                                                        markAsPaid(s.id)
+                                                    }
+                                                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                                                >
+                                                    Mark Paid
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
-                    <tbody>
-                        {salaries.map((s) => (
-                            <tr
-                                key={s.id}
-                                className="border-b hover:bg-gray-50"
-                            >
-                                <td className="p-2">{s.staff.name}</td>
-                                <td className="p-2">{s.month}</td>
-                                <td className="p-2">{s.net_salary}</td>
-                                <td className="p-2">
-                                    {s.is_paid ? (
-                                        <span className="text-green-600 font-semibold">
-                                            Paid
-                                        </span>
-                                    ) : (
-                                        <span className="text-red-600 font-semibold">
-                                            Unpaid
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="p-2">
-                                    {!s.is_paid && (
-                                        <button
-                                            onClick={() => markAsPaid(s.id)}
-                                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                                        >
-                                            Mark Paid
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                </div>
+            </section>
         </AuthenticatedLayout>
     );
 }
