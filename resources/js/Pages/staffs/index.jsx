@@ -7,11 +7,7 @@ const Index = ({ staffs }) => {
     const { auth } = usePage().props;
     const canCreateStaff = auth?.user?.permissions.includes("create staff");
     const {
-        data,
         setData,
-        post,
-        processing,
-        errors,
         delete: destroy,
     } = useForm({
         id: null,

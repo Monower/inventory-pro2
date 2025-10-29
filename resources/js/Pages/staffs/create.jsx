@@ -3,7 +3,7 @@ import { useForm } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = () => {
-    const { data, setData, post, errors } = useForm({
+    const { setData, post } = useForm({
         name: "",
         email: "",
         phone: "",
@@ -27,7 +27,8 @@ const Create = () => {
                 <div>
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-                            <fieldset className="border border-gray-300 bg-white">
+
+                            <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Name
@@ -39,11 +40,12 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("name", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter staff name"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+
+                            <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Email
@@ -55,11 +57,12 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("email", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter staff email"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+
+                            <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Phone
@@ -71,11 +74,12 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("phone", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter staff phone"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+
+                            <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
                                     <label>
                                         Salary
@@ -87,11 +91,12 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("salary", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter staff salary"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+
+                            <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
                                     <label>Address</label>
                                 </legend>
@@ -100,15 +105,15 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("address", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter staff address"
                                     rows="1"
                                 ></textarea>
                             </fieldset>
                         </div>
 
-                        <div className="flex justify-end">
-                            <button className="bg-blue-500 text-white p-1 px-2 rounded">
+                        <div className="w-full flex justify-end">
+                            <button className="create-button" type="submit">
                                 Save
                             </button>
                         </div>
