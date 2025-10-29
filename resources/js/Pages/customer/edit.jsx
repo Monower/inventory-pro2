@@ -18,7 +18,7 @@ const Edit = ({ customer }) => {
 
     return (
         <AuthenticatedLayout>
-            <section className="px-4">
+            <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"customers.index"} />

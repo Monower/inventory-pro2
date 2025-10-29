@@ -47,7 +47,7 @@ const Index = ({ customers }) => {
 
     return (
         <AuthenticatedLayout>
-            <section className="px-4">
+            <section>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Customers</h3>

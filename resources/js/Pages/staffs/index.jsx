@@ -22,7 +22,7 @@ const Index = ({ staffs }) => {
 
     return (
         <AuthenticatedLayout>
-            <section className="px-4">
+            <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Employees</h3>
 

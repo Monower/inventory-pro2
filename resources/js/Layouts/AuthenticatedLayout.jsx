@@ -350,7 +350,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
             <div className="flex">
                 <Sidebar url={url} />
-                <main className="w-full p-4">{children}</main>
+                <main className="w-full p-4 px-4">{children}</main>
             </div>
         </div>
     );

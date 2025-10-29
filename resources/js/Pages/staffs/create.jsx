@@ -18,7 +18,7 @@ const Create = () => {
 
     return (
         <AuthenticatedLayout>
-            <section className="px-4">
+            <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"staffs.index"} />
                     <h3 className="heading">Add employee</h3>
