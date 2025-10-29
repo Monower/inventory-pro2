@@ -6,7 +6,7 @@ import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ staff }) => {
 
-    const { data, setData, post, errors, put } = useForm({
+    const { data, setData, post, errors, put, processing } = useForm({
         name: staff.name,
         email: staff.email,
         phone: staff.phone,
@@ -22,16 +22,17 @@ const Edit = ({ staff }) => {
 
     return (
         <AuthenticatedLayout>
-                    <section>
+                    <section className="px-4">
                         <div className="mb-4 flex items-center gap-4">
                             <BackButton url={"staffs.index"} />
-                            <h3 className="text-xl font-semibold">Update staff</h3>
+                            <h3 className="heading">Update employee</h3>
                         </div>
         
                         <div>
                             <form onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-                                    <fieldset className="border border-gray-300 bg-white">
+
+                                    <fieldset className="custom-fieldset">
                                         <legend className="text-sm mx-2">
                                             <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                                 Name
@@ -44,11 +45,12 @@ const Edit = ({ staff }) => {
                                             onChange={(e) =>
                                                 setData("name", e.target.value)
                                             }
-                                            className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                            className="custom-input"
                                             placeholder="Enter staff name"
                                         />
                                     </fieldset>
-                                    <fieldset className="border border-gray-300 bg-white">
+
+                                    <fieldset className="custom-fieldset">
                                         <legend className="text-sm mx-2">
                                             <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                                 Email
@@ -61,11 +63,12 @@ const Edit = ({ staff }) => {
                                             onChange={(e) =>
                                                 setData("email", e.target.value)
                                             }
-                                            className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                            className="custom-input"
                                             placeholder="Enter staff email"
                                         />
                                     </fieldset>
-                                    <fieldset className="border border-gray-300 bg-white">
+
+                                    <fieldset className="custom-fieldset">
                                         <legend className="text-sm mx-2">
                                             <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                                 Phone
@@ -78,11 +81,12 @@ const Edit = ({ staff }) => {
                                             onChange={(e) =>
                                                 setData("phone", e.target.value)
                                             }
-                                            className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                            className="custom-input"
                                             placeholder="Enter staff phone"
                                         />
                                     </fieldset>
-                                    <fieldset className="border border-gray-300 bg-white">
+
+                                    <fieldset className="custom-fieldset">
                                         <legend className="text-sm mx-2">
                                             <label>
                                                 Salary
@@ -95,11 +99,12 @@ const Edit = ({ staff }) => {
                                             onChange={(e) =>
                                                 setData("salary", e.target.value)
                                             }
-                                            className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                            className="custom-input"
                                             placeholder="Enter staff salary"
                                         />
                                     </fieldset>
-                                    <fieldset className="border border-gray-300 bg-white">
+
+                                    <fieldset className="custom-fieldset">
                                         <legend className="text-sm mx-2">
                                             <label>Address</label>
                                         </legend>
@@ -109,15 +114,15 @@ const Edit = ({ staff }) => {
                                             onChange={(e) =>
                                                 setData("address", e.target.value)
                                             }
-                                            className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                            className="custom-input"
                                             placeholder="Enter staff address"
                                             rows="1"
                                         ></textarea>
                                     </fieldset>
                                 </div>
         
-                                <div className="flex justify-end">
-                                    <button className="bg-blue-500 text-white p-1 px-2 rounded">
+                                <div className="w-full flex justify-end">
+                                    <button className="create-button" type="submit" disabled={processing}>
                                         Update
                                     </button>
                                 </div>
@@ -127,6 +132,5 @@ const Edit = ({ staff }) => {
                 </AuthenticatedLayout>
     )
 };
-
 
 export default Edit;

@@ -21,7 +21,7 @@ const Create = () => {
             <section className="px-4">
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"staffs.index"} />
-                    <h3 className="heading">Add new employee</h3>
+                    <h3 className="heading">Add employee</h3>
                 </div>
 
                 <div>
