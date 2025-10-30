@@ -1,5 +1,5 @@
 import React from "react";
-import { useForm, Link } from "@inertiajs/react";
+import { useForm, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
@@ -18,6 +18,7 @@ export default function AdvanceCreate({ staff }) {
 
     return (
         <AuthenticatedLayout>
+            <Head title="Add Advance Salary" />
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">
@@ -28,14 +29,19 @@ export default function AdvanceCreate({ staff }) {
                 <div>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-                            <div>
-                                <label>Staff</label>
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        Staff
+                                    </label>
+                                </legend>
+
                                 <select
                                     value={data.staff_id}
                                     onChange={(e) =>
                                         setData("staff_id", e.target.value)
                                     }
-                                    className="w-full border p-2 rounded"
+                                    className="custom-input"
                                 >
                                     <option value="">Select staff</option>
                                     {staff.map((s) => (
@@ -49,58 +55,76 @@ export default function AdvanceCreate({ staff }) {
                                         {errors.staff_id}
                                     </p>
                                 )}
-                            </div>
+                            </fieldset>
 
-                            <div>
-                                <label>Amount</label>
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        Amount
+                                    </label>
+                                </legend>
+
                                 <input
                                     type="number"
                                     value={data.amount}
                                     onChange={(e) =>
                                         setData("amount", e.target.value)
                                     }
-                                    className="w-full border p-2 rounded"
+                                    className="custom-input"
+                                    placeholder="Enter amount"
                                 />
                                 {errors.amount && (
                                     <p className="text-red-600">
                                         {errors.amount}
                                     </p>
                                 )}
-                            </div>
+                            </fieldset>
 
-                            <div>
-                                <label>Installments (months)</label>
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        Installments (months)
+                                    </label>
+                                </legend>
+
                                 <input
                                     type="number"
                                     value={data.installments}
                                     onChange={(e) =>
                                         setData("installments", e.target.value)
                                     }
-                                    className="w-full border p-2 rounded"
+                                    className="custom-input"
+                                    placeholder="Enter number of installments"
                                 />
                                 {errors.installments && (
                                     <p className="text-red-600">
                                         {errors.installments}
                                     </p>
                                 )}
-                            </div>
+                            </fieldset>
 
-                            <div>
-                                <label>Start Month (YYYY-MM)</label>
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        Start Month (YYYY-MM)
+                                    </label>
+                                </legend>
+
                                 <input
                                     type="text"
                                     value={data.start_month}
                                     onChange={(e) =>
                                         setData("start_month", e.target.value)
                                     }
-                                    className="w-full border p-2 rounded"
+                                    className="custom-input"
+                                    placeholder="Enter start month"
                                 />
                                 {errors.start_month && (
                                     <p className="text-red-600">
                                         {errors.start_month}
                                     </p>
                                 )}
-                            </div>
+                            </fieldset>
                         </div>
 
                         {/* Submit Button */}
