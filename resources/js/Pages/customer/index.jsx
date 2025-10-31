@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm } from "@inertiajs/react";
+import { Link, useForm, Head } from "@inertiajs/react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { useState } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"; // optional icons
@@ -47,6 +47,7 @@ const Index = ({ customers }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title="Customers" />
             <section>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">

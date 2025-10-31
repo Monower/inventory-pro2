@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ customer }) => {
@@ -18,6 +18,7 @@ const Edit = ({ customer }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title="Edit customer" />
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">
