@@ -201,7 +201,7 @@ const Index = ({ subcategories, categories }) => {
                 </Modal>
 
                 {/* Table */}
-                <div className="bg-white p-4 rounded shadow overflow-x-auto">
+                <div className="table-div">
                     <table className="w-full text-left border-collapse border">
                         <thead className="border-b">
                             <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">

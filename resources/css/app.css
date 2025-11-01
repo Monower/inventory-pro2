@@ -66,6 +66,10 @@
     @apply bg-background text-foreground;
   }
 
+  td {
+    @apply py-2 px-3 border-t border-[hsl(var(--border))] text-sm
+  }
+
   .heading {
     @apply text-xl font-semibold;
   }

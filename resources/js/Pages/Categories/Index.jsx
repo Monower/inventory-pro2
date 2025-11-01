@@ -3,11 +3,15 @@ import { useForm } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import { useState } from "react";
 import { dateFormater } from "@/util/DateFormater";
+import NoDataFound from "@/Components/NoDataFound/NoDataFound";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = ({ categories }) => {
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null); // null = create, object = edit
     const [clientErrors, setClientErrors] = useState({});
+
+    console.log('categories: ',categories.length);
 
     const {
         data,
@@ -80,11 +84,11 @@ const Index = ({ categories }) => {
         <AuthenticatedLayout>
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Categories</h3>
+                    <h3 className="heading">Categories</h3>
 
                     <button
                         onClick={openCreateModal}
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                        className="create-button"
                         disabled={processing}
                     >
                         Create new
@@ -158,62 +162,62 @@ const Index = ({ categories }) => {
                 </Modal>
 
                 {/* Table */}
-                <div className="bg-white p-4 rounded shadow overflow-x-auto">
-                    <table className="w-full text-left border-collapse border">
-                        <thead className="border-b">
-                            <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">
-                                <th>SI</th>
-                                <th>Name</th>
-                                <th>Created At</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {categories.map((category, index) => (
-                                <tr
-                                    key={category.id}
-                                    className="[&>td]:border [&>td]:py-1 [&>td]:px-2"
-                                >
-                                    <td>{index + 1}</td>
-                                    <td>{category.name}</td>
-                                    <td>{dateFormater(category.created_at)}</td>
-                                    <td>
-                                        <button
-                                            onClick={() =>
-                                                openEditModal(category)
-                                            }
-                                            className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
-                                            disabled={processing}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(category.id)
-                                            }
-                                            className="bg-red-500 text-white py-1 px-2 rounded"
-                                            disabled={processing}
-                                        >
-                                            {processing
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-
-                            {categories.length === 0 && (
+                <div className="table-div">
+                    {categories?.length > 0 ? (
+                        <table className="w-full text-left border-collapse border">
+                            <thead className="custom-thead">
                                 <tr>
-                                    <td
-                                        colSpan={4}
-                                        className="text-center text-gray-500 py-4"
-                                    >
-                                        No categories found.
-                                    </td>
+                                    <th className="custom-th rounded-l-md">
+                                        SI
+                                    </th>
+                                    <th className="custom-th">Name</th>
+                                    <th className="custom-th">Created At</th>
+                                    <th className="custom-th rounded-r-md text-center">
+                                        Actions
+                                    </th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {categories.map((category, index) => (
+                                    <tr
+                                        key={category.id}
+                                        className="custom-body-tr"
+                                    >
+                                        <td>{index + 1}</td>
+                                        <td>{category.name}</td>
+                                        <td>
+                                            {dateFormater(category.created_at)}
+                                        </td>
+                                        <td className="text-center flex justify-center items-center gap-2">
+                                            <button
+                                                onClick={() =>
+                                                    openEditModal(category)
+                                                }
+                                                className="edit-button"
+                                                disabled={processing}
+                                            >
+                                                <EditIcon className="w-4 h-4 inline" />
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(category.id)
+                                                }
+                                                className="delete-button"
+                                                disabled={processing}
+                                            >
+                                                <Trash2Icon className="w-4 h-4 inline" />
+                                                {/* {processing
+                                                    ? "Deleting..."
+                                                    : "Delete"} */}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <NoDataFound />
+                    )}
                 </div>
             </section>
         </AuthenticatedLayout>

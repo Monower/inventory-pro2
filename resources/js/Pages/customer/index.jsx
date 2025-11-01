@@ -89,7 +89,7 @@ const Index = ({ customers }) => {
                                     <th className="custom-th">
                                         Address
                                     </th>
-                                    <th className="py-2 px-3 text-center rounded-r-md">
+                                    <th className="custom-th rounded-r-md">
                                         Actions
                                     </th>
                                 </tr>

@@ -97,315 +97,328 @@ const Create = ({ categories, attributes }) => {
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"products.index"} />
-                    <h3 className="text-xl font-semibold">Add New Product</h3>
+                    <h3 className="heading">Add New Product</h3>
                 </div>
-                <form onSubmit={handleSubmit} encType="multipart/form-data">
-                    <div className="grid  grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-                        {/* Product Name */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">
-                                Product Name
-                            </legend>
-                            <input
-                                type="text"
-                                value={data.name}
-                                onChange={(e) =>
-                                    setData("name", e.target.value)
-                                }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter product name"
-                            />
-                            {errors.name && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.name}
-                                </p>
-                            )}
-                        </fieldset>
 
-                        {/* Selling Price */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">
-                                Selling Price
-                            </legend>
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={data.selling_price}
-                                onChange={(e) =>
-                                    setData("selling_price", e.target.value)
-                                }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter selling price"
-                            />
-                            {errors.selling_price && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.selling_price}
-                                </p>
-                            )}
-                        </fieldset>
-
-                        {/* Buying Price */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">
-                                Buying Price
-                            </legend>
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={data.buying_price}
-                                onChange={(e) =>
-                                    setData("buying_price", e.target.value)
-                                }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter buying price"
-                            />
-                            {errors.buying_price && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.buying_price}
-                                </p>
-                            )}
-                        </fieldset>
-
-                        {/* Stock */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Stock</legend>
-                            <input
-                                type="number"
-                                value={data.stock}
-                                onChange={(e) =>
-                                    setData("stock", e.target.value)
-                                }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="Enter stock quantity"
-                            />
-                            {errors.stock && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.stock}
-                                </p>
-                            )}
-                        </fieldset>
-
-                        {/* Unit */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Unit</legend>
-                            <input
-                                type="text"
-                                value={data.unit}
-                                onChange={(e) =>
-                                    setData("unit", e.target.value)
-                                }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                placeholder="e.g. pcs, kg"
-                            />
-                            {errors.unit && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.unit}
-                                </p>
-                            )}
-                        </fieldset>
-
-                        {/* Category */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
-                            <legend className="text-sm mx-2">Category</legend>
-                            <select
-                                value={data.category}
-                                onChange={(e) => {
-                                    const selectedCat = e.target.value;
-                                    setData("category", selectedCat);
-                                    const firstSub =
-                                        categories.find(
-                                            (c) => c.id == selectedCat
-                                        )?.sub_categories[0]?.id || "";
-                                    setData("sub_category_id", firstSub);
-                                }}
-                                className="border-none w-full focus:outline-none focus:ring-0 text-sm"
-                            >
-                                {categories.map((cat) => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.name}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.category && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.category}
-                                </p>
-                            )}
-                        </fieldset>
-
-                        {/* Sub Category */}
-                        {data.category && (
-                            <fieldset className="border border-gray-300 bg-white p-2">
+                <div>
+                    <form onSubmit={handleSubmit} encType="multipart/form-data">
+                        <div className="grid  grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
+                            {/* Product Name */}
+                            <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
-                                    Sub Category
+                                    Product Name
                                 </legend>
-                                <select
-                                    value={data.sub_category_id}
+                                <input
+                                    type="text"
+                                    value={data.name}
                                     onChange={(e) =>
-                                        setData(
-                                            "sub_category_id",
-                                            e.target.value
-                                        )
+                                        setData("name", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 text-sm"
-                                >
-                                    {categories
-                                        .find((c) => c.id == data.category)
-                                        ?.sub_categories.map((sub) => (
-                                            <option key={sub.id} value={sub.id}>
-                                                {sub.name}
-                                            </option>
-                                        ))}
-                                </select>
-                                {errors.sub_category_id && (
+                                    className="custom-input"
+                                    placeholder="Enter product name"
+                                />
+                                {errors.name && (
                                     <p className="text-red-500 text-xs">
-                                        {errors.sub_category_id}
+                                        {errors.name}
                                     </p>
                                 )}
                             </fieldset>
-                        )}
 
-                        {/* Description */}
-                        <fieldset className="border border-gray-300 bg-white p-2 lg:col-span-3">
-                            <legend className="text-sm mx-2">
-                                Description
-                            </legend>
-                            <textarea
-                                value={data.description}
-                                onChange={(e) =>
-                                    setData("description", e.target.value)
-                                }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-sm placeholder:text-gray-400"
-                                rows="2"
-                                placeholder="Enter product description"
-                            />
-                            {errors.description && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.description}
-                                </p>
-                            )}
-                        </fieldset>
+                            {/* Selling Price */}
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    Selling Price
+                                </legend>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={data.selling_price}
+                                    onChange={(e) =>
+                                        setData("selling_price", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    placeholder="Enter selling price"
+                                />
+                                {errors.selling_price && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.selling_price}
+                                    </p>
+                                )}
+                            </fieldset>
 
-                        {/* Product Image */}
-                        <fieldset className="border border-gray-300 bg-white p-2 lg:col-span-3">
-                            <legend className="text-sm mx-2">
-                                Product Image
-                            </legend>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="border-none w-full focus:outline-none focus:ring-0 text-sm"
-                            />
-                            {imagePreview && (
-                                <div className="relative mt-2 max-w-xs">
-                                    <img
-                                        src={imagePreview}
-                                        alt="Preview"
-                                        className="w-full h-auto rounded"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={removeImage}
-                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-2 py-0.5 font-bold"
-                                        aria-label="Remove image preview"
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
-                            )}
-                            {errors.product_image && (
-                                <p className="text-red-500 text-xs">
-                                    {errors.product_image}
-                                </p>
-                            )}
-                        </fieldset>
+                            {/* Buying Price */}
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    Buying Price
+                                </legend>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={data.buying_price}
+                                    onChange={(e) =>
+                                        setData("buying_price", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    placeholder="Enter buying price"
+                                />
+                                {errors.buying_price && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.buying_price}
+                                    </p>
+                                )}
+                            </fieldset>
 
-                        {/* Attribute & Values */}
-                        <fieldset className="border border-gray-300 bg-white p-2 lg:col-span-3">
-                            <legend className="text-sm mx-2 font-semibold">
-                                Attribute
-                            </legend>
-                            <select
-                                value={selectedAttribute}
-                                onChange={(e) =>
-                                    setSelectedAttribute(e.target.value)
-                                }
-                                className="border border-gray-300 rounded w-full text-sm mb-2"
-                            >
-                                <option value="">Select Attribute</option>
-                                {attributes.map((a) => (
-                                    <option key={a.id} value={a.id}>
-                                        {a.name}
-                                    </option>
-                                ))}
-                            </select>
+                            {/* Stock */}
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">Stock</legend>
+                                <input
+                                    type="number"
+                                    value={data.stock}
+                                    onChange={(e) =>
+                                        setData("stock", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    placeholder="Enter stock quantity"
+                                />
+                                {errors.stock && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.stock}
+                                    </p>
+                                )}
+                            </fieldset>
 
-                            {selectedAttribute && (
-                                <>
+                            {/* Unit */}
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">Unit</legend>
+                                <input
+                                    type="text"
+                                    value={data.unit}
+                                    onChange={(e) =>
+                                        setData("unit", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    placeholder="e.g. pcs, kg"
+                                />
+                                {errors.unit && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.unit}
+                                    </p>
+                                )}
+                            </fieldset>
+
+                            {/* Category */}
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    Category
+                                </legend>
+                                <select
+                                    value={data.category}
+                                    onChange={(e) => {
+                                        const selectedCat = e.target.value;
+                                        setData("category", selectedCat);
+                                        const firstSub =
+                                            categories.find(
+                                                (c) => c.id == selectedCat
+                                            )?.sub_categories[0]?.id || "";
+                                        setData("sub_category_id", firstSub);
+                                    }}
+                                    className="custom-input"
+                                >
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.category && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.category}
+                                    </p>
+                                )}
+                            </fieldset>
+
+                            {/* Sub Category */}
+                            {data.category && (
+                                <fieldset className="custom-fieldset">
+                                    <legend className="text-sm mx-2">
+                                        Sub Category
+                                    </legend>
                                     <select
-                                        value={currentDropdownValue}
-                                        onChange={(e) => {
-                                            setCurrentDropdownValue(
+                                        value={data.sub_category_id}
+                                        onChange={(e) =>
+                                            setData(
+                                                "sub_category_id",
                                                 e.target.value
-                                            );
-                                            handleAddValue(e.target.value);
-                                        }}
-                                        className="border border-gray-300 rounded w-full text-sm"
+                                            )
+                                        }
+                                        className="custom-input"
                                     >
-                                        <option value="">Select Value</option>
-                                        {dropdownValues.map((val) => (
-                                            <option key={val.id} value={val.id}>
-                                                {val.name || val.value}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    <div className="flex flex-wrap mt-2 gap-2">
-                                        {selectedValues.map((valId) => {
-                                            const valObj = attributes
-                                                .find(
-                                                    (a) =>
-                                                        a.id ==
-                                                        selectedAttribute
-                                                )
-                                                ?.values.find(
-                                                    (v) => v.id == valId
-                                                );
-                                            return (
-                                                <span
-                                                    key={valId}
-                                                    className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center"
+                                        {categories
+                                            .find((c) => c.id == data.category)
+                                            ?.sub_categories.map((sub) => (
+                                                <option
+                                                    key={sub.id}
+                                                    value={sub.id}
                                                 >
-                                                    {valObj?.name ||
-                                                        valObj?.value}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleRemoveValue(
-                                                                valId
-                                                            )
-                                                        }
-                                                        className="ml-1 text-red-500 font-bold"
-                                                    >
-                                                        &times;
-                                                    </button>
-                                                </span>
-                                            );
-                                        })}
-                                    </div>
-                                </>
+                                                    {sub.name}
+                                                </option>
+                                            ))}
+                                    </select>
+                                    {errors.sub_category_id && (
+                                        <p className="text-red-500 text-xs">
+                                            {errors.sub_category_id}
+                                        </p>
+                                    )}
+                                </fieldset>
                             )}
-                        </fieldset>
-                    </div>
 
-                    <button
-                        type="submit"
-                        className="bg-blue-500 text-white p-2 rounded mt-2"
-                    >
-                        Save
-                    </button>
-                </form>
+                            {/* Description */}
+                            <fieldset className="custom-fieldset lg:col-span-3">
+                                <legend className="text-sm mx-2">
+                                    Description
+                                </legend>
+                                <textarea
+                                    value={data.description}
+                                    onChange={(e) =>
+                                        setData("description", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    rows="2"
+                                    placeholder="Enter product description"
+                                />
+                                {errors.description && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.description}
+                                    </p>
+                                )}
+                            </fieldset>
+
+                            {/* Product Image */}
+                            <fieldset className="custom-fieldset lg:col-span-3">
+                                <legend className="text-sm mx-2">
+                                    Product Image
+                                </legend>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="custom-input"
+                                />
+                                {imagePreview && (
+                                    <div className="relative mt-2 max-w-xs">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full h-auto rounded"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-2 py-0.5 font-bold"
+                                            aria-label="Remove image preview"
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                )}
+                                {errors.product_image && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.product_image}
+                                    </p>
+                                )}
+                            </fieldset>
+
+                            {/* Attribute & Values */}
+                            <fieldset className="custom-fieldset lg:col-span-3">
+                                <legend className="text-sm mx-2 font-semibold">
+                                    Attribute
+                                </legend>
+                                <select
+                                    value={selectedAttribute}
+                                    onChange={(e) =>
+                                        setSelectedAttribute(e.target.value)
+                                    }
+                                    className="custom-input"
+                                >
+                                    <option value="">Select Attribute</option>
+                                    {attributes.map((a) => (
+                                        <option key={a.id} value={a.id}>
+                                            {a.name}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {selectedAttribute && (
+                                    <>
+                                        <select
+                                            value={currentDropdownValue}
+                                            onChange={(e) => {
+                                                setCurrentDropdownValue(
+                                                    e.target.value
+                                                );
+                                                handleAddValue(e.target.value);
+                                            }}
+                                            className="border border-gray-300 rounded w-full text-sm"
+                                        >
+                                            <option value="">
+                                                Select Value
+                                            </option>
+                                            {dropdownValues.map((val) => (
+                                                <option
+                                                    key={val.id}
+                                                    value={val.id}
+                                                >
+                                                    {val.name || val.value}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        <div className="flex flex-wrap mt-2 gap-2">
+                                            {selectedValues.map((valId) => {
+                                                const valObj = attributes
+                                                    .find(
+                                                        (a) =>
+                                                            a.id ==
+                                                            selectedAttribute
+                                                    )
+                                                    ?.values.find(
+                                                        (v) => v.id == valId
+                                                    );
+                                                return (
+                                                    <span
+                                                        key={valId}
+                                                        className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center"
+                                                    >
+                                                        {valObj?.name ||
+                                                            valObj?.value}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleRemoveValue(
+                                                                    valId
+                                                                )
+                                                            }
+                                                            className="ml-1 text-red-500 font-bold"
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
+                            </fieldset>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="bg-blue-500 text-white p-2 rounded mt-2"
+                        >
+                            Save
+                        </button>
+                    </form>
+                </div>
             </section>
         </AuthenticatedLayout>
     );
