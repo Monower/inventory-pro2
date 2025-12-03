@@ -1,17 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm } from "@inertiajs/react";
+import { Link, useForm, Head } from "@inertiajs/react";
+import DataTable from "@/Components/DataTable/DataTable";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = ({ transactions }) => {
-    const {
-        data,
-        setData,
-        post,
-        processing,
-        errors,
-        delete: destroy,
-    } = useForm({
-        id: null,
-    });
+    const { setData, delete: destroy } = useForm({ id: null });
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this customer?")) {
@@ -20,98 +13,69 @@ const Index = ({ transactions }) => {
         }
     };
 
+    const columns = [
+        { key: "si", label: "SI" },
+        { key: "name", label: "Name" },
+        { key: "payment_method", label: "Payment Method" },
+        { key: "transaction_type", label: "Transaction Type" },
+        { key: "source", label: "Source" },
+        { key: "amount", label: "Amount" },
+    ];
+
+    const formattedData = transactions.map((t, i) => ({
+        ...t,
+        si: i + 1,
+        transaction_type:
+            t.transaction_type === "add_money" ? "Add Money" : "Expense",
+    }));
+
     return (
         <AuthenticatedLayout>
+            <Head title="Transactions" />
+
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Transactions</h3>
+                    <h3 className="heading">Transactions</h3>
+
                     <div className="flex gap-2">
-                        <Link
-                            href="/transaction/create?type=add_money"
-                            className="bg-blue-500 text-white p-1 px-2 rounded"
-                        >
+                        <Link href="/transaction/create?type=add_money" className="create-button">
                             Add money
                         </Link>
-                        <Link
-                            href="/transaction/create?type=expense"
-                            className="bg-red-500 text-white p-1 px-2 rounded"
-                        >
+                        <Link href="/transaction/create?type=expense" className="edit-button">
                             Add expenses
                         </Link>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 rounded">
-                    <table className="w-full border-separate border-spacing-y-2">
-                        <thead>
-                            <tr>
-                                <th>SI</th>
-                                <th>Name</th>
-                                <th>Payment method</th>
-                                <th>Transaction type</th>
-                                <th>source</th>
-                                <th>amount</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        {transactions.length === 0 && (
-                            <tbody>
-                                <tr>
-                                    <td
-                                        colSpan="6"
-                                        className="text-center text-sm text-gray-500"
-                                    >
-                                        No data found
-                                    </td>
-                                </tr>
-                            </tbody>
-                        )}
-                        <tbody>
-                            {transactions.map((transaction, index) => (
-                                <tr
-                                    key={index}
-                                    className={`text-center ${
-                                        transaction?.transaction_type ===
-                                        "add_money"
-                                            ? "bg-green-100"
-                                            : "bg-red-100"
-                                    }`}
-                                >
-                                    <td>{index + 1}</td>
-                                    <td>{transaction.name}</td>
-                                    <td>{transaction.payment_method}</td>
-                                    <td>
-                                        {transaction.transaction_type ==
-                                        "add_money"
-                                            ? "Add money"
-                                            : "Expense"}
-                                    </td>
-                                    <td>{transaction.source}</td>
-                                    <td>{transaction.amount}</td>
-                                    <td>
-                                        <Link
-                                            href={route(
-                                                "transaction.edit",
-                                                transaction.id
-                                            )}
-                                            className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
-                                        >
-                                            Edit
-                                        </Link>
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(transaction.id)
-                                            }
-                                            className="bg-red-500 text-white py-1 px-2 rounded"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <DataTable
+                    columns={columns}
+                    data={formattedData}
+                    renderCell={(col, row) => {
+                        // Special row coloring logic
+                        if (col.key === "amount" || col.key === "si") {
+                            return row[col.key];
+                        }
+
+                        return row[col.key];
+                    }}
+                    actions={(row) => (
+                        <div className="flex justify-center items-center gap-2">
+                            <Link
+                                href={route("transaction.edit", row.id)}
+                                className="edit-button"
+                            >
+                                <EditIcon className="w-4 h-4 inline" />
+                            </Link>
+
+                            <button
+                                onClick={() => handleDelete(row.id)}
+                                className="delete-button"
+                            >
+                                <Trash2Icon className="w-4 h-4 inline" />
+                            </button>
+                        </div>
+                    )}
+                />
             </section>
         </AuthenticatedLayout>
     );

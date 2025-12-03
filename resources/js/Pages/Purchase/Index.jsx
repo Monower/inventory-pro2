@@ -1,17 +1,41 @@
 import React from "react";
-import { Link, usePage, router } from "@inertiajs/react";
+import { Link, usePage, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import DataTable from "@/Components/DataTable/DataTable";
 
 export default function Index() {
     const { purchase_items } = usePage().props;
+    const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this purchase?")) {
-            router.delete(route("purchases.destroy", id));
+            destroy(route("purchases.destroy", id));
         }
     };
 
-    // console.log("purchase_items: ", purchase_items);
+    // ---- Columns for DataTable ----
+    const columns = [
+        { key: "invoice_no", label: "Invoice" },
+        { key: "product_name", label: "Product" },
+        { key: "supplier_name", label: "Supplier" },
+        { key: "quantity", label: "Quantity" },
+        { key: "purchase_date", label: "Date" },
+        { key: "total_amount", label: "Total" },
+        { key: "payment_status", label: "Payment Status" },
+    ];
+
+    // ---- Format data for DataTable ----
+    const tableData = purchase_items.map((item) => ({
+        ...item,
+        invoice_no: item.purchase.invoice_no,
+        product_name: item.product.name,
+        supplier_name: item.purchase.supplier_name,
+        quantity: item.quantity,
+        purchase_date: item.purchase.purchase_date,
+        total_amount: item.purchase.total_amount,
+        payment_status: item.purchase.payment_status,
+        id: item.purchase.id, // for actions
+    }));
 
     return (
         <AuthenticatedLayout>
@@ -26,65 +50,29 @@ export default function Index() {
                     </Link>
                 </div>
 
-                <table className="w-full border">
-                    <thead className="bg-gray-100">
-                        <tr>
-                            <th className="border p-2">Invoice</th>
-                            <th className="border p-2">Product</th>
-                            <th className="border p-2">Supplier</th>
-                            <th className="border p-2">Quantity</th>
-                            <th className="border p-2">Date</th>
-                            <th className="border p-2">Total</th>
-                            <th className="border p-2">Payment Status</th>
-                            <th className="border p-2">Actions</th>
-                        </tr>
-                    </thead>
-                    {purchase_items.length === 0 && (
-                        <tbody>
-                            <tr>
-                                <td
-                                    colSpan="6"
-                                    className="text-center text-sm text-gray-500"
-                                >
-                                    No data found
-                                </td>
-                            </tr>
-                        </tbody>
+                {/* ---- Reusable DataTable ---- */}
+                <DataTable
+                    columns={columns}
+                    data={tableData}
+                    actions={(row) => (
+                        <div className="flex gap-2">
+                            <Link
+                                href={route("purchases.edit", row.id)}
+                                className="bg-yellow-500 text-white px-3 py-1 rounded"
+                            >
+                                Edit
+                            </Link>
+                            <button
+                                onClick={() => handleDelete(row.id)}
+                                className="bg-red-600 text-white px-3 py-1 rounded"
+                                disabled={processing}
+                            >
+                                {processing ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
                     )}
-                    <tbody>
-                        {purchase_items.map((p) => (
-                            <tr key={p.id}>
-                                <td className="border p-2">{p.purchase.invoice_no}</td>
-                                <td className="border p-2">{p.product.name}</td>
-                                <td className="border p-2">
-                                    {p.purchase.supplier_name}
-                                </td>
-                                <td className="border p-2">
-                                    {p.quantity}
-                                </td>
-                                <td className="border p-2">
-                                    {p.purchase.purchase_date}
-                                </td>
-                                <td className="border p-2">{p.purchase.total_amount}</td>
-                                <td className="border p-2">{p.purchase.payment_status}</td>
-                                <td className="border p-2 flex gap-2">
-                                    <Link
-                                        href={route("purchases.edit", p.purchase.id)}
-                                        className="bg-yellow-500 text-white px-3 py-1 rounded"
-                                    >
-                                        Edit
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(p.purchase.id)}
-                                        className="bg-red-600 text-white px-3 py-1 rounded"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                    noDataMessage="No purchases found."
+                />
             </div>
         </AuthenticatedLayout>
     );

@@ -1,12 +1,13 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
+import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
 import { dateFormater } from "@/util/DateFormater";
 
 const Index = ({ subcategories, categories }) => {
     const [open, setOpen] = useState(false);
-    const [editing, setEditing] = useState(null); // null = create, object = edit
+    const [editing, setEditing] = useState(null);
     const [clientErrors, setClientErrors] = useState({});
 
     const {
@@ -23,6 +24,7 @@ const Index = ({ subcategories, categories }) => {
         category_id: "",
     });
 
+    // ---- Modal handlers ----
     const openCreateModal = () => {
         reset();
         setEditing(null);
@@ -40,18 +42,16 @@ const Index = ({ subcategories, categories }) => {
         setOpen(true);
     };
 
+    // ---- Validation ----
     const validate = () => {
         const newErrors = {};
-        if (!data.category_id) {
-            newErrors.category_id = "Category is required.";
-        }
-        if (!data.name || data.name.trim() === "") {
-            newErrors.name = "Subcategory name is required.";
-        } else if (data.name.length < 3) {
+        if (!data.category_id) newErrors.category_id = "Category is required.";
+        if (!data.name?.trim()) newErrors.name = "Subcategory name is required.";
+        else if (data.name.length < 3)
             newErrors.name = "Subcategory name must be at least 3 characters.";
-        } else if (data.name.length > 255) {
+        else if (data.name.length > 255)
             newErrors.name = "Subcategory name cannot exceed 255 characters.";
-        }
+
         setClientErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -83,12 +83,26 @@ const Index = ({ subcategories, categories }) => {
         }
     };
 
+    // ---- DataTable setup ----
+    const columns = [
+        { key: "si", label: "SI" },
+        { key: "name", label: "Subcategory Name" },
+        { key: "category_name", label: "Category" },
+        { key: "created_at", label: "Created At" },
+    ];
+
+    const tableData = subcategories.map((sub, index) => ({
+        ...sub,
+        si: index + 1,
+        category_name: sub.category?.name || "-",
+        created_at: dateFormater(sub.created_at),
+    }));
+
     return (
         <AuthenticatedLayout>
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Subcategories</h3>
-
                     <button
                         onClick={openCreateModal}
                         className="bg-blue-500 text-white p-1 px-2 rounded"
@@ -98,7 +112,7 @@ const Index = ({ subcategories, categories }) => {
                     </button>
                 </div>
 
-                {/* Modal for Create / Edit */}
+                {/* ---- Modal (Create / Edit) ---- */}
                 <Modal
                     open={open}
                     onOpenChange={setOpen}
@@ -145,9 +159,7 @@ const Index = ({ subcategories, categories }) => {
                             <select
                                 id="category_id"
                                 value={data.category_id}
-                                onChange={(e) =>
-                                    setData("category_id", e.target.value)
-                                }
+                                onChange={(e) => setData("category_id", e.target.value)}
                                 className={`w-full border rounded px-2 py-1 ${
                                     clientErrors.category_id || errors.category_id
                                         ? "border-red-500"
@@ -164,8 +176,7 @@ const Index = ({ subcategories, categories }) => {
                             </select>
                             {(clientErrors.category_id || errors.category_id) && (
                                 <div className="text-red-500 text-sm mt-1">
-                                    {clientErrors.category_id ||
-                                        errors.category_id}
+                                    {clientErrors.category_id || errors.category_id}
                                 </div>
                             )}
                         </div>
@@ -175,15 +186,12 @@ const Index = ({ subcategories, categories }) => {
                                 htmlFor="name"
                                 className="block text-sm font-medium"
                             >
-                                Subcategory Name{" "}
-                                <span className="text-red-500">*</span>
+                                Subcategory Name <span className="text-red-500">*</span>
                             </label>
                             <input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) =>
-                                    setData("name", e.target.value)
-                                }
+                                onChange={(e) => setData("name", e.target.value)}
                                 className={`w-full border rounded px-2 py-1 ${
                                     clientErrors.name || errors.name
                                         ? "border-red-500"
@@ -200,68 +208,29 @@ const Index = ({ subcategories, categories }) => {
                     </form>
                 </Modal>
 
-                {/* Table */}
-                <div className="table-div">
-                    <table className="w-full text-left border-collapse border">
-                        <thead className="border-b">
-                            <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">
-                                <th>SI</th>
-                                <th>Subcategory Name</th>
-                                <th>Category</th>
-                                <th>Created At</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {subcategories.map((subcategory, index) => (
-                                <tr
-                                    key={subcategory.id}
-                                    className="[&>td]:border [&>td]:py-1 [&>td]:px-2"
-                                >
-                                    <td>{index + 1}</td>
-                                    <td>{subcategory.name}</td>
-                                    <td>{subcategory.category.name}</td>
-                                    <td>
-                                        {dateFormater(subcategory.created_at)}
-                                    </td>
-                                    <td>
-                                        <button
-                                            onClick={() =>
-                                                openEditModal(subcategory)
-                                            }
-                                            className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
-                                            disabled={processing}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(subcategory.id)
-                                            }
-                                            className="bg-red-500 text-white py-1 px-2 rounded"
-                                            disabled={processing}
-                                        >
-                                            {processing
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-
-                            {subcategories.length === 0 && (
-                                <tr>
-                                    <td
-                                        colSpan={5}
-                                        className="text-center text-gray-500 py-4"
-                                    >
-                                        No subcategories found.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                {/* ---- Reusable DataTable ---- */}
+                <DataTable
+                    columns={columns}
+                    data={tableData}
+                    actions={(row) => (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => openEditModal(row)}
+                                className="bg-blue-500 text-white py-1 px-2 rounded"
+                                disabled={processing}
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => handleDelete(row.id)}
+                                className="bg-red-500 text-white py-1 px-2 rounded"
+                                disabled={processing}
+                            >
+                                {processing ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
+                    )}
+                />
             </section>
         </AuthenticatedLayout>
     );

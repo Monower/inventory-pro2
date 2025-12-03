@@ -1,12 +1,13 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
+import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
 
 const Index = ({ banks }) => {
     const [open, setOpen] = useState(false);
-    const [editing, setEditing] = useState(null); // null = create, object = edit
-    const [clientErrors, setClientErrors] = useState({}); // client-side errors
+    const [editing, setEditing] = useState(null);
+    const [clientErrors, setClientErrors] = useState({});
 
     const {
         data,
@@ -21,6 +22,7 @@ const Index = ({ banks }) => {
         name: "",
     });
 
+    // ---- Modal Handlers ----
     const openCreateModal = () => {
         reset();
         setEditing(null);
@@ -35,16 +37,17 @@ const Index = ({ banks }) => {
         setOpen(true);
     };
 
+    // ---- Client Validation ----
     const validate = () => {
         const newErrors = {};
-        if (!data.name || data.name.trim() === "") {
-            newErrors.name = "Bank name is required.";
-        } else if (data.name.length < 3) {
+        if (!data.name.trim()) newErrors.name = "Bank name is required.";
+        else if (data.name.length < 3)
             newErrors.name = "Bank name must be at least 3 characters.";
-        } else if (data.name.length > 255) {
+        else if (data.name.length > 255)
             newErrors.name = "Bank name cannot exceed 255 characters.";
-        }
+
         setClientErrors(newErrors);
+
         return Object.keys(newErrors).length === 0;
     };
 
@@ -75,6 +78,17 @@ const Index = ({ banks }) => {
         }
     };
 
+    // ---- DataTable Setup ----
+    const columns = [
+        { key: "si", label: "SI" },
+        { key: "name", label: "Bank Name" },
+    ];
+
+    const tableData = banks.map((bank, index) => ({
+        ...bank,
+        si: index + 1,
+    }));
+
     return (
         <AuthenticatedLayout>
             <section>
@@ -90,7 +104,7 @@ const Index = ({ banks }) => {
                     </button>
                 </div>
 
-                {/* Modal for Create / Edit */}
+                {/* ---- Modal (Create / Edit) ---- */}
                 <Modal
                     open={open}
                     onOpenChange={setOpen}
@@ -132,8 +146,9 @@ const Index = ({ banks }) => {
                                 htmlFor="name"
                                 className="block text-sm font-medium"
                             >
-                                Name <span className="text-red-500">*</span>
+                                Bank Name <span className="text-red-500">*</span>
                             </label>
+
                             <input
                                 id="name"
                                 value={data.name}
@@ -147,6 +162,7 @@ const Index = ({ banks }) => {
                                 }`}
                                 disabled={processing}
                             />
+
                             {(clientErrors.name || errors.name) && (
                                 <div className="text-red-500 text-sm mt-1">
                                     {clientErrors.name || errors.name}
@@ -156,59 +172,30 @@ const Index = ({ banks }) => {
                     </form>
                 </Modal>
 
-                <div className="bg-white p-4 rounded shadow">
-                    <table className="w-full text-left border-collapse border">
-                        <thead className="border-b">
-                            <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">
-                                <th>SI</th>
-                                <th>Name</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {banks.map((bank, index) => (
-                                <tr
-                                    key={bank.id}
-                                    className="[&>td]:border [&>td]:py-1 [&>td]:px-2"
-                                >
-                                    <td>{index + 1}</td>
-                                    <td>{bank.name}</td>
-                                    <td>
-                                        <button
-                                            onClick={() => openEditModal(bank)}
-                                            className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
-                                            disabled={processing}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(bank.id)
-                                            }
-                                            className="bg-red-500 text-white py-1 px-2 rounded"
-                                            disabled={processing}
-                                        >
-                                            {processing
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                {/* ---- Reusable Data Table ---- */}
+                <DataTable
+                    columns={columns}
+                    data={tableData}
+                    actions={(row) => (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => openEditModal(row)}
+                                className="bg-blue-500 text-white py-1 px-2 rounded"
+                                disabled={processing}
+                            >
+                                Edit
+                            </button>
 
-                            {banks.length === 0 && (
-                                <tr>
-                                    <td
-                                        colSpan={3}
-                                        className="text-center text-gray-500 py-4"
-                                    >
-                                        No data found.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                            <button
+                                onClick={() => handleDelete(row.id)}
+                                className="bg-red-500 text-white py-1 px-2 rounded"
+                                disabled={processing}
+                            >
+                                {processing ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
+                    )}
+                />
             </section>
         </AuthenticatedLayout>
     );
