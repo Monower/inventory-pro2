@@ -105,7 +105,7 @@ const Index = ({ categories }) => {
                             <button
                                 type="button"
                                 onClick={() => setOpen(false)}
-                                className="px-3 py-1 rounded bg-gray-300"
+                                className="delete-button"
                                 disabled={processing}
                             >
                                 Cancel
@@ -114,10 +114,10 @@ const Index = ({ categories }) => {
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={processing}
-                                className={`px-3 py-1 rounded text-white ${
+                                className={`create-button ${
                                     processing
-                                        ? "bg-blue-300 cursor-not-allowed"
-                                        : "bg-blue-500 hover:bg-blue-600"
+                                        ? "cursor-not-allowed"
+                                        : "hover:bg-blue-600"
                                 }`}
                             >
                                 {processing
@@ -145,12 +145,13 @@ const Index = ({ categories }) => {
                                 onChange={(e) =>
                                     setData("name", e.target.value)
                                 }
-                                className={`w-full border rounded px-2 py-1 ${
+                                className={`w-full border rounded px-2 py-1 modal-input ${
                                     clientErrors.name || errors.name
                                         ? "border-red-500"
                                         : "border-gray-300"
                                 }`}
                                 disabled={processing}
+                                placeholder="Enter category name"
                             />
                             {(clientErrors.name || errors.name) && (
                                 <div className="text-red-500 text-sm mt-1">

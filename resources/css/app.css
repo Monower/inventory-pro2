@@ -125,4 +125,8 @@
   .custom-input {
     @apply w-full border-none bg-transparent text-[hsl(var(--foreground))] focus:outline-none focus:ring-0 placeholder:text-[hsl(var(--muted-foreground))] text-sm placeholder:text-sm p-2
   }
+  
+  .modal-input {
+    @apply w-full bg-transparent text-[hsl(var(--foreground))] focus:outline-none focus:ring-0 placeholder:text-[hsl(var(--muted-foreground))] text-sm placeholder:text-sm p-2
+  }
 }

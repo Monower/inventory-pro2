@@ -35,10 +35,10 @@ const Index = () => {
         <AuthenticatedLayout>
             <div className="p-4 max-w-5xl mx-auto">
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold">Attributes</h2>
+                    <h2 className="heading">Attributes</h2>
                     <Link
                         href={route("attributes.create")}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                        className="create-button"
                     >
                         Add Attribute
                     </Link>
@@ -63,14 +63,14 @@ const Index = () => {
                         <div className="flex gap-2">
                             <Link
                                 href={route("attributes.edit", row.id)}
-                                className="text-blue-600 hover:underline"
+                                className="edit-button"
                             >
                                 Edit
                             </Link>
                             <button
                                 onClick={() => handleDelete(row.id)}
                                 disabled={processing}
-                                className="text-red-600 hover:underline"
+                                className="delete-button"
                             >
                                 Delete
                             </button>

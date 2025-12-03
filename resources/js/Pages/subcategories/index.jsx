@@ -4,6 +4,7 @@ import Modal from "@/Components/Modal/Modal";
 import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
 import { dateFormater } from "@/util/DateFormater";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = ({ subcategories, categories }) => {
     const [open, setOpen] = useState(false);
@@ -102,10 +103,10 @@ const Index = ({ subcategories, categories }) => {
         <AuthenticatedLayout>
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Subcategories</h3>
+                    <h3 className="heading">Subcategories</h3>
                     <button
                         onClick={openCreateModal}
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                        className="create-button"
                         disabled={processing}
                     >
                         Create new
@@ -160,7 +161,7 @@ const Index = ({ subcategories, categories }) => {
                                 id="category_id"
                                 value={data.category_id}
                                 onChange={(e) => setData("category_id", e.target.value)}
-                                className={`w-full border rounded px-2 py-1 ${
+                                className={`w-full border rounded px-2 py-1 modal-input ${
                                     clientErrors.category_id || errors.category_id
                                         ? "border-red-500"
                                         : "border-gray-300"
@@ -192,7 +193,7 @@ const Index = ({ subcategories, categories }) => {
                                 id="name"
                                 value={data.name}
                                 onChange={(e) => setData("name", e.target.value)}
-                                className={`w-full border rounded px-2 py-1 ${
+                                className={`w-full border rounded px-2 py-1 modal-input ${
                                     clientErrors.name || errors.name
                                         ? "border-red-500"
                                         : "border-gray-300"
@@ -216,17 +217,18 @@ const Index = ({ subcategories, categories }) => {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => openEditModal(row)}
-                                className="bg-blue-500 text-white py-1 px-2 rounded"
+                                className="edit button"
                                 disabled={processing}
                             >
-                                Edit
+                                <EditIcon className="w-4 h-4 inline" />
                             </button>
                             <button
                                 onClick={() => handleDelete(row.id)}
-                                className="bg-red-500 text-white py-1 px-2 rounded"
+                                className="delete-button"
                                 disabled={processing}
                             >
-                                {processing ? "Deleting..." : "Delete"}
+                                <Trash2Icon className="w-4 h-4 inline" />
+                                {/* {processing ? "Deleting..." : "Delete"} */}
                             </button>
                         </div>
                     )}

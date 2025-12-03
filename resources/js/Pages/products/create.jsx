@@ -413,7 +413,7 @@ const Create = ({ categories, attributes }) => {
 
                         <button
                             type="submit"
-                            className="bg-blue-500 text-white p-2 rounded mt-2"
+                            className="create-button mt-2 float-right"
                         >
                             Save
                         </button>
