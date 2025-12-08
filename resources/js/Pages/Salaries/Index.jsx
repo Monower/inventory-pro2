@@ -1,11 +1,11 @@
 import React from "react";
-import { Link, usePage, router } from "@inertiajs/react";
+import { Link, usePage, router, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
 
 export default function SalaryIndex() {
-    const { salaries, flash } = usePage().props;
+    const { salaries, flash, company_name } = usePage().props;
 
     const markAsPaid = (id) => {
         if (confirm("Mark this salary as paid?")) {
@@ -22,14 +22,15 @@ export default function SalaryIndex() {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Salary sheet - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h1 className="heading">Salary Sheet</h1>
+                    <h1 className="heading">Salary sheet</h1>
                     <Link
                         href={route("salaries.create")}
                         className="create-button"
                     >
-                        Generate Salary
+                        Generate salary
                     </Link>
                 </div>
 
@@ -50,7 +51,7 @@ export default function SalaryIndex() {
                                     <th className="custom-th">Month</th>
                                     <th className="custom-th">Net Salary</th>
                                     <th className="custom-th">Status</th>
-                                    <th className="py-2 px-3 text-center rounded-r-md">Action</th>
+                                    <th className="custom-th rounded-r-md">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -81,7 +82,7 @@ export default function SalaryIndex() {
                                                     }
                                                     className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
                                                 >
-                                                    Mark Paid
+                                                    Mark paid
                                                 </button>
                                             )}
                                         </td>

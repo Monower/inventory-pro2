@@ -1,10 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm, usePage } from "@inertiajs/react";
+import { Link, useForm, usePage, Head } from "@inertiajs/react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = ({ staffs }) => {
-    const { auth } = usePage().props;
+    const { auth, company_name } = usePage().props;
     const canCreateStaff = auth?.user?.permissions.includes("create staff");
     const {
         setData,
@@ -22,6 +22,7 @@ const Index = ({ staffs }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Employees - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Employees</h3>

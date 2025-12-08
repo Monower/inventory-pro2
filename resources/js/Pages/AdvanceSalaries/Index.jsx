@@ -1,13 +1,14 @@
 import React from "react";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 
 export default function AdvanceIndex() {
-    const { advances, flash } = usePage().props;
+    const { advances, flash, company_name } = usePage().props;
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Advance / Loan Records - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="heading">Advance / Loan Records</h1>

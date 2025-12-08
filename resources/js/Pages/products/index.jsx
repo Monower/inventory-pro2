@@ -5,7 +5,7 @@ import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = () => {
-    const { products } = usePage().props;
+    const { products, company_name } = usePage().props;
     const [search, setSearch] = useState("");
 
     // Filter products locally (can be replaced with server-side search)
@@ -15,7 +15,7 @@ const Index = () => {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Products" />
+            <Head title={`Products - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Products</h3>
