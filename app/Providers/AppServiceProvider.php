@@ -50,6 +50,11 @@ class AppServiceProvider extends ServiceProvider
                         : null,
                 ];
             },
+
+            'company_name' => function () {
+                $setting = Setting::where('name', 'company_name')->first();
+                return $setting ? $setting->value : 'Default Company Name';
+            },
         ]);
     }
 }

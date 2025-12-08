@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
+import { usePage } from "@inertiajs/react";
 
 const Create = () => {
+    const { company_name } = usePage().props;
     const { data, setData, post, errors } = useForm({
         name: "",
         email: "",
@@ -17,7 +19,7 @@ const Create = () => {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Add customer" />
+            <Head title={`Add customer - ${company_name}`} />
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">

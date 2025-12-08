@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, Head } from "@inertiajs/react";
+import { useForm, Head, Link } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
+import { usePage } from "@inertiajs/react";
 
 const Edit = ({ customer }) => {
+    const { company_name } = usePage().props;
     const { data, setData, put: update, processing, errors } = useForm({
         id: customer.id,
         name: customer.name,
@@ -18,7 +20,7 @@ const Edit = ({ customer }) => {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Edit customer" />
+            <Head title={`Update customer - ${company_name}`} />
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">
@@ -100,6 +102,9 @@ const Edit = ({ customer }) => {
 
                         {/* Submit Button */}
                         <div className="w-full flex justify-end">
+                            <Link href={route("customers.index")} className="delete-button mr-2 text-center">
+                                Cancel
+                            </Link>
                             <button
                                 type="submit"
                                 disabled={processing}

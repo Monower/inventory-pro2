@@ -4,8 +4,10 @@ import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { useState } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"; // optional icons
 import { EditIcon, Trash2Icon } from "lucide-react";
+import { usePage } from "@inertiajs/react";
 
 const Index = ({ customers }) => {
+    const { company_name } = usePage().props;
     const { setData, delete: destroy } = useForm({ id: null });
     const [sortField, setSortField] = useState(null);
     const [sortOrder, setSortOrder] = useState("asc"); // or 'desc'
@@ -47,7 +49,7 @@ const Index = ({ customers }) => {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Customers" />
+            <Head title={`Customers - ${company_name}`} />
             <section>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">
@@ -115,7 +117,7 @@ const Index = ({ customers }) => {
                                         <td className="custom-body-td">
                                             {customer.address}
                                         </td>
-                                        <td className="custom-body-td text-center flex justify-center items-center gap-2">
+                                        <td className="custom-body-td text-center flex items-center gap-2">
                                             <Link
                                                 href={route("customer.edit", customer.id)}
                                                 className="edit-button"
