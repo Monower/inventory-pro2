@@ -1,7 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 
 const Create = () => {
+    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
         name: "",
     });
@@ -12,6 +13,7 @@ const Create = () => {
     };
     return (
         <AuthenticatedLayout>
+            <Head title={`Create Category - ${company_name}`} />
             <div className="w-full h-[50vh] flex justify-center items-center">
                 <div className="bg-white p-4 rounded">
                     <h1 className="text-md font-bold">Create Category</h1>

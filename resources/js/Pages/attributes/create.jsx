@@ -1,8 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import { useState } from "react";
 
 const Create = () => {
+  const { company_name } = usePage().props;
   const { data, setData, post, errors } = useForm({
     name: "",
     values: [""], // start with one empty value input
@@ -32,6 +33,7 @@ const Create = () => {
 
   return (
     <AuthenticatedLayout>
+      <Head title={`Create Attribute - ${company_name}`} />
       <section className="max-w-2xl mx-auto p-4 bg-white rounded shadow">
         <h3 className="text-xl font-semibold mb-4">Add New Attribute</h3>
 

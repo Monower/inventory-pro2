@@ -1,10 +1,10 @@
 import React from "react";
-import { Link, usePage, useForm } from "@inertiajs/react";
+import { Link, usePage, useForm, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import DataTable from "@/Components/DataTable/DataTable";
 
 export default function Index() {
-    const { purchase_items } = usePage().props;
+    const { purchase_items, company_name } = usePage().props;
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
@@ -39,12 +39,13 @@ export default function Index() {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Purchases - ${company_name}`} />
             <div className="p-6">
                 <div className="flex justify-between mb-4">
                     <h1 className="text-xl font-semibold">All Purchases</h1>
                     <Link
                         href={route("purchases.create")}
-                        className="bg-blue-600 text-white px-4 py-2 rounded"
+                        className="create-button"
                     >
                         + New Purchase
                     </Link>

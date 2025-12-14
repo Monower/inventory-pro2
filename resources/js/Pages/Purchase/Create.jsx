@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { useForm, Link } from "@inertiajs/react";
+import { useForm, Link, usePage, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
 export default function Create({ products }) {
+    const { company_name } = usePage().props;
     const { data, setData, post, processing } = useForm({
         supplier_name: "",
         purchase_date: "",
@@ -33,6 +34,7 @@ export default function Create({ products }) {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Create Purchase - ${company_name}`} />
             <div>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"purchases.index"} />

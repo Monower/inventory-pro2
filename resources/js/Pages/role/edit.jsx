@@ -1,8 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ role, permissions }) => {
+    const { company_name } = usePage().props;
     // Initialize with role data
     const { data, setData, put, errors } = useForm({
         name: role.name || "",
@@ -63,6 +64,7 @@ const Edit = ({ role, permissions }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Edit Role - ${company_name}`} />
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"roles.index"} />

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import { useState } from "react";
 import { dateFormater } from "@/util/DateFormater";
@@ -7,6 +7,7 @@ import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = ({ categories }) => {
+    const { company_name } = usePage().props;
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null); // null = create, object = edit
     const [clientErrors, setClientErrors] = useState({});
@@ -82,6 +83,7 @@ const Index = ({ categories }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Categories - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Categories</h3>

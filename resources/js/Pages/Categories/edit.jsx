@@ -1,8 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 
 
 const Edit = ({category}) => {
+    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors, put: update } = useForm({
         name: category.name,
     });
@@ -14,6 +15,7 @@ const Edit = ({category}) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Edit Category - ${company_name}`} />
             <div className="w-full h-[50vh] flex justify-center items-center">
                 <div className="bg-white p-4 rounded">
                     <h1 className="text-md font-bold">Update Category</h1>

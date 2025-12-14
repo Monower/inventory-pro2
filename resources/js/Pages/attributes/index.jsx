@@ -1,10 +1,10 @@
-import { Link, usePage, useForm } from "@inertiajs/react";
+import { Link, usePage, useForm, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import DataTable from "@/Components/DataTable/DataTable";
 import React, { useState } from "react";
 
 const Index = () => {
-    const { attributes } = usePage().props;
+    const { attributes, company_name } = usePage().props;
     const { delete: destroy, processing } = useForm();
     const [search, setSearch] = useState("");
 
@@ -33,6 +33,7 @@ const Index = () => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Attributes - ${company_name}`} />
             <div className="p-4 max-w-5xl mx-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="heading">Attributes</h2>

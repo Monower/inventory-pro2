@@ -1,8 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 
 const Edit = ({ attribute }) => {
+  const { company_name } = usePage().props;
   const { data, setData, put, errors, processing } = useForm({
     name: attribute.name || "",
     values: attribute.values.length
@@ -44,6 +45,7 @@ const Edit = ({ attribute }) => {
 
   return (
     <AuthenticatedLayout>
+      <Head title={`Edit Attribute - ${company_name}`} />
       <section className="max-w-2xl mx-auto p-4 bg-white rounded shadow">
         <h3 className="text-xl font-semibold mb-4">Edit Attribute</h3>
 

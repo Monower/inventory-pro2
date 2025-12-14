@@ -1,8 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm } from "@inertiajs/react";
+import { Link, useForm, usePage, Head } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 
 const Index = ({ roles }) => {
+    const { company_name } = usePage().props;
     const { setData, delete: destroy, processing } = useForm({ id: null });
 
     const handleDelete = (id) => {
@@ -29,6 +30,7 @@ const Index = ({ roles }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Roles - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Roles</h3>
