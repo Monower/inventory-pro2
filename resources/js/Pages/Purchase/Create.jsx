@@ -1,30 +1,74 @@
-import React, { useState } from "react";
-import { useForm, Link, usePage, Head } from "@inertiajs/react";
+import React, { useState, useEffect } from "react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
 export default function Create({ products }) {
     const { company_name } = usePage().props;
-    const { data, setData, post, processing } = useForm({
-        supplier_name: "",
-        purchase_date: "",
-        payment_status: "paid",
-        items: [],
-    });
 
     const [rows, setRows] = useState([
         { product_id: "", quantity: 1, buying_price: 0 },
     ]);
 
-    const addRow = () =>
-        setRows([...rows, { product_id: "", quantity: 1, buying_price: 0 }]);
-    const removeRow = (i) => setRows(rows.filter((_, idx) => idx !== i));
+    const { data, setData, post, processing } = useForm({
+        supplier_name: "",
+        purchase_date: "",
+        payment_status: "paid",
+        paid_amount: 0,
+        items: rows,
+    });
+
+    // keep items synced
+    useEffect(() => {
+        setData("items", rows);
+    }, [rows]);
+
+    // total amount
+    const totalAmount = rows.reduce(
+        (sum, row) => sum + row.quantity * row.buying_price,
+        0
+    );
+
+    // auto manage paid amount
+    useEffect(() => {
+        if (data.payment_status === "paid") {
+            setData("paid_amount", totalAmount);
+        }
+
+        if (data.payment_status === "unpaid") {
+            setData("paid_amount", 0);
+        }
+    }, [data.payment_status, totalAmount]);
+
+    // prevent partial overpay
+    useEffect(() => {
+        if (
+            data.payment_status === "partial" &&
+            data.paid_amount > totalAmount
+        ) {
+            setData("paid_amount", totalAmount);
+        }
+    }, [data.paid_amount, totalAmount]);
+
+    const addRow = () => {
+        setRows([
+            ...rows,
+            { product_id: "", quantity: 1, buying_price: 0 },
+        ]);
+    };
+
+    const removeRow = (i) => {
+        if (rows.length === 1) return;
+        setRows(rows.filter((_, idx) => idx !== i));
+    };
 
     const handleChange = (i, field, value) => {
         const updated = [...rows];
-        updated[i][field] = value;
+        updated[i][field] =
+            field === "quantity" || field === "buying_price"
+                ? Number(value)
+                : value;
         setRows(updated);
-        setData("items", updated);
     };
 
     const submit = (e) => {
@@ -35,6 +79,7 @@ export default function Create({ products }) {
     return (
         <AuthenticatedLayout>
             <Head title={`Create Purchase - ${company_name}`} />
+
             <div>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"purchases.index"} />
@@ -42,6 +87,7 @@ export default function Create({ products }) {
                 </div>
 
                 <form onSubmit={submit} className="space-y-4">
+                    {/* Supplier & Date */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label>Supplier Name</label>
@@ -54,6 +100,7 @@ export default function Create({ products }) {
                                 }
                             />
                         </div>
+
                         <div>
                             <label>Purchase Date</label>
                             <input
@@ -68,6 +115,7 @@ export default function Create({ products }) {
                         </div>
                     </div>
 
+                    {/* Payment Status */}
                     <div>
                         <label>Payment Status</label>
                         <select
@@ -83,7 +131,9 @@ export default function Create({ products }) {
                         </select>
                     </div>
 
+                    {/* Products */}
                     <h2 className="font-semibold mt-6">Products</h2>
+
                     <table className="w-full border mt-2">
                         <thead className="bg-gray-100">
                             <tr>
@@ -94,6 +144,7 @@ export default function Create({ products }) {
                                 <th className="border p-2"></th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {rows.map((row, i) => (
                                 <tr key={i}>
@@ -108,6 +159,7 @@ export default function Create({ products }) {
                                                     e.target.value
                                                 )
                                             }
+                                            required
                                         >
                                             <option value="">Select</option>
                                             {products.map((p) => (
@@ -117,6 +169,7 @@ export default function Create({ products }) {
                                             ))}
                                         </select>
                                     </td>
+
                                     <td className="border p-2">
                                         <input
                                             type="number"
@@ -132,6 +185,7 @@ export default function Create({ products }) {
                                             }
                                         />
                                     </td>
+
                                     <td className="border p-2">
                                         <input
                                             type="number"
@@ -147,13 +201,12 @@ export default function Create({ products }) {
                                             }
                                         />
                                     </td>
+
                                     <td className="border p-2">
-                                        ৳{" "}
-                                        {(
-                                            row.quantity * row.buying_price
-                                        ).toFixed(2)}
+                                        ৳ {(row.quantity * row.buying_price).toFixed(2)}
                                     </td>
-                                    <td className="border p-2">
+
+                                    <td className="border p-2 text-center">
                                         <button
                                             type="button"
                                             onClick={() => removeRow(i)}
@@ -175,6 +228,31 @@ export default function Create({ products }) {
                         + Add Row
                     </button>
 
+                    {/* Total & Paid Amount */}
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="text-lg font-semibold flex items-end">
+                            Total Amount: ৳ {totalAmount.toFixed(2)}
+                        </div>
+
+                        <div>
+                            <label>Paid Amount</label>
+                            <input
+                                type="number"
+                                min="0"
+                                className="border p-2 w-full"
+                                value={data.paid_amount}
+                                onChange={(e) =>
+                                    setData(
+                                        "paid_amount",
+                                        Number(e.target.value)
+                                    )
+                                }
+                                disabled={data.payment_status !== "partial"}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Submit */}
                     <div className="mt-6 flex justify-end">
                         <button
                             type="submit"

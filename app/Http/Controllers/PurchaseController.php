@@ -14,16 +14,11 @@ class PurchaseController extends Controller
 {
     public function index()
     {
-        $purchases = Purchase::with('items.product')->latest()->get();
         $purchase_items = PurchaseItem::with(['purchase', 'product'])->latest()->get();
 
-        // dd($purchase_items);
         return Inertia::render('Purchase/Index', [
             'purchase_items' => $purchase_items
         ]);
-        // return Inertia::render('Purchase/Index', [
-        //     'purchases' => $purchases
-        // ]);
     }
 
     public function create()
@@ -36,10 +31,13 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
+
         $validated = $request->validate([
             'supplier_name' => 'nullable|string|max:255',
             'purchase_date' => 'required|date',
             'payment_status' => 'required|string',
+            'paid_amount' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -55,6 +53,7 @@ class PurchaseController extends Controller
                 'purchase_date' => $validated['purchase_date'],
                 'payment_status' => $validated['payment_status'],
                 'total_amount' => 0,
+                'paid_amount' => $validated['paid_amount'] ?? 0, // fallback to 0
             ]);
 
             $totalAmount = 0;
@@ -75,16 +74,24 @@ class PurchaseController extends Controller
                 $product->update(['buying_price' => $item['buying_price']]);
             }
 
-            $purchase->update(['total_amount' => $totalAmount]);
+            // Update purchase totals AFTER calculating items
+            $purchase->update([
+                'total_amount' => $totalAmount,
+                'paid_amount' => $validated['paid_amount'] ?? 0,
+            ]);
 
+            // dd($validated['paid_amount']);
+
+            // Now paid_amount is guaranteed to exist
             Transaction::create([
                 'name' => 'Product Purchase - ' . $purchase->invoice_no,
                 'payment_method' => 'cash',
                 'transaction_type' => 'expense',
                 'source' => $purchase->supplier_name,
-                'amount' => $totalAmount,
+                'amount' => $purchase->paid_amount, // safe now
             ]);
         });
+
 
         return redirect()->route('purchases.index')->with('success', 'Purchase recorded successfully.');
     }
@@ -105,6 +112,7 @@ class PurchaseController extends Controller
             'supplier_name' => 'nullable|string|max:255',
             'purchase_date' => 'required|date',
             'payment_status' => 'required|string',
+            'paid_amount' => 'required|numeric|min:0', // this is the new payment entered
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -139,21 +147,42 @@ class PurchaseController extends Controller
                 $product->update(['buying_price' => $item['buying_price']]);
             }
 
+            // Calculate new cumulative paid amount
+            $newPaid = $validated['paid_amount']; // new payment this edit
+            $cumulativePaid = $purchase->paid_amount + $newPaid;
+
+            $paymentStatus = $cumulativePaid >= $totalAmount ? 'paid' : 'partial';
+
+            // Update purchase
             $purchase->update([
                 'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
                 'purchase_date' => $validated['purchase_date'],
-                'payment_status' => $validated['payment_status'],
+                'payment_status' => $paymentStatus,
+                // 'payment_status' => $validated['payment_status'],
                 'total_amount' => $totalAmount,
+                'paid_amount' => $cumulativePaid, // cumulative paid amount
             ]);
+
+            // Only create a transaction if new payment > 0
+            if ($newPaid > 0) {
+                Transaction::create([
+                    'name' => 'Product Purchase - ' . $purchase->invoice_no,
+                    'payment_method' => 'cash',
+                    'transaction_type' => 'expense',
+                    'source' => $purchase->supplier_name,
+                    'amount' => $newPaid,
+                ]);
+            }
         });
 
-        return redirect()->route('purchases.index')->with('success', 'Purchase updated successfully.');
+        return redirect()->route('purchases.index')
+            ->with('success', 'Purchase updated successfully.');
     }
+
 
     public function destroy(Purchase $purchase)
     {
         DB::transaction(function () use ($purchase) {
-            // revert stock
             foreach ($purchase->items as $item) {
                 $product = Product::find($item->product_id);
                 $product->decrement('stock', $item->quantity);

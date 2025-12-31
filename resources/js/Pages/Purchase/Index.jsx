@@ -19,9 +19,11 @@ export default function Index() {
         { key: "product_name", label: "Product" },
         { key: "supplier_name", label: "Supplier" },
         { key: "quantity", label: "Quantity" },
-        { key: "purchase_date", label: "Date" },
+        { key: "buying_price", label: "Unit Price" },
         { key: "total_amount", label: "Total" },
+        { key: "paid_amount", label: "Paid" },
         { key: "payment_status", label: "Payment Status" },
+        { key: "purchase_date", label: "Date" },
     ];
 
     // ---- Format data for DataTable ----
@@ -32,7 +34,9 @@ export default function Index() {
         supplier_name: item.purchase.supplier_name,
         quantity: item.quantity,
         purchase_date: item.purchase.purchase_date,
+        buying_price: item.buying_price,
         total_amount: item.purchase.total_amount,
+        paid_amount: item.purchase.paid_amount,
         payment_status: item.purchase.payment_status,
         id: item.purchase.id, // for actions
     }));

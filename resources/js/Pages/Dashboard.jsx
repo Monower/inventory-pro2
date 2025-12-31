@@ -14,7 +14,7 @@ export default function Dashboard({ data }) {
             } */
         >
             
-            <Head title={`Dashboard - ${company_name}`} />;
+            <Head title={`Dashboard - ${company_name}`} />
 
             <section className="px-4">
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

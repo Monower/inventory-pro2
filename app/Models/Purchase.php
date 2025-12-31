@@ -14,7 +14,8 @@ class Purchase extends Model
         'purchase_date',
         'supplier_name',
         'total_amount',
-        'payment_status'
+        'payment_status',
+        'paid_amount',
     ];
 
     public function items()
