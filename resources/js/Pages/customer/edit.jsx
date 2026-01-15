@@ -5,7 +5,13 @@ import { usePage } from "@inertiajs/react";
 
 const Edit = ({ customer }) => {
     const { company_name } = usePage().props;
-    const { data, setData, put: update, processing, errors } = useForm({
+    const {
+        data,
+        setData,
+        put: update,
+        processing,
+        errors,
+    } = useForm({
         id: customer.id,
         name: customer.name,
         email: customer.email,
@@ -32,77 +38,107 @@ const Edit = ({ customer }) => {
                 <div>
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-
                             {/* Name */}
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Name
-                                    </label>
-                                </legend>
-                                <input
-                                    value={data.name}
-                                    type="text"
-                                    name="name"
-                                    onChange={(e) => setData("name", e.target.value)}
-                                    className="custom-input"
-                                    placeholder="Enter customer name"
-                                />
-                            </fieldset>
-
-                            {/* Email */}
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Email
-                                    </label>
-                                </legend>
-                                <input
-                                    value={data.email}
-                                    type="email"
-                                    name="email"
-                                    onChange={(e) => setData("email", e.target.value)}
-                                    className="custom-input"
-                                    placeholder="Enter customer email"
-                                />
-                            </fieldset>
+                            <div>
+                                <fieldset className="custom-fieldset">
+                                    <legend className="text-sm mx-2">
+                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                            Name
+                                        </label>
+                                    </legend>
+                                    <input
+                                        value={data.name}
+                                        type="text"
+                                        name="name"
+                                        onChange={(e) =>
+                                            setData("name", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Enter customer name"
+                                    />
+                                </fieldset>
+                                <small className="text-destructive">
+                                    {errors.name}
+                                </small>
+                            </div>
 
                             {/* Phone */}
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Phone
-                                    </label>
-                                </legend>
-                                <input
-                                    value={data.phone}
-                                    type="number"
-                                    name="phone"
-                                    onChange={(e) => setData("phone", e.target.value)}
-                                    className="custom-input"
-                                    placeholder="Enter customer phone"
-                                />
-                            </fieldset>
+                            <div>
+                                <fieldset className="custom-fieldset">
+                                    <legend className="text-sm mx-2">
+                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                            Phone
+                                        </label>
+                                    </legend>
+                                    <input
+                                        value={data.phone}
+                                        type="number"
+                                        name="phone"
+                                        onChange={(e) =>
+                                            setData("phone", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Enter customer phone"
+                                    />
+                                </fieldset>
+                                <small className="text-destructive">
+                                    {errors.phone}
+                                </small>
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <fieldset className="custom-fieldset">
+                                    <legend className="text-sm mx-2">
+                                        <label>
+                                            Email
+                                        </label>
+                                    </legend>
+                                    <input
+                                        value={data.email}
+                                        type="email"
+                                        name="email"
+                                        onChange={(e) =>
+                                            setData("email", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Enter customer email"
+                                    />
+                                </fieldset>
+                                <small className="text-destructive">
+                                    {errors.email}
+                                </small>
+                            </div>
 
                             {/* Address */}
-                            <fieldset className="custom-fieldset lg:col-span-3">
-                                <legend className="text-sm mx-2">
-                                    <label>Address</label>
-                                </legend>
-                                <textarea
-                                    value={data.address}
-                                    name="address"
-                                    onChange={(e) => setData("address", e.target.value)}
-                                    className="custom-input resize-none"
-                                    placeholder="Enter customer address"
-                                    rows={3}
-                                ></textarea>
-                            </fieldset>
+                            <div>
+                                <fieldset className="custom-fieldset lg:col-span-3">
+                                    <legend className="text-sm mx-2">
+                                        <label>Address</label>
+                                    </legend>
+                                    <textarea
+                                        value={data.address}
+                                        name="address"
+                                        onChange={(e) =>
+                                            setData("address", e.target.value)
+                                        }
+                                        className="custom-input resize-none"
+                                        placeholder="Enter customer address"
+                                        rows={3}
+                                    ></textarea>
+                                </fieldset>
+                                <small className="text-destructive">
+                                    {errors.address}
+                                </small>
+                            </div>
                         </div>
 
                         {/* Submit Button */}
                         <div className="w-full flex justify-end">
-                            <Link href={route("customers.index")} className="delete-button mr-2 text-center">
+                            <Link
+                                href={route("customers.index")}
+                                className="delete-button mr-2 text-center"
+                            >
                                 Cancel
                             </Link>
                             <button
@@ -110,7 +146,9 @@ const Edit = ({ customer }) => {
                                 disabled={processing}
                                 className="create-button"
                             >
-                                Update
+                                {
+                                    processing ? "Updating..." : "Update"
+                                }
                             </button>
                         </div>
                     </form>

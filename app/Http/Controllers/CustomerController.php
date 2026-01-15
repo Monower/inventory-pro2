@@ -20,14 +20,23 @@ class CustomerController extends Controller
 
 
     public function store(Request $request){
-        $customer = new Customer();
-        $customer->name = $request->name;
-        $customer->email = $request->email;
-        $customer->phone = $request->phone;
-        $customer->address = $request->address;
-        $customer->save();
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'phone' => 'required|max:11|min:11', 
+        ]);
 
-        return to_route('customers.index');
+        if($validated){
+            $customer = new Customer();
+            $customer->name = $request->name;
+            $customer->email = $request->email ?? '';
+            $customer->phone = $request->phone;
+            $customer->address = $request->address ?? '';
+            $customer->save();
+
+            return to_route('customers.index');
+        } else {
+            return redirect()->back()->withErrors(['errors' => $validated]);
+        }
     }
 
 
@@ -38,14 +47,24 @@ class CustomerController extends Controller
 
 
     public function update(Request $request, $customer_id){
-        $customer = Customer::find($customer_id);
-        $customer->name = $request->name;
-        $customer->email = $request->email;
-        $customer->phone = $request->phone;
-        $customer->address = $request->address;
-        $customer->save();
 
-        return to_route('customers.index');
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'phone' => 'required|max:11|min:11', 
+        ]);
+
+        if($validated){
+            $customer = Customer::find($customer_id);
+            $customer->name = $request->name;
+            $customer->email = $request->email ?? '';
+            $customer->phone = $request->phone;
+            $customer->address = $request->address ?? '';
+            $customer->save();
+
+            return to_route('customers.index');
+        } else {
+            return redirect()->back()->withErrors(['errors' => $validated]);
+        }
     }
 
 

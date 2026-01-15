@@ -74,19 +74,19 @@ const Index = ({ customers }) => {
                                         SI
                                     </th>
                                     <th
-                                        onClick={() => handleSort("name")}
+                                        // onClick={() => handleSort("name")}
                                         className="custom-th cursor-pointer select-none"
                                     >
-                                        Name {renderSortIcon("name")}
+                                        Name {/* {renderSortIcon("name")} */}
+                                    </th>
+                                    <th className="custom-th" /* onClick={() => handleSort("phone")} */>
+                                        Phone {/* {renderSortIcon("phone")} */}
                                     </th>
                                     <th
-                                        onClick={() => handleSort("email")}
+                                        // onClick={() => handleSort("email")}
                                         className="custom-th cursor-pointer select-none"
                                     >
-                                        Email {renderSortIcon("email")}
-                                    </th>
-                                    <th className="custom-th">
-                                        Phone
+                                        Email {/* {renderSortIcon("email")} */}
                                     </th>
                                     <th className="custom-th">
                                         Address
@@ -106,16 +106,16 @@ const Index = ({ customers }) => {
                                             {index + 1}
                                         </td>
                                         <td className="custom-body-td">
-                                            {customer.name}
+                                            {customer?.name}
                                         </td>
                                         <td className="custom-body-td">
-                                            {customer.email}
+                                            {customer?.phone}
                                         </td>
                                         <td className="custom-body-td">
-                                            {customer.phone}
+                                            {customer?.email?.length < 1 ? "N/A" : customer?.email}
                                         </td>
                                         <td className="custom-body-td">
-                                            {customer.address}
+                                            {customer?.address?.length < 1 ? "N/A" : customer.address}
                                         </td>
                                         <td className="custom-body-td text-center flex items-center gap-2">
                                             <Link
