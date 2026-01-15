@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $total_staff_count = Staff::count();
         $total_added_money = Transaction::where(['transaction_type' => 'add_money'])->sum('amount');
         $total_expenses = Transaction::where(['transaction_type' => 'expense'])->sum('amount');
-        $total_order_count = Transaction::count();
+        $total_order_count = Order::count();
         $total_sold_value = Order::where(['payment_status' => 'paid'])->sum('paid_amount');
 
         $data = [
