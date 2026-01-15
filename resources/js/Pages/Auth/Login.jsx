@@ -121,7 +121,7 @@ export default function Login({ status, canResetPassword }) {
 
                     <button
                         type="submit"
-                        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition"
+                        className="w-full bg-foreground text-secondary py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition"
                         disabled={processing}
                     >
                         Log in
