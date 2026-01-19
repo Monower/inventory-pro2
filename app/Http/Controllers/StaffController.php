@@ -30,15 +30,24 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
-        $staff = new Staff();
-        $staff->name = $request->name;
-        $staff->email = $request->email;
-        $staff->phone = $request->phone;
-        $staff->salary = $request->salary;
-        $staff->address = $request->address;
-        $staff->save();
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'phone' => 'required|max:11|min:11',
+        ]);
 
-        return to_route('staffs.index');
+        if ($validated) {
+            $staff = new Staff();
+            $staff->name = $request->name;
+            $staff->phone = $request->phone;
+            $staff->email = $request->email ?? '';
+            $staff->salary = $request->salary ?? 0;
+            $staff->address = $request->address ?? '';
+            $staff->save();
+
+            return to_route('staffs.index');
+        } else {
+            return redirect()->back()->withErrors(['errors' => $validated]);
+        }
     }
 
     /**
@@ -64,20 +73,36 @@ class StaffController extends Controller
      */
     public function update(Request $request, $staff_id)
     {
-        $staff = Staff::find($staff_id);
-        $staff->name = $request->name;
-        $staff->email = $request->email;
-        $staff->phone = $request->phone;
-        $staff->salary = $request->salary;
-        $staff->address = $request->address;
-        $staff->save();
-        return to_route('staffs.index');
+        $validated = $request->validate([
+            'name' => 'required|max:255',
+            'phone' => 'required|max:11|min:11',
+        ]);
+
+        if ($validated) {
+            $staff = Staff::find($staff_id);
+
+            if (!$staff) {
+                return redirect()->back()->withErrors(['errors' => 'Employee not found']);
+            }
+
+
+            $staff->name = $request->name;
+            $staff->phone = $request->phone;
+            $staff->email = $request->email ?? '';
+            $staff->salary = $request->salary ?? 0;
+            $staff->address = $request->address ?? '';
+            $staff->save();
+
+            return to_route('staffs.index');
+        } else {
+            return redirect()->back()->withErrors(['errors' => $validated]);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Staff $staff, $staff_id)
+    public function destroy($staff_id)
     {
         $staff = Staff::find($staff_id);
         $staff->delete();

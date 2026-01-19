@@ -9,6 +9,7 @@ const Index = ({ staffs }) => {
     const {
         setData,
         delete: destroy,
+        processing
     } = useForm({
         id: null,
     });
@@ -43,10 +44,10 @@ const Index = ({ staffs }) => {
                                 <tr>
                                     <th className="custom-th rounded-l-md">SI</th>
                                     <th className="custom-th">Name</th>
-                                    <th className="custom-th">Email</th>
                                     <th className="custom-th">Phone</th>
-                                    <th className="custom-th">Address</th>
                                     <th className="custom-th">Salary</th>
+                                    <th className="custom-th">Email</th>
+                                    <th className="custom-th">Address</th>
                                     <th className="py-2 px-3 text-center rounded-r-md">Actions</th>
                                 </tr>
                             </thead>
@@ -57,16 +58,16 @@ const Index = ({ staffs }) => {
                                         className="custom-body-tr"
                                     >
                                         <td className="custom-body-td">{index + 1}</td>
-                                        <td className="custom-body-td">{staff.name}</td>
-                                        <td className="custom-body-td">{staff.email}</td>
-                                        <td className="custom-body-td">{staff.phone}</td>
-                                        <td className="custom-body-td">{staff.address}</td>
-                                        <td className="custom-body-td">{staff.salary}</td>
+                                        <td className="custom-body-td">{staff?.name}</td>
+                                        <td className="custom-body-td">{staff?.phone}</td>
+                                        <td className="custom-body-td">{staff?.salary}</td>
+                                        <td className="custom-body-td">{staff?.email?.length > 0 ? staff?.email : "N/A"}</td>
+                                        <td className="custom-body-td">{staff?.address?.length > 0 ? staff?.address : "N/A"}</td>
                                         <td className="custom-body-td text-center flex justify-center items-center gap-2">
                                             <Link
                                                 href={route(
                                                     "staff.edit",
-                                                    staff.id
+                                                    staff?.id
                                                 )}
                                                 className="edit-button"
                                             >
@@ -74,8 +75,9 @@ const Index = ({ staffs }) => {
                                             </Link>
 
                                             <button
-                                                onClick={() => handleDelete(staff.id)}
+                                                onClick={() => handleDelete(staff?.id)}
                                                 className="delete-button"
+                                                disabled={processing}
                                             >
                                                 <Trash2Icon className="w-4 h-4 inline" />
                                             </button>
