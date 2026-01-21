@@ -1,8 +1,9 @@
-import { useForm } from "@inertiajs/react";
+import { useForm, Head, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
 export default function SalaryCreate({ staff }) {
+    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
         staff_id: "",
         month: "",
@@ -17,6 +18,7 @@ export default function SalaryCreate({ staff }) {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Generate Salary - ${company_name}`} />
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"salaries.index"} />

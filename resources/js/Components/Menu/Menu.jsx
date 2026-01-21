@@ -29,6 +29,56 @@ const Menu = ({ url }) => {
                 </Link>
             )}
 
+            {permissions.includes("view order") && (
+                <SidebarDropdown
+                    title="Order"
+                    icon={<AiOutlineBorderlessTable />}
+                >
+                    <div className="flex flex-col mt-2 space-y-2">
+                        <Link href="/banks" className="menu-sublink">Bank list</Link>
+                        <Link href="/orders/create" className="menu-sublink">Create order</Link>
+                        <Link href="/orders" className="menu-sublink">Order list</Link>
+                    </div>
+                </SidebarDropdown>
+            )}
+
+            {(permissions.includes("view product") ||
+                permissions.includes("create product") ||
+                permissions.includes("view category") ||
+                permissions.includes("view subcategory") ||
+                permissions.includes("view attribute") ||
+                permissions.includes("view attribute value")) && (
+                <SidebarDropdown title="Product" icon={<BsBoxes />}>
+                    <div className="flex flex-col mt-2 space-y-2">
+                        {permissions.includes("view product") && (
+                            <Link href="/products" className="menu-sublink">Product list</Link>
+                        )}
+                        {permissions.includes("create product") && (
+                            <Link href="/products/create" className="menu-sublink">Create product</Link>
+                        )}
+                        {permissions.includes("view category") && (
+                            <Link href="/categories" className="menu-sublink">Category list</Link>
+                        )}
+                        {permissions.includes("view subcategory") && (
+                            <Link href="/sub-categories" className="menu-sublink">
+                                Sub-category list
+                            </Link>
+                        )}
+                        {permissions.includes("view attribute") && (
+                            <Link href="/attributes" className="menu-sublink">Attribute list</Link>
+                        )}
+                        {/* {permissions.includes("view attribute value") && (
+                            <Link href="/attribute-values">
+                                Attribute value list
+                            </Link>
+                        )} */}
+                        {permissions.includes("view purchase") && (
+                            <Link href="/purchases" className="menu-sublink">Purchases</Link>
+                        )}
+                    </div>
+                </SidebarDropdown>
+            )}
+
             {permissions.includes("view customer") && (
                 <Link
                     href="/customers"
@@ -77,42 +127,7 @@ const Menu = ({ url }) => {
                 </Link>
             )} */}
 
-            {(permissions.includes("view product") ||
-                permissions.includes("create product") ||
-                permissions.includes("view category") ||
-                permissions.includes("view subcategory") ||
-                permissions.includes("view attribute") ||
-                permissions.includes("view attribute value")) && (
-                <SidebarDropdown title="Product" icon={<BsBoxes />}>
-                    <div className="flex flex-col mt-2 space-y-2">
-                        {permissions.includes("view product") && (
-                            <Link href="/products" className="menu-sublink">Product list</Link>
-                        )}
-                        {permissions.includes("create product") && (
-                            <Link href="/products/create" className="menu-sublink">Create product</Link>
-                        )}
-                        {permissions.includes("view category") && (
-                            <Link href="/categories" className="menu-sublink">Category list</Link>
-                        )}
-                        {permissions.includes("view subcategory") && (
-                            <Link href="/sub-categories" className="menu-sublink">
-                                Sub-category list
-                            </Link>
-                        )}
-                        {permissions.includes("view attribute") && (
-                            <Link href="/attributes" className="menu-sublink">Attribute list</Link>
-                        )}
-                        {/* {permissions.includes("view attribute value") && (
-                            <Link href="/attribute-values">
-                                Attribute value list
-                            </Link>
-                        )} */}
-                        {permissions.includes("view purchase") && (
-                            <Link href="/purchases" className="menu-sublink">Purchases</Link>
-                        )}
-                    </div>
-                </SidebarDropdown>
-            )}
+            
 
             {(permissions.includes("view role") ||
                 permissions.includes("view user")) && (
@@ -127,19 +142,6 @@ const Menu = ({ url }) => {
                         {permissions.includes("view user") && (
                             <Link href="/users" className="menu-sublink">User list</Link>
                         )}
-                    </div>
-                </SidebarDropdown>
-            )}
-
-            {permissions.includes("view category") && (
-                <SidebarDropdown
-                    title="Order"
-                    icon={<AiOutlineBorderlessTable />}
-                >
-                    <div className="flex flex-col mt-2 space-y-2">
-                        <Link href="/banks" className="menu-sublink">Bank list</Link>
-                        <Link href="/orders/create" className="menu-sublink">Create order</Link>
-                        <Link href="/orders" className="menu-sublink">Order list</Link>
                     </div>
                 </SidebarDropdown>
             )}
