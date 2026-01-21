@@ -35,9 +35,9 @@ const Menu = ({ url }) => {
                     icon={<AiOutlineBorderlessTable />}
                 >
                     <div className="flex flex-col mt-2 space-y-2">
-                        <Link href="/banks" className="menu-sublink">Bank list</Link>
                         <Link href="/orders/create" className="menu-sublink">Create order</Link>
                         <Link href="/orders" className="menu-sublink">Order list</Link>
+                        <Link href="/banks" className="menu-sublink">Bank list</Link>
                     </div>
                 </SidebarDropdown>
             )}

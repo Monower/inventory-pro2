@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm } from "@inertiajs/react";
+import { Link, useForm, Head } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
+import { usePage } from "@inertiajs/react";
 
 const Index = ({ orders }) => {
+    const { company_name } = usePage().props;
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
@@ -38,13 +40,14 @@ const Index = ({ orders }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Orders - ${company_name}`} />
             <section>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Orders</h3>
                     <Link
                         href={route("orders.create")}
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                        className="create-button"
                     >
                         Create
                     </Link>
