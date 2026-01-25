@@ -126,13 +126,20 @@ class ProductController extends Controller
     }
 
     // Remove the specified product from storage
-    public function destroy(Product $product)
+    public function destroy($id)
     {
-        if ($product->product_image) {
-            Storage::disk('public')->delete($product->product_image);
-        }
-        $product->delete();
 
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+        $product = Product::findOrFail($id);
+
+        if($product){
+            if ($product->product_image) {
+                Storage::disk('public')->delete($product->product_image);
+            }
+            $product->delete();
+
+            return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+        } else {
+            return redirect()->route('products.index')->with('error', 'Product not found.');
+        }
     }
 }

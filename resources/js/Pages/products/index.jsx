@@ -1,4 +1,4 @@
-import { Link, usePage, Head } from "@inertiajs/react";
+import { Link, usePage, Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import React, { useState } from "react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
@@ -7,11 +7,19 @@ import { EditIcon, Trash2Icon } from "lucide-react";
 const Index = () => {
     const { products, company_name } = usePage().props;
     const [search, setSearch] = useState("");
+    const { setData, delete: destroy } = useForm({ id: null });
 
     // Filter products locally (can be replaced with server-side search)
     const filteredProducts = products.data.filter((product) =>
         product.name.toLowerCase().includes(search.toLowerCase())
     );
+
+    const handleDelete = (id) => {
+        if (confirm("Are you sure you want to delete this product?")) {
+            setData("id", id);
+            destroy(route("products.destroy", id));
+        }
+    };
 
     return (
         <AuthenticatedLayout>
@@ -35,18 +43,10 @@ const Index = () => {
                                     <th className="custom-th rounded-l-md">
                                         Name
                                     </th>
-                                    <th className="custom-th">
-                                        Selling Price
-                                    </th>
-                                    <th className="custom-th">
-                                        Stock
-                                    </th>
-                                    <th className="custom-th">
-                                        Unit
-                                    </th>
-                                    <th className="custom-th">
-                                        Sub Category
-                                    </th>
+                                    <th className="custom-th">Selling Price</th>
+                                    <th className="custom-th">Stock</th>
+                                    <th className="custom-th">Unit</th>
+                                    <th className="custom-th">Sub Category</th>
                                     <th className="custom-th">
                                         Attribute Value
                                     </th>
@@ -57,7 +57,10 @@ const Index = () => {
                             </thead>
                             <tbody>
                                 {filteredProducts.map((product) => (
-                                    <tr key={product.id} className="custom-body-tr">
+                                    <tr
+                                        key={product.id}
+                                        className="custom-body-tr"
+                                    >
                                         <td className="custom-body-td">
                                             {product.name}
                                         </td>
@@ -87,7 +90,15 @@ const Index = () => {
                                             >
                                                 <EditIcon className="w-4 h-4 inline" />
                                             </Link>
-                                            <Link
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(product.id)
+                                                }
+                                                className="delete-button"
+                                            >
+                                                <Trash2Icon className="w-4 h-4 inline" />
+                                            </button>
+                                            {/* <Link
                                                 href={route(
                                                     "products.destroy",
                                                     product.id
@@ -105,7 +116,7 @@ const Index = () => {
                                                 }}
                                             >
                                                 <Trash2Icon className="w-4 h-4 inline" />
-                                            </Link>
+                                            </Link> */}
                                         </td>
                                     </tr>
                                 ))}

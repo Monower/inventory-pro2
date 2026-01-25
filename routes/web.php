@@ -19,6 +19,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SalaryController;
 use App\Http\Controllers\AdvanceSalaryController;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', function () {
     return to_route('login');
@@ -106,7 +107,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/', [ProductController::class, 'store'])->name('store')->middleware('permission:create product');
         Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit')->middleware('permission:edit product');
         Route::put('/{product}', [ProductController::class, 'update'])->name('update')->middleware('permission:edit product');
-        Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy')->middleware('permission:delete product');
+        Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy')->middleware('permission:delete product');
     });
 
     Route::prefix('attributes')->name('attributes.')->middleware(['auth'])->group(function () {
@@ -189,6 +190,11 @@ Route::middleware(['auth'])->group(function () {
 
 Route::fallback(function () {
     return to_route('login');
+});
+
+Route::get('/clear', function () {
+    Artisan::call('optimize:clear');
+    return 'Cleared!';
 });
 
 
