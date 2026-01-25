@@ -25,6 +25,9 @@ const Create = ({ categories, attributes }) => {
     const [currentDropdownValue, setCurrentDropdownValue] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
 
+    console.log("current dropdown value: ", currentDropdownValue);
+    console.log("selected values: ", selectedValues);
+
     useEffect(() => {
         if (selectedAttribute) {
             const attr = attributes.find((a) => a.id == selectedAttribute);
@@ -99,7 +102,7 @@ const Create = ({ categories, attributes }) => {
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"products.index"} />
-                    <h3 className="heading">Add New Product</h3>
+                    <h3 className="heading">Add new product</h3>
                 </div>
 
                 <div>
@@ -107,8 +110,8 @@ const Create = ({ categories, attributes }) => {
                         <div className="grid  grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
                             {/* Product Name */}
                             <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    Product Name
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">
+                                    Product name
                                 </legend>
                                 <input
                                     type="text"
@@ -118,6 +121,7 @@ const Create = ({ categories, attributes }) => {
                                     }
                                     className="custom-input"
                                     placeholder="Enter product name"
+                                    required
                                 />
                                 {errors.name && (
                                     <p className="text-red-500 text-xs">
@@ -128,8 +132,8 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Selling Price */}
                             <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    Selling Price
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">
+                                    Selling price
                                 </legend>
                                 <input
                                     type="number"
@@ -140,6 +144,7 @@ const Create = ({ categories, attributes }) => {
                                     }
                                     className="custom-input"
                                     placeholder="Enter selling price"
+                                    required
                                 />
                                 {errors.selling_price && (
                                     <p className="text-red-500 text-xs">
@@ -150,8 +155,8 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Buying Price */}
                             <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    Buying Price
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">
+                                    Buying price
                                 </legend>
                                 <input
                                     type="number"
@@ -162,6 +167,7 @@ const Create = ({ categories, attributes }) => {
                                     }
                                     className="custom-input"
                                     placeholder="Enter buying price"
+                                    required
                                 />
                                 {errors.buying_price && (
                                     <p className="text-red-500 text-xs">
@@ -172,7 +178,7 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Stock */}
                             <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">Stock</legend>
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">Stock</legend>
                                 <input
                                     type="number"
                                     value={data.stock}
@@ -181,6 +187,7 @@ const Create = ({ categories, attributes }) => {
                                     }
                                     className="custom-input"
                                     placeholder="Enter stock quantity"
+                                    required
                                 />
                                 {errors.stock && (
                                     <p className="text-red-500 text-xs">
@@ -191,7 +198,7 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Unit */}
                             <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">Unit</legend>
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">Unit</legend>
                                 <input
                                     type="text"
                                     value={data.unit}
@@ -200,6 +207,7 @@ const Create = ({ categories, attributes }) => {
                                     }
                                     className="custom-input"
                                     placeholder="e.g. pcs, kg"
+                                    required
                                 />
                                 {errors.unit && (
                                     <p className="text-red-500 text-xs">
@@ -210,7 +218,7 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Category */}
                             <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">
                                     Category
                                 </legend>
                                 <select
@@ -225,6 +233,7 @@ const Create = ({ categories, attributes }) => {
                                         setData("sub_category_id", firstSub);
                                     }}
                                     className="custom-input"
+                                    required
                                 >
                                     {categories.map((cat) => (
                                         <option key={cat.id} value={cat.id}>
@@ -242,8 +251,8 @@ const Create = ({ categories, attributes }) => {
                             {/* Sub Category */}
                             {data.category && (
                                 <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        Sub Category
+                                    <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        Sub category
                                     </legend>
                                     <select
                                         value={data.sub_category_id}
@@ -254,6 +263,7 @@ const Create = ({ categories, attributes }) => {
                                             )
                                         }
                                         className="custom-input"
+                                        required
                                     >
                                         {categories
                                             .find((c) => c.id == data.category)
@@ -276,7 +286,7 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Description */}
                             <fieldset className="custom-fieldset lg:col-span-3">
-                                <legend className="text-sm mx-2">
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">
                                     Description
                                 </legend>
                                 <textarea
@@ -287,6 +297,7 @@ const Create = ({ categories, attributes }) => {
                                     className="custom-input"
                                     rows="2"
                                     placeholder="Enter product description"
+                                    required
                                 />
                                 {errors.description && (
                                     <p className="text-red-500 text-xs">
@@ -297,14 +308,15 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Product Image */}
                             <fieldset className="custom-fieldset lg:col-span-3">
-                                <legend className="text-sm mx-2">
-                                    Product Image
+                                <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">
+                                    Product image
                                 </legend>
                                 <input
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
                                     className="custom-input"
+                                    required
                                 />
                                 {imagePreview && (
                                     <div className="relative mt-2 max-w-xs">
@@ -332,7 +344,7 @@ const Create = ({ categories, attributes }) => {
 
                             {/* Attribute & Values */}
                             <fieldset className="custom-fieldset lg:col-span-3">
-                                <legend className="text-sm mx-2 font-semibold">
+                                <legend className="text-sm mx-2 font-semibold after:content-['*'] after:ml-0.5 after:text-red-500">
                                     Attribute
                                 </legend>
                                 <select
@@ -341,8 +353,9 @@ const Create = ({ categories, attributes }) => {
                                         setSelectedAttribute(e.target.value)
                                     }
                                     className="custom-input"
+                                    required
                                 >
-                                    <option value="">Select Attribute</option>
+                                    <option value="">Select attribute</option>
                                     {attributes.map((a) => (
                                         <option key={a.id} value={a.id}>
                                             {a.name}
@@ -360,10 +373,11 @@ const Create = ({ categories, attributes }) => {
                                                 );
                                                 handleAddValue(e.target.value);
                                             }}
-                                            className="border border-gray-300 rounded w-full text-sm"
+                                            className="custom-input"
+                                            required={selectedValues.length === 0}
                                         >
                                             <option value="">
-                                                Select Value
+                                                Select value
                                             </option>
                                             {dropdownValues.map((val) => (
                                                 <option
