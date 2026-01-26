@@ -162,14 +162,24 @@ class OrderController extends Controller
     }
 
 
-    public function destroy(Order $order)
+    public function destroy($id)
     {
-        foreach ($order->items as $item) {
-            $item->product->increment('stock', $item->quantity);
-        }
-        $order->items()->delete();
-        $order->delete();
+        if ($id) {
+            $order = Order::findOrFail($id);
 
-        return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+            if ($order) {
+                foreach ($order->items as $item) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+                $order->items()->delete();
+                $order->delete();
+
+                return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
+            } else {
+                return redirect()->route('orders.index')->with('error', 'Order not found.');
+            }
+        } else {
+            return redirect()->route('orders.index')->with('error', 'Order not found.');
+        }
     }
 }

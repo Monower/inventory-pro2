@@ -43,12 +43,12 @@ const Index = () => {
                                     <th className="custom-th rounded-l-md">
                                         Name
                                     </th>
-                                    <th className="custom-th">Selling Price</th>
+                                    <th className="custom-th">Selling price</th>
                                     <th className="custom-th">Stock</th>
                                     <th className="custom-th">Unit</th>
-                                    <th className="custom-th">Sub Category</th>
+                                    <th className="custom-th">Sub category</th>
                                     <th className="custom-th">
-                                        Attribute Value
+                                        Attribute value
                                     </th>
                                     <th className="custom-th rounded-r-md">
                                         Actions
@@ -80,7 +80,7 @@ const Index = () => {
                                             {product.attribute_value?.name ||
                                                 "-"}
                                         </td>
-                                        <td className="custom-body-td text-center flex justify-center items-center gap-2">
+                                        <td className="custom-body-td text-center flex items-center gap-2">
                                             <Link
                                                 href={route(
                                                     "products.edit",

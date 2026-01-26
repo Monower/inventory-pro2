@@ -127,7 +127,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{order}', [OrderController::class, 'show'])->name('show')->middleware('permission:view order'); // <-- added
         Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit')->middleware('permission:edit order');
         Route::put('/{order}', [OrderController::class, 'update'])->name('update')->middleware('permission:edit order');
-        Route::delete('/{order}', [OrderController::class, 'destroy'])->name('destroy')->middleware('permission:delete order');
+        Route::delete('/delete/{id}', [OrderController::class, 'destroy'])->name('destroy')->middleware('permission:delete order');
     });
 
     Route::prefix('settings')->name('settings.')->middleware(['auth'])->group(function () {

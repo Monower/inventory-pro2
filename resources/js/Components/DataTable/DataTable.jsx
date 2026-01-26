@@ -38,7 +38,7 @@ const DataTable = ({ columns = [], data = [], renderCell, actions }) => {
 
                     <tbody>
                         {data.map((row, rowIndex) => (
-                            <tr key={rowIndex} className="custom-body-tr text-center">
+                            <tr key={rowIndex} className="custom-body-tr">
                                 {columns.map((col) => (
                                     <td key={col.key} className="custom-body-td">
                                         {renderCell
@@ -48,7 +48,7 @@ const DataTable = ({ columns = [], data = [], renderCell, actions }) => {
                                 ))}
 
                                 {actions && (
-                                    <td className="custom-body-td text-center">
+                                    <td className="custom-body-td">
                                         {actions(row)}
                                     </td>
                                 )}

@@ -2,9 +2,11 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, Head } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { usePage } from "@inertiajs/react";
+import { Trash2Icon, EyeIcon } from "lucide-react";
+import Alert from "@/Components/Alert/Alert";
 
 const Index = ({ orders }) => {
-    const { company_name } = usePage().props;
+    const { company_name, flash } = usePage().props;
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
@@ -18,12 +20,12 @@ const Index = ({ orders }) => {
     // Define columns for DataTable
     const columns = [
         { key: "si", label: "SI" },
-        { key: "order_number", label: "Order Number" },
-        { key: "customer_name", label: "Customer Name" },
-        { key: "total_amount", label: "Total Amount" },
-        { key: "paid_amount", label: "Paid Amount" },
-        { key: "due_amount", label: "Due Amount" },
-        { key: "payment_status", label: "Payment Status" },
+        { key: "order_number", label: "Order number" },
+        { key: "customer_name", label: "Customer name" },
+        { key: "total_amount", label: "Total amount" },
+        { key: "paid_amount", label: "Paid amount" },
+        { key: "due_amount", label: "Due amount" },
+        { key: "payment_status", label: "Payment status" },
     ];
 
     // Convert raw orders → formatted table rows
@@ -53,6 +55,19 @@ const Index = ({ orders }) => {
                     </Link>
                 </div>
 
+                {/* Success message */}
+                {flash?.success && (
+                    <Alert flash={flash} />
+                )}
+
+                {/* Error message */}
+                {flash?.error && (
+                    <Alert flash={flash} />
+                    // <div className="bg-red-100 rounded-lg py-5 px-6 mb-4 text-base text-red-700" role="alert">
+                    //     {flash.error}
+                    // </div>
+                )}
+
                 {/* Data Table */}
                 <DataTable
                     columns={columns}
@@ -73,17 +88,19 @@ const Index = ({ orders }) => {
                         <div className="flex gap-2">
                             <Link
                                 href={route("orders.show", row.id)}
-                                className="bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
+                                className="edit-button"
+                                title="View"
                             >
-                                View
+                                <EyeIcon className="w-4 h-4 inline" />
                             </Link>
 
                             <button
                                 onClick={() => handleDelete(row.id)}
                                 disabled={processing}
-                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                                className="delete-button"
+                                title="Delete"
                             >
-                                Delete
+                                <Trash2Icon className="w-4 h-4 inline" />
                             </button>
                         </div>
                     )}
@@ -92,5 +109,4 @@ const Index = ({ orders }) => {
         </AuthenticatedLayout>
     );
 };
-
 export default Index;

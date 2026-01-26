@@ -11,7 +11,7 @@ const Create = ({ customers, products, banks }) => {
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
         customer_id: "",
-        payment_method: "",
+        payment_method: "cash",
         bank_id: "",
         mfs: "",
         payment_amount: "",
