@@ -30,7 +30,7 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|exists:products,id',
@@ -41,44 +41,59 @@ class OrderController extends Controller
             'payment_amount' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function () use ($request) {
-            $orderNumber = 'ORD-' . Str::upper(Str::random(6));
+        try {
+            DB::transaction(function () use ($validated) {
+                $orderNumber = 'ORD-' . Str::upper(Str::random(6));
 
-            $totalAmount = 0;
-            foreach ($request->cart as $item) {
-                $product = Product::findOrFail($item['id']);
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Not enough stock for {$product->name}");
+                $totalAmount = 0;
+
+                foreach ($validated['cart'] as $item) {
+                    $product = Product::findOrFail($item['id']);
+
+                    if ($product->stock < $item['quantity']) {
+                        throw new \Exception("Not enough stock for {$product->name}");
+                    }
+
+                    $totalAmount += $product->selling_price * $item['quantity'];
                 }
-                $totalAmount += $product->selling_price * $item['quantity'];
-            }
 
-            $paidAmount = $request->payment_amount;
-            $dueAmount = max($totalAmount - $paidAmount, 0);
-            $paymentStatus = $paidAmount == 0 ? 'pending' : ($dueAmount > 0 ? 'partial' : 'paid');
+                $paidAmount = $validated['payment_amount'];
+                $dueAmount = max($totalAmount - $paidAmount, 0);
+                $paymentStatus = $paidAmount == 0
+                    ? 'pending'
+                    : ($dueAmount > 0 ? 'partial' : 'paid');
 
-            $order = Order::create([
-                'order_number' => $orderNumber,
-                'customer_id' => $request->customer_id,
-                'total_amount' => $totalAmount,
-                'paid_amount' => $paidAmount,
-                'due_amount' => $dueAmount,
-                'payment_status' => $paymentStatus,
-            ]);
-
-            foreach ($request->cart as $item) {
-                $product = Product::findOrFail($item['id']);
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'quantity' => $item['quantity'],
-                    'price' => $product->selling_price,
+                $order = Order::create([
+                    'order_number' => $orderNumber,
+                    'customer_id' => $validated['customer_id'],
+                    'total_amount' => $totalAmount,
+                    'paid_amount' => $paidAmount,
+                    'due_amount' => $dueAmount,
+                    'payment_status' => $paymentStatus,
                 ]);
-                $product->decrement('stock', $item['quantity']);
-            }
-        });
 
-        return redirect()->route('orders.index')->with('success', 'Order created successfully.');
+                foreach ($validated['cart'] as $item) {
+                    $product = Product::findOrFail($item['id']);
+
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'quantity' => $item['quantity'],
+                        'price' => $product->selling_price,
+                    ]);
+
+                    $product->decrement('stock', $item['quantity']);
+                }
+            });
+
+            return redirect()
+                ->route('orders.index')
+                ->with('success', 'Order created successfully.');
+        } catch (\Throwable $e) {
+            return back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function edit(Order $order)
@@ -152,13 +167,20 @@ class OrderController extends Controller
     /**
      * Display a single order.
      */
-    public function show(Order $order)
+    public function show($id)
     {
-        // Load related customer and order items with product details
-        $order->load('customer', 'items.product');
+        if($id){
+            $order = Order::findOrFail($id);
 
-        // Pass to Inertia view
-        return Inertia::render('orders/show', compact('order'));
+            if ($order) {
+                $order->load('customer', 'items.product');
+                return Inertia::render('orders/show', compact('order'));
+            } else {
+                return redirect()->route('orders.index')->with('error', 'Order not found.');
+            }
+        } else {
+            return redirect()->route('orders.index')->with('error', 'Order not found.');
+        }
     }
 
 
