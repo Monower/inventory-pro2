@@ -55,29 +55,17 @@ const Index = ({ orders }) => {
                     </Link>
                 </div>
 
-                {/* Success message */}
-                {flash?.success && (
-                    <Alert flash={flash} />
-                )}
-
-                {/* Error message */}
-                {flash?.error && (
-                    <Alert flash={flash} />
-                    // <div className="bg-red-100 rounded-lg py-5 px-6 mb-4 text-base text-red-700" role="alert">
-                    //     {flash.error}
-                    // </div>
-                )}
+                <Alert flash={flash} />
 
                 {/* Data Table */}
                 <DataTable
                     columns={columns}
                     data={formattedData}
                     renderCell={(col, row) => {
-                        // Highlight payment status (optional)
                         if (col.key === "payment_status") {
                             return (
-                                <span className="capitalize">
-                                    {row.payment_status}
+                                <span className={`p-1 rounded-md text-white ${row.payment_status === "paid" ? "bg-green-600" : row.payment_status === "pending" ? "bg-red-600" : "bg-yellow-600"}`}>
+                                    {row?.payment_status == "pending" ? "unpaid" : row?.payment_status}
                                 </span>
                             );
                         }

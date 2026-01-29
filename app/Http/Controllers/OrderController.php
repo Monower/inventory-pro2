@@ -39,6 +39,15 @@ class OrderController extends Controller
             'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
             'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
             'payment_amount' => 'required|numeric|min:0',
+        ],[
+            'customer_id.required' => 'Customer is required',
+            'cart.*.id.required' => 'Product ID is required',
+            'cart.*.quantity.required' => 'Quantity is required',
+            'cart.*.quantity.integer' => 'Quantity must be an integer',
+            'cart.*.quantity.min' => 'Quantity must be at least 1',
+            'payment_amount.required' => 'Payment amount is required',
+            'payment_amount.numeric' => 'Payment amount must be a number',
+            'payment_amount.min' => 'Payment amount must be at least 0',
         ]);
 
         try {

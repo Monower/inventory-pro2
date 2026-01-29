@@ -3,10 +3,13 @@ import BackButton from "@/Components/BackButton/BackButton";
 import { useState, useEffect } from "react";
 import { useForm, Head } from "@inertiajs/react";
 import { usePage } from "@inertiajs/react";
+import Alert from "@/Components/Alert/Alert";
 
 const Create = ({ customers, products, banks }) => {
-    const { company_name } = usePage().props;
+    const { company_name, flash } = usePage().props;
     const [cart, setCart] = useState([]);
+
+    console.log("flash: ", flash);
 
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
@@ -17,6 +20,10 @@ const Create = ({ customers, products, banks }) => {
         payment_amount: "",
         cart: [],
     });
+
+    const allErrors = Object.values(errors);
+
+    console.log("errors: ", allErrors);
 
     // Add product to cart
     const addToCart = (product) => {
@@ -74,6 +81,10 @@ const Create = ({ customers, products, banks }) => {
         post("/orders");
     };
 
+    useEffect(()=>{
+
+    },[]);
+
     return (
         <AuthenticatedLayout>
             <Head title={`Create Order - ${company_name}`} />
@@ -88,19 +99,33 @@ const Create = ({ customers, products, banks }) => {
                     </div>
                 </div>
 
+                {allErrors.length > 0 && (
+                    <Alert
+                        flash={{
+                            error: (
+                                <ul className="list-disc pl-5">
+                                    {allErrors.map((err, idx) => (
+                                        <li key={idx}>{err}</li>
+                                    ))}
+                                </ul>
+                            ),
+                        }}
+                    />
+                )}
+
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                     {/* Products & Cart */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Products */}
                         <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">
-                                Products List
-                            </h3>
+                            <h3 className="heading">Products List</h3>
                             <div className="overflow-x-auto">
                                 <table className="custom-table">
                                     <thead className="custom-thead">
                                         <tr>
-                                            <th className="custom-th rounded-l-md">Name</th>
+                                            <th className="custom-th rounded-l-md">
+                                                Name
+                                            </th>
                                             <th className="custom-th">
                                                 Buying Price
                                             </th>
@@ -162,9 +187,7 @@ const Create = ({ customers, products, banks }) => {
 
                         {/* Cart */}
                         <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">
-                                Cart List
-                            </h3>
+                            <h3 className="heading">Cart List</h3>
                             {cart.length === 0 ? (
                                 <p className="text-gray-500">
                                     No items in cart
