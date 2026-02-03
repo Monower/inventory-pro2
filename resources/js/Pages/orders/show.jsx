@@ -22,7 +22,8 @@ const Show = ({ order }) => {
                     <p><strong>Order ID:</strong> {order?.order_number || "N/A"}</p>
                     <p><strong>Created at:</strong> {dateTimeFormater(order?.created_at) || "N/A"}</p>
                     <p><strong>Total amount:</strong> {order?.total_amount || "00.00"}</p>
-                    <p><strong>Pending amount:</strong> {order?.pending_amount || "00.00"}</p>
+                    <p><strong>Paid amount:</strong> {order?.paid_amount || "00.00"}</p>
+                    <p><strong>Due amount:</strong> {order?.due_amount || "00.00"}</p>
                     <p><strong>Payment status:</strong> 
                         <span className={`ml-2 px-2 py-1 rounded text-white ${order?.payment_status === 'paid' ? 'bg-green-600' : order?.payment_status === 'partial' ? 'bg-yellow-500' : 'bg-red-500'}`}>
                             {
