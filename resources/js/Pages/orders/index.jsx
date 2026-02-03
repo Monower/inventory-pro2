@@ -4,6 +4,7 @@ import DataTable from "@/Components/DataTable/DataTable";
 import { usePage } from "@inertiajs/react";
 import { Trash2Icon, EyeIcon } from "lucide-react";
 import Alert from "@/Components/Alert/Alert";
+import { dateTimeFormater } from "@/util/DateFormater";
 
 const Index = ({ orders }) => {
     const { company_name, flash } = usePage().props;
@@ -21,11 +22,13 @@ const Index = ({ orders }) => {
     const columns = [
         { key: "si", label: "SI" },
         { key: "order_number", label: "Order number" },
-        { key: "customer_name", label: "Customer name" },
+        // { key: "customer_name", label: "Customer name" },
         { key: "total_amount", label: "Total amount" },
-        { key: "paid_amount", label: "Paid amount" },
-        { key: "due_amount", label: "Due amount" },
+        // { key: "paid_amount", label: "Paid amount" },
+        // { key: "due_amount", label: "Due amount" },
+        
         { key: "payment_status", label: "Payment status" },
+        { key: "created_at", label: "Created at" },
     ];
 
     // Convert raw orders → formatted table rows
@@ -33,11 +36,13 @@ const Index = ({ orders }) => {
         si: i + 1,
         id: o.id,
         order_number: o.order_number,
-        customer_name: o.customer?.name || "-",
+        // customer_name: o.customer?.name || "-",
         total_amount: o.total_amount,
-        paid_amount: o.paid_amount,
-        due_amount: o.due_amount,
+        // paid_amount: o.paid_amount,
+        // due_amount: o.due_amount,
+        
         payment_status: o.payment_status,
+        created_at: dateTimeFormater(o.created_at),
     }));
 
     return (
@@ -64,8 +69,21 @@ const Index = ({ orders }) => {
                     renderCell={(col, row) => {
                         if (col.key === "payment_status") {
                             return (
-                                <span className={`p-1 rounded-md text-white ${row.payment_status === "paid" ? "bg-green-600" : row.payment_status === "pending" ? "bg-red-600" : "bg-yellow-600"}`}>
-                                    {row?.payment_status == "pending" ? "unpaid" : row?.payment_status}
+                                <span
+                                    className={`p-1 rounded-md text-white ${
+                                        row.payment_status === "paid"
+                                            ? "bg-green-600"
+                                            : row.payment_status === "pending"
+                                            ? "bg-red-600"
+                                            : "bg-yellow-600"
+                                    }`}
+                                >
+                                    {row?.payment_status === "pending"
+                                        ? "Unpaid"
+                                        : row?.payment_status
+                                              .charAt(0)
+                                              .toUpperCase() +
+                                          row?.payment_status.slice(1)}
                                 </span>
                             );
                         }

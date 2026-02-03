@@ -9,8 +9,6 @@ const Create = ({ customers, products, banks }) => {
     const { company_name, flash } = usePage().props;
     const [cart, setCart] = useState([]);
 
-    console.log("flash: ", flash);
-
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
         customer_id: "",
@@ -22,8 +20,6 @@ const Create = ({ customers, products, banks }) => {
     });
 
     const allErrors = Object.values(errors);
-
-    console.log("errors: ", allErrors);
 
     // Add product to cart
     const addToCart = (product) => {
@@ -81,18 +77,16 @@ const Create = ({ customers, products, banks }) => {
         post("/orders");
     };
 
-    useEffect(()=>{
-
-    },[]);
+    useEffect(() => {}, []);
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Create Order - ${company_name}`} />
+            <Head title={`Create order - ${company_name}`} />
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"orders.index"} />
                     <div>
-                        <h3 className="heading">Create New Order</h3>
+                        <h3 className="heading">Create new order</h3>
                         <p className="text-gray-500">
                             Manage products, customers and checkout below.
                         </p>
@@ -118,7 +112,7 @@ const Create = ({ customers, products, banks }) => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Products */}
                         <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">Products List</h3>
+                            <h3 className="heading">Products list</h3>
                             <div className="overflow-x-auto">
                                 <table className="custom-table">
                                     <thead className="custom-thead">
@@ -187,7 +181,7 @@ const Create = ({ customers, products, banks }) => {
 
                         {/* Cart */}
                         <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">Cart List</h3>
+                            <h3 className="heading">Cart list</h3>
                             {cart.length === 0 ? (
                                 <p className="text-gray-500">
                                     No items in cart
@@ -201,7 +195,7 @@ const Create = ({ customers, products, banks }) => {
                                                     Name
                                                 </th>
                                                 <th className="custom-th">
-                                                    Selling Price
+                                                    Selling price
                                                 </th>
                                                 <th className="custom-th">
                                                     Qty
@@ -276,14 +270,14 @@ const Create = ({ customers, products, banks }) => {
                             {/* Summary */}
                             <div className="grid grid-cols-2 gap-4 bg-background* border border-ring shadow-md py-50 p-4 rounded-lg">
                                 <div>
-                                    <p className="text-primary">Total Price</p>
+                                    <p className="text-primary">Total price</p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {totalPrice}
                                     </h3>
                                 </div>
                                 <div>
                                     <p className="text-primary">
-                                        Total Quantity
+                                        Total quantity
                                     </p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {totalQuantity}
@@ -294,7 +288,7 @@ const Create = ({ customers, products, banks }) => {
                             {/* Customer */}
                             <div>
                                 <label className="block text-sm font-medium text-primary mb-1">
-                                    Select Customer
+                                    Select customer
                                 </label>
                                 <select
                                     value={data.customer_id}
@@ -323,7 +317,7 @@ const Create = ({ customers, products, banks }) => {
                             {/* Payment Method */}
                             <div>
                                 <label className="block text-sm font-medium text-primary mb-2">
-                                    Payment Method
+                                    Payment method
                                 </label>
                                 <div className="flex flex-wrap gap-6">
                                     {["cash", "bank", "mobile"].map(
@@ -369,7 +363,7 @@ const Create = ({ customers, products, banks }) => {
                             {data?.payment_method === "bank" && (
                                 <div>
                                     <label className="block text-sm font-medium text-primary mb-1">
-                                        Select Bank
+                                        Select bank
                                     </label>
                                     <select
                                         value={data?.bank_id}
@@ -379,7 +373,7 @@ const Create = ({ customers, products, banks }) => {
                                         className="w-full border rounded-md px-3 py-2"
                                     >
                                         <option value="">
-                                            -- Select Bank --
+                                            -- Select bank --
                                         </option>
                                         {banks?.map((bank) => (
                                             <option
@@ -402,7 +396,7 @@ const Create = ({ customers, products, banks }) => {
                             {data.payment_method === "mobile" && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Select Mobile Financial Service
+                                        Select mobile financial service
                                     </label>
                                     <select
                                         value={data.mfs}
@@ -429,7 +423,7 @@ const Create = ({ customers, products, banks }) => {
                             {/* Payment Amount */}
                             <div>
                                 <label className="block text-sm font-medium text-primary mb-1">
-                                    Payment Amount
+                                    Payment amount
                                 </label>
                                 <input
                                     type="number"
@@ -459,7 +453,7 @@ const Create = ({ customers, products, banks }) => {
                                 >
                                     {processing
                                         ? "Creating..."
-                                        : "Create Order"}
+                                        : "Create order"}
                                 </button>
                             </div>
                         </div>
