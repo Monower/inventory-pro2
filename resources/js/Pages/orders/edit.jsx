@@ -5,11 +5,14 @@ import { useState, useEffect } from "react";
 import { useForm, Head, usePage } from "@inertiajs/react";
 
 const Edit = ({ order, customers, products, banks }) => {
-    console.log("order: ", order);
     const { company_name, flash } = usePage().props;
+
+    /* -----------------------------
+        Form
+    ------------------------------ */
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id,
-        payment_amount: order.paid_amount,
+        payment_amount: Number(order.paid_amount) || 0,
         payment_method: order.payment_method || "cash",
         bank_id: order.bank_id || "",
         mfs: order.mfs || "",
@@ -18,6 +21,9 @@ const Edit = ({ order, customers, products, banks }) => {
 
     const allErrors = Object.values(errors);
 
+    /* -----------------------------
+        Cart State
+    ------------------------------ */
     const [cart, setCart] = useState(
         order.items.map((i) => ({
             id: i.product.id,
@@ -28,17 +34,30 @@ const Edit = ({ order, customers, products, banks }) => {
     );
 
     /* -----------------------------
-        Cart → Form Sync (IMPORTANT)
+        Sync Cart → Form (FIXED)
     ------------------------------ */
     useEffect(() => {
         setData(
             "cart",
             cart.map((item) => ({
-                id: item.id,
+                product_id: item.id, // ✅ backend expects this
                 quantity: item.quantity,
             }))
         );
     }, [cart]);
+
+    /* -----------------------------
+        Reset Conditional Fields
+    ------------------------------ */
+    useEffect(() => {
+        if (data.payment_method !== "bank") {
+            setData("bank_id", "");
+        }
+
+        if (data.payment_method !== "mobile") {
+            setData("mfs", "");
+        }
+    }, [data.payment_method]);
 
     /* -----------------------------
         Cart Actions
@@ -48,7 +67,9 @@ const Edit = ({ order, customers, products, banks }) => {
             const existing = prev.find((i) => i.id === product.id);
             if (existing) {
                 return prev.map((i) =>
-                    i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+                    i.id === product.id
+                        ? { ...i, quantity: i.quantity + 1 }
+                        : i
                 );
             }
 
@@ -65,9 +86,11 @@ const Edit = ({ order, customers, products, banks }) => {
     };
 
     const updateQuantity = (id, qty) => {
-        if (qty < 1) return;
+        const quantity = Math.max(Number(qty), 1);
         setCart((prev) =>
-            prev.map((i) => (i.id === id ? { ...i, quantity: Number(qty) } : i))
+            prev.map((i) =>
+                i.id === id ? { ...i, quantity } : i
+            )
         );
     };
 
@@ -78,23 +101,38 @@ const Edit = ({ order, customers, products, banks }) => {
     /* -----------------------------
         Totals
     ------------------------------ */
-    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalQuantity = cart.reduce((sum, i) => sum + i.quantity, 0);
     const totalPrice = cart.reduce(
         (sum, i) => sum + i.selling_price * i.quantity,
         0
     );
 
+    const paidAmount = Number(data.payment_amount) || 0;
+    const dueAmount = Math.max(totalPrice - paidAmount, 0);
+
     /* -----------------------------
-        Submit
+        Submit (BLOCK OVERPAY)
     ------------------------------ */
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        if (cart.length === 0) {
+            alert("Cart cannot be empty.");
+            return;
+        }
+
+        if (paidAmount > totalPrice) {
+            alert("Payment amount cannot exceed total amount.");
+            return;
+        }
+
         put(route("orders.update", order.id));
     };
 
     return (
         <AuthenticatedLayout>
             <Head title={`Edit order - ${company_name}`} />
+
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"orders.index"} />
@@ -108,6 +146,7 @@ const Edit = ({ order, customers, products, banks }) => {
                     </div>
                 </div>
 
+                {/* Errors */}
                 {allErrors.length > 0 && (
                     <Alert
                         flash={{
@@ -122,142 +161,122 @@ const Edit = ({ order, customers, products, banks }) => {
                     />
                 )}
 
+                {/* Flash */}
+                {(flash?.success || flash?.error) && (
+                    <Alert flash={flash} />
+                )}
+
                 {/* Products & Cart */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     {/* Products */}
                     <div className="bg-background border border-ring shadow-md rounded-lg p-4">
                         <h3 className="heading">Products list</h3>
-                        <div className="overflow-x-auto">
-                            <table className="custom-table">
-                                <thead className="custom-thead">
-                                    <tr>
-                                        <th className="custom-th rounded-l-md">
-                                            Name
-                                        </th>
-                                        <th className="custom-th">
-                                            Buying price
-                                        </th>
-                                        <th className="custom-th">
-                                            Selling price
-                                        </th>
-                                        <th className="custom-th">Stock</th>
-                                        <th className="custom-th rounded-r-md">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {products
-                                        .filter(
-                                            (product) =>
-                                                !cart.find(
-                                                    (item) =>
-                                                        item.id === product.id
-                                                )
-                                        )
-                                        .map((product) => (
-                                            <tr
-                                                key={product.id}
-                                                className="custom-body-tr"
-                                            >
-                                                <td className="custom-body-td">
-                                                    {product.name}
-                                                </td>
-                                                <td className="custom-body-td">
-                                                    {product.selling_price}
-                                                </td>
-                                                <td className="custom-body-td">
-                                                    {product.stock}
-                                                </td>
-                                                <td className="custom-body-td">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            addToCart(product)
-                                                        }
-                                                        className="create-button"
-                                                    >
-                                                        Add to cart
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <table className="custom-table">
+                            <thead className="custom-thead">
+                                <tr>
+                                    <th className="custom-th">Name</th>
+                                    <th className="custom-th">Price</th>
+                                    <th className="custom-th">Stock</th>
+                                    <th className="custom-th">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {products
+                                    .filter(
+                                        (p) =>
+                                            !cart.find(
+                                                (c) => c.id === p.id
+                                            )
+                                    )
+                                    .map((product) => (
+                                        <tr key={product.id}>
+                                            <td className="custom-body-td">
+                                                {product.name}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {product.selling_price}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {product.stock}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        addToCart(product)
+                                                    }
+                                                    className="create-button"
+                                                >
+                                                    Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                            </tbody>
+                        </table>
                     </div>
 
                     {/* Cart */}
                     <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                        <h3 className="heading">Cart list</h3>
+                        <h3 className="heading">Cart</h3>
+
                         {cart.length === 0 ? (
-                            <p className="text-gray-500">No items in cart</p>
+                            <p className="text-gray-500">No items</p>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="custom-table">
-                                    <thead className="custom-thead">
-                                        <tr>
-                                            <th className="custom-th rounded-l-md">
-                                                Name
-                                            </th>
-                                            <th className="custom-th">
-                                                Selling price
-                                            </th>
-                                            <th className="custom-th">Qty</th>
-                                            <th className="custom-th">Total</th>
-                                            <th className="custom-th rounded-r-md">
-                                                Actions
-                                            </th>
+                            <table className="custom-table">
+                                <thead className="custom-thead">
+                                    <tr>
+                                        <th className="custom-th">Name</th>
+                                        <th className="custom-th">Price</th>
+                                        <th className="custom-th">Qty</th>
+                                        <th className="custom-th">Total</th>
+                                        <th className="custom-th">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cart.map((item) => (
+                                        <tr key={item.id}>
+                                            <td className="custom-body-td">
+                                                {item.name}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {item.selling_price}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={item.quantity}
+                                                    onChange={(e) =>
+                                                        updateQuantity(
+                                                            item.id,
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="w-16 custom-input"
+                                                />
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {item.selling_price *
+                                                    item.quantity}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        removeFromCart(
+                                                            item.id
+                                                        )
+                                                    }
+                                                    className="bg-destructive text-white px-3 py-1 rounded"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {cart.map((item) => (
-                                            <tr
-                                                key={item.id}
-                                                className="custom-body-tr"
-                                            >
-                                                <td className="custom-body-td">
-                                                    {item.name}
-                                                </td>
-                                                <td className="custom-body-td">
-                                                    {item.selling_price}
-                                                </td>
-                                                <td className="custom-body-td">
-                                                    <input
-                                                        type="number"
-                                                        value={item.quantity}
-                                                        min="1"
-                                                        onChange={(e) =>
-                                                            updateQuantity(
-                                                                item.id,
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-16 rounded-md custom-input border border-ring"
-                                                    />
-                                                </td>
-                                                <td className="custom-body-td">
-                                                    {item.selling_price *
-                                                        item.quantity}
-                                                </td>
-                                                <td className="custom-body-td">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            removeFromCart(
-                                                                item.id
-                                                            )
-                                                        }
-                                                        className="bg-destructive text-white px-3 py-1 rounded-md hover:bg-red-700 ease-in-out duration-300"
-                                                    >
-                                                        Remove from cart
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    ))}
+                                </tbody>
+                            </table>
                         )}
                     </div>
                 </div>
@@ -267,92 +286,65 @@ const Edit = ({ order, customers, products, banks }) => {
                     onSubmit={handleSubmit}
                     className="bg-background border border-ring shadow-md rounded-lg p-4"
                 >
-                    {/* Summary */}
-                    <div className="grid grid-cols-2 gap-4 bg-background* border border-ring shadow-md py-50 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
                         <div>
-                            <p className="text-primary">Total amount</p>
-                            <h3 className="text-xl font-bold text-primary">
-                                {totalPrice}
-                            </h3>
+                            <p>Total</p>
+                            <strong>{totalPrice}</strong>
                         </div>
                         <div>
-                            <p className="text-primary">Paid amount</p>
-                            <h3 className="text-xl font-bold text-primary">
-                                {order?.paid_amount || 0}
-                            </h3>
+                            <p>Quantity</p>
+                            <strong>{totalQuantity}</strong>
                         </div>
                         <div>
-                            <p className="text-primary">Due amount</p>
-                            <h3 className="text-xl font-bold text-primary">
-                                {order?.due_amount || 0}
-                            </h3>
+                            <p>Paid</p>
+                            <strong>{paidAmount}</strong>
                         </div>
                         <div>
-                            <p className="text-primary">Total quantity</p>
-                            <h3 className="text-xl font-bold text-primary">
-                                {totalQuantity}
-                            </h3>
+                            <p>Due</p>
+                            <strong>{dueAmount}</strong>
                         </div>
                     </div>
 
                     {/* Customer */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-primary mb-1">
-                            Customer
-                        </label>
-                        <select
-                            value={data.customer_id}
-                            onChange={(e) =>
-                                setData("customer_id", e.target.value)
-                            }
-                            className="custom-input"
-                        >
-                            <option value="">-- Select --</option>
-                            {customers.map((customer) => (
-                                <option key={customer.id} value={customer.id}>
-                                    {customer.name}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.customer_id && (
-                            <p className="text-red-500 text-sm">
-                                {errors.customer_id}
-                            </p>
-                        )}
+                    <select
+                        value={data.customer_id}
+                        onChange={(e) =>
+                            setData("customer_id", e.target.value)
+                        }
+                        className="custom-input mb-4"
+                    >
+                        <option value="">-- Select Customer --</option>
+                        {customers.map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Payment */}
+                    <div className="flex gap-4 mb-4">
+                        {["cash", "bank", "mobile"].map((m) => (
+                            <label key={m} className="flex gap-2">
+                                <input
+                                    type="radio"
+                                    value={m}
+                                    checked={data.payment_method === m}
+                                    onChange={(e) =>
+                                        setData("payment_method", e.target.value)
+                                    }
+                                />
+                                {m}
+                            </label>
+                        ))}
                     </div>
 
-                    {/* Payment Method */}
-                    <div className="mb-4">
-                        <label className="block mb-1 font-medium">
-                            Payment method
-                        </label>
-                        <div className="flex gap-4">
-                            {["cash", "bank", "mobile"].map((method) => (
-                                <label key={method} className="flex gap-2">
-                                    <input
-                                        type="radio"
-                                        value={method}
-                                        checked={data.payment_method === method}
-                                        onChange={(e) =>
-                                            setData(
-                                                "payment_method",
-                                                e.target.value
-                                            )
-                                        }
-                                    />
-                                    {method.charAt(0).toUpperCase() +
-                                        method.slice(1)}
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Conditional fields */}
                     {data.payment_method === "bank" && (
                         <select
                             value={data.bank_id}
-                            onChange={(e) => setData("bank_id", e.target.value)}
-                            className="custom-input"
+                            onChange={(e) =>
+                                setData("bank_id", e.target.value)
+                            }
+                            className="custom-input mb-4"
                         >
                             <option value="">-- Select Bank --</option>
                             {banks.map((b) => (
@@ -366,8 +358,10 @@ const Edit = ({ order, customers, products, banks }) => {
                     {data.payment_method === "mobile" && (
                         <select
                             value={data.mfs}
-                            onChange={(e) => setData("mfs", e.target.value)}
-                            className="custom-input"
+                            onChange={(e) =>
+                                setData("mfs", e.target.value)
+                            }
+                            className="custom-input mb-4"
                         >
                             <option value="">-- Select MFS --</option>
                             <option value="bkash">Bkash</option>
@@ -376,29 +370,27 @@ const Edit = ({ order, customers, products, banks }) => {
                         </select>
                     )}
 
-                    {/* Payment Amount */}
-                    <div className="mb-4">
-                        <label className="block mb-1 font-medium">
-                            Payment amount
-                        </label>
-                        <input
-                            type="number"
-                            value={data.payment_amount}
-                            onChange={(e) =>
-                                setData("payment_amount", e.target.value)
-                            }
-                            className="custom-input"
-                        />
-                    </div>
-
-                    <p className="font-semibold mb-4">
-                        Total price: {totalPrice}
-                    </p>
+                    {/* PAYMENT INPUT (CLAMPED) */}
+                    <input
+                        type="number"
+                        min="0"
+                        max={totalPrice}
+                        value={data.payment_amount}
+                        onChange={(e) => {
+                            const value = Number(e.target.value);
+                            setData(
+                                "payment_amount",
+                                value > totalPrice ? totalPrice : value
+                            );
+                        }}
+                        className="custom-input mb-4"
+                        placeholder="Payment amount"
+                    />
 
                     <button
                         type="submit"
                         disabled={processing}
-                        className="bg-green-600 text-white w-full md:w-auto px-6 py-2 rounded-lg font-semibold hover:bg-green-700"
+                        className="bg-green-600 text-white px-6 py-2 rounded-lg"
                     >
                         {processing ? "Updating..." : "Update order"}
                     </button>

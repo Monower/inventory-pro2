@@ -39,7 +39,7 @@ class OrderController extends Controller
             'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
             'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
             'payment_amount' => 'required|numeric|min:0',
-        ],[
+        ], [
             'customer_id.required' => 'Customer is required',
             'cart.*.id.required' => 'Product ID is required',
             'cart.*.quantity.required' => 'Quantity is required',
@@ -122,63 +122,110 @@ class OrderController extends Controller
             'cart' => 'required|array|min:1',
             'cart.*.product_id' => 'required|exists:products,id',
             'cart.*.quantity' => 'required|integer|min:1',
+
             'payment_method' => 'required|in:cash,bank,mobile',
             'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
             'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
             'payment_amount' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function () use ($request, $order) {
-            // Restore previous stock
-            foreach ($order->items as $item) {
-                $item->product->increment('stock', $item->quantity);
-            }
+        try {
+            DB::transaction(function () use ($request, $order) {
 
-            $totalAmount = 0;
-            foreach ($request->cart as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Not enough stock for {$product->name}");
+                /* ----------------------------
+               Restore previous stock
+            ----------------------------- */
+                foreach ($order->items as $oldItem) {
+                    $oldItem->product->increment('stock', $oldItem->quantity);
                 }
-                $totalAmount += $product->selling_price * $item['quantity'];
-            }
+                $order->items()->delete();
 
-            $paidAmount = $request->payment_amount;
-            $dueAmount = max($totalAmount - $paidAmount, 0);
-            $paymentStatus = $paidAmount == 0 ? 'pending' : ($dueAmount > 0 ? 'partial' : 'paid');
+                /* ----------------------------
+               Calculate total
+            ----------------------------- */
+                $totalAmount = 0;
+                $products = Product::whereIn(
+                    'id',
+                    collect($request->cart)->pluck('product_id')
+                )->get()->keyBy('id');
 
-            // Update order
-            $order->update([
-                'customer_id' => $request->customer_id,
-                'total_amount' => $totalAmount,
-                'paid_amount' => $paidAmount,
-                'due_amount' => $dueAmount,
-                'payment_status' => $paymentStatus,
-            ]);
+                foreach ($request->cart as $item) {
+                    $product = $products[$item['product_id']];
 
-            // Remove previous items and add new ones
-            $order->items()->delete();
-            foreach ($request->cart as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'quantity' => $item['quantity'],
-                    'price' => $product->selling_price,
+                    if ($product->stock < $item['quantity']) {
+                        throw new \Exception("Not enough stock for {$product->name}");
+                    }
+
+                    $totalAmount += $product->selling_price * $item['quantity'];
+                }
+
+                /* ----------------------------
+               Prevent overpayment
+            ----------------------------- */
+                if ($request->payment_amount > $totalAmount) {
+                    throw new \Exception("Payment amount cannot exceed total amount.");
+                }
+
+                $paidAmount = $request->payment_amount;
+                $dueAmount = $totalAmount - $paidAmount;
+
+                $paymentStatus = $paidAmount == 0
+                    ? 'pending'
+                    : ($dueAmount > 0 ? 'partial' : 'paid');
+
+                /* ----------------------------
+               Update order
+            ----------------------------- */
+                $order->update([
+                    'customer_id' => $request->customer_id,
+                    'total_amount' => $totalAmount,
+                    'paid_amount' => $paidAmount,
+                    'due_amount' => $dueAmount,
+                    'payment_status' => $paymentStatus,
+                    'payment_method' => $request->payment_method,
+                    'bank_id' => $request->payment_method === 'bank'
+                        ? $request->bank_id
+                        : null,
+                    'mfs' => $request->payment_method === 'mobile'
+                        ? $request->mfs
+                        : null,
                 ]);
-                $product->decrement('stock', $item['quantity']);
-            }
-        });
 
-        return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
+                /* ----------------------------
+               Create new items & deduct stock
+            ----------------------------- */
+                foreach ($request->cart as $item) {
+                    $product = $products[$item['product_id']];
+
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'quantity' => $item['quantity'],
+                        'price' => $product->selling_price,
+                    ]);
+
+                    $product->decrement('stock', $item['quantity']);
+                }
+            });
+
+            return redirect()
+                ->route('orders.index')
+                ->with('success', 'Order updated successfully.');
+        } catch (\Throwable $e) {
+            return back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
+
+
 
     /**
      * Display a single order.
      */
     public function show($id)
     {
-        if($id){
+        if ($id) {
             $order = Order::findOrFail($id);
 
             if ($order) {
