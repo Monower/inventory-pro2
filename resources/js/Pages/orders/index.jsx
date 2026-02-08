@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, Head } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { usePage } from "@inertiajs/react";
-import { Trash2Icon, EyeIcon } from "lucide-react";
+import { Trash2Icon, EyeIcon, EditIcon } from "lucide-react";
 import Alert from "@/Components/Alert/Alert";
 import { dateTimeFormater } from "@/util/DateFormater";
 
@@ -94,10 +94,18 @@ const Index = ({ orders }) => {
                         <div className="flex gap-2">
                             <Link
                                 href={route("orders.show", row.id)}
-                                className="edit-button"
+                                className="show-button"
                                 title="View"
                             >
                                 <EyeIcon className="w-4 h-4 inline" />
+                            </Link>
+
+                            <Link
+                                href={route("orders.edit", row.id)}
+                                className="edit-button"
+                                title="Edit"
+                            >
+                                <EditIcon className="w-4 h-4 inline" />
                             </Link>
 
                             <button

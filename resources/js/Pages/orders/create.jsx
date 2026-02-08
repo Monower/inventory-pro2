@@ -77,8 +77,6 @@ const Create = ({ customers, products, banks }) => {
         post("/orders");
     };
 
-    useEffect(() => {}, []);
-
     return (
         <AuthenticatedLayout>
             <Head title={`Create order - ${company_name}`} />
@@ -121,10 +119,10 @@ const Create = ({ customers, products, banks }) => {
                                                 Name
                                             </th>
                                             <th className="custom-th">
-                                                Buying Price
+                                                Buying price
                                             </th>
                                             <th className="custom-th">
-                                                Selling Price
+                                                Selling price
                                             </th>
                                             <th className="custom-th">Stock</th>
                                             <th className="custom-th rounded-r-md">
@@ -370,7 +368,7 @@ const Create = ({ customers, products, banks }) => {
                                         onChange={(e) =>
                                             setData("bank_id", e.target.value)
                                         }
-                                        className="w-full border rounded-md px-3 py-2"
+                                        className="custom-input"
                                     >
                                         <option value="">
                                             -- Select bank --
@@ -403,7 +401,7 @@ const Create = ({ customers, products, banks }) => {
                                         onChange={(e) =>
                                             setData("mfs", e.target.value)
                                         }
-                                        className="w-full border rounded-md px-3 py-2"
+                                        className="custom-input"
                                     >
                                         <option value="">
                                             -- Select MFS --
