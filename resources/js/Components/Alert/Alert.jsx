@@ -2,15 +2,18 @@ import { useState, useEffect } from "react";
 import { Info, X } from 'lucide-react';
 
 const Alert = ({ flash }) => {
+    console.log("inside flash", flash);
     const [visible, setVisible] = useState(true);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setVisible(false);
-        }, 3000); // auto disappear after 4 seconds
+    console.log("visible, flash?.success, flash?.error", visible, flash?.success, flash?.error);
 
-        return () => clearTimeout(timer); // cleanup on unmount
-    }, []);
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         setVisible(false);
+    //     }, 3000); // auto disappear after 4 seconds
+
+    //     return () => clearTimeout(timer); // cleanup on unmount
+    // }, []);
 
     if (!visible || (!flash?.success && !flash?.error)) return null;
 

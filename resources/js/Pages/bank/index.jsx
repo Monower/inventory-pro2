@@ -1,13 +1,16 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, Head, usePage } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
+import Alert from "@/Components/Alert/Alert";
+import { Trash2Icon, EditIcon } from "lucide-react"
 
 const Index = ({ banks }) => {
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [clientErrors, setClientErrors] = useState({});
+    const { company_name, flash } = usePage().props;
 
     const {
         data,
@@ -91,30 +94,33 @@ const Index = ({ banks }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Banks - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Banks</h3>
+                    <h3 className="heading">Banks</h3>
 
                     <button
                         onClick={openCreateModal}
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                        className="create-button"
                         disabled={processing}
                     >
-                        Create new
+                        Add new
                     </button>
                 </div>
+
+                <Alert flash={flash} />
 
                 {/* ---- Modal (Create / Edit) ---- */}
                 <Modal
                     open={open}
                     onOpenChange={setOpen}
-                    title={editing ? "Edit Bank" : "Create new Bank"}
+                    title={editing ? "Edit Bank" : "Add new bank"}
                     footer={
                         <>
                             <button
                                 type="button"
                                 onClick={() => setOpen(false)}
-                                className="px-3 py-1 rounded bg-gray-300"
+                                className="delete-button"
                                 disabled={processing}
                             >
                                 Cancel
@@ -123,10 +129,10 @@ const Index = ({ banks }) => {
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={processing}
-                                className={`px-3 py-1 rounded text-white ${
+                                className={`create-button ${
                                     processing
-                                        ? "bg-blue-300 cursor-not-allowed"
-                                        : "bg-blue-500 hover:bg-blue-600"
+                                        && "cursor-not-allowed"
+                                        
                                 }`}
                             >
                                 {processing
@@ -155,7 +161,7 @@ const Index = ({ banks }) => {
                                 onChange={(e) =>
                                     setData("name", e.target.value)
                                 }
-                                className={`w-full border rounded px-2 py-1 ${
+                                className={`custom-input ${
                                     clientErrors.name || errors.name
                                         ? "border-red-500"
                                         : "border-gray-300"
@@ -180,18 +186,20 @@ const Index = ({ banks }) => {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => openEditModal(row)}
-                                className="bg-blue-500 text-white py-1 px-2 rounded"
+                                className="edit-button"
                                 disabled={processing}
+                                title="Edit"
                             >
-                                Edit
+                                <EditIcon className="w-4 h-4 inline" />
                             </button>
 
                             <button
                                 onClick={() => handleDelete(row.id)}
-                                className="bg-red-500 text-white py-1 px-2 rounded"
+                                className="delete-button"
                                 disabled={processing}
+                                title="Delete"
                             >
-                                {processing ? "Deleting..." : "Delete"}
+                                <Trash2Icon className="w-4 h-4 inline" />
                             </button>
                         </div>
                     )}

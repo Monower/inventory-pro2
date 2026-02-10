@@ -36,10 +36,15 @@ class BankController extends Controller
             "name" => "required|string|max:255|unique:banks,name",
         ]);
 
-        Bank::create($validated);
+        $result = Bank::create($validated);
 
-        return redirect()->route('banks.index')
-            ->with('success', 'Bank created successfully.');
+        if ($result) {
+            return redirect()->route('banks.index')
+                ->with('success', 'Bank created successfully.');
+        } else {
+            return redirect()->route('banks.index')
+                ->with('error', 'Bank creation failed.');
+        }
     }
 
     /**
