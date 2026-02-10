@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import Alert from "@/Components/Alert/Alert";
 import { useState, useEffect } from "react";
-import { useForm, Head, usePage } from "@inertiajs/react";
+import { useForm, Head, usePage, Link } from "@inertiajs/react";
 
 const Edit = ({ order, customers, products, banks }) => {
     const { company_name, flash } = usePage().props;
@@ -67,9 +67,7 @@ const Edit = ({ order, customers, products, banks }) => {
             const existing = prev.find((i) => i.id === product.id);
             if (existing) {
                 return prev.map((i) =>
-                    i.id === product.id
-                        ? { ...i, quantity: i.quantity + 1 }
-                        : i
+                    i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
                 );
             }
 
@@ -88,9 +86,7 @@ const Edit = ({ order, customers, products, banks }) => {
     const updateQuantity = (id, qty) => {
         const quantity = Math.max(Number(qty), 1);
         setCart((prev) =>
-            prev.map((i) =>
-                i.id === id ? { ...i, quantity } : i
-            )
+            prev.map((i) => (i.id === id ? { ...i, quantity } : i))
         );
     };
 
@@ -162,9 +158,7 @@ const Edit = ({ order, customers, products, banks }) => {
                 )}
 
                 {/* Flash */}
-                {(flash?.success || flash?.error) && (
-                    <Alert flash={flash} />
-                )}
+                {(flash?.success || flash?.error) && <Alert flash={flash} />}
 
                 {/* Products & Cart */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -183,10 +177,7 @@ const Edit = ({ order, customers, products, banks }) => {
                             <tbody>
                                 {products
                                     .filter(
-                                        (p) =>
-                                            !cart.find(
-                                                (c) => c.id === p.id
-                                            )
+                                        (p) => !cart.find((c) => c.id === p.id)
                                     )
                                     .map((product) => (
                                         <tr key={product.id}>
@@ -264,9 +255,7 @@ const Edit = ({ order, customers, products, banks }) => {
                                                 <button
                                                     type="button"
                                                     onClick={() =>
-                                                        removeFromCart(
-                                                            item.id
-                                                        )
+                                                        removeFromCart(item.id)
                                                     }
                                                     className="bg-destructive text-white px-3 py-1 rounded"
                                                 >
@@ -308,9 +297,7 @@ const Edit = ({ order, customers, products, banks }) => {
                     {/* Customer */}
                     <select
                         value={data.customer_id}
-                        onChange={(e) =>
-                            setData("customer_id", e.target.value)
-                        }
+                        onChange={(e) => setData("customer_id", e.target.value)}
                         className="custom-input mb-4"
                     >
                         <option value="">-- Select Customer --</option>
@@ -330,7 +317,10 @@ const Edit = ({ order, customers, products, banks }) => {
                                     value={m}
                                     checked={data.payment_method === m}
                                     onChange={(e) =>
-                                        setData("payment_method", e.target.value)
+                                        setData(
+                                            "payment_method",
+                                            e.target.value
+                                        )
                                     }
                                 />
                                 {m}
@@ -341,9 +331,7 @@ const Edit = ({ order, customers, products, banks }) => {
                     {data.payment_method === "bank" && (
                         <select
                             value={data.bank_id}
-                            onChange={(e) =>
-                                setData("bank_id", e.target.value)
-                            }
+                            onChange={(e) => setData("bank_id", e.target.value)}
                             className="custom-input mb-4"
                         >
                             <option value="">-- Select Bank --</option>
@@ -358,9 +346,7 @@ const Edit = ({ order, customers, products, banks }) => {
                     {data.payment_method === "mobile" && (
                         <select
                             value={data.mfs}
-                            onChange={(e) =>
-                                setData("mfs", e.target.value)
-                            }
+                            onChange={(e) => setData("mfs", e.target.value)}
                             className="custom-input mb-4"
                         >
                             <option value="">-- Select MFS --</option>
@@ -387,13 +373,22 @@ const Edit = ({ order, customers, products, banks }) => {
                         placeholder="Payment amount"
                     />
 
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="bg-green-600 text-white px-6 py-2 rounded-lg"
-                    >
-                        {processing ? "Updating..." : "Update order"}
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="bg-green-600 text-white px-4 py-1 rounded-lg"
+                        >
+                            {processing ? "Updating..." : "Update order"}
+                        </button>
+
+                        <Link
+                            href={route("orders.index")}
+                            className="delete-button"
+                        >
+                            Cancel
+                        </Link>
+                    </div>
                 </form>
             </section>
         </AuthenticatedLayout>
