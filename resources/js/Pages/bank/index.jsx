@@ -5,6 +5,7 @@ import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
 import Alert from "@/Components/Alert/Alert";
 import { Trash2Icon, EditIcon } from "lucide-react"
+import { dateTimeFormater } from "@/util/DateFormater";
 
 const Index = ({ banks }) => {
     const [open, setOpen] = useState(false);
@@ -84,12 +85,16 @@ const Index = ({ banks }) => {
     // ---- DataTable Setup ----
     const columns = [
         { key: "si", label: "SI" },
-        { key: "name", label: "Bank Name" },
+        { key: "name", label: "Bank name" },
+        { key: "created_at", label: "Created at" },
+        { key: "updated_at", label: "Last updated at" },
     ];
 
     const tableData = banks.map((bank, index) => ({
         ...bank,
         si: index + 1,
+        created_at: dateTimeFormater(bank.created_at),
+        updated_at: dateTimeFormater(bank.updated_at),
     }));
 
     return (
@@ -114,7 +119,7 @@ const Index = ({ banks }) => {
                 <Modal
                     open={open}
                     onOpenChange={setOpen}
-                    title={editing ? "Edit Bank" : "Add new bank"}
+                    title={editing ? "Edit bank" : "Add new bank"}
                     footer={
                         <>
                             <button
@@ -152,7 +157,7 @@ const Index = ({ banks }) => {
                                 htmlFor="name"
                                 className="block text-sm font-medium"
                             >
-                                Bank Name <span className="text-red-500">*</span>
+                                Bank name <span className="text-red-500">*</span>
                             </label>
 
                             <input

@@ -87,9 +87,15 @@ class BankController extends Controller
      */
     public function destroy(Bank $bank)
     {
-        $bank->delete();
 
-        return redirect()->route('banks.index')
-            ->with('success', 'Bank deleted successfully.');
+        if($bank){
+            $bank->delete();
+
+            return redirect()->route('banks.index')
+                ->with('success', 'Bank deleted successfully.');
+        } else {
+            return redirect()->route('banks.index')
+                ->with('error', 'Bank not found.');
+        }
     }
 }

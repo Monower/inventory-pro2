@@ -1,191 +1,9 @@
 <?php
-
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CategoriesController;
-use App\Http\Controllers\SubcategoriesController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\BankController;
-use App\Http\Controllers\AttributeController;
-// use App\Http\Controllers\AttributeValueController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\SalaryController;
-use App\Http\Controllers\AdvanceSalaryController;
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', function () {
     return to_route('login');
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit')->middleware('permission:edit profile');
-    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update')->middleware('permission:edit profile');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('permission:view dashboard');
-
-    Route::prefix('roles')->controller(RoleController::class)->group(function () {
-        Route::get('/', 'index')->name('roles.index')->middleware('permission:view role');
-        Route::get('/create', 'create')->name('role.create')->middleware('permission:create role');
-        Route::post('/create', 'store')->name('role.store')->middleware('permission:create role');
-        Route::get('/edit/{role_id}', 'edit')->name('role.edit')->middleware('permission:edit role');
-        Route::put('/edit/{role_id}', 'update')->name('role.update')->middleware('permission:edit role');
-        Route::delete('/delete/{role_id}', 'destroy')->name('role.destroy')->middleware('permission:delete role');
-    });
-
-    Route::prefix('categories')->controller(CategoriesController::class)->group(function () {
-        Route::get('/', 'index')->name('categories.index')->middleware('permission:view category');
-        Route::get('/create', 'create')->name('categories.create')->middleware('permission:create category');
-        Route::post('/create', 'store')->name('categories.store')->middleware('permission:create category');
-        Route::get('/edit/{category}', 'edit')->name('categories.edit')->middleware('permission:edit category');
-        Route::put('/edit/{category}', 'update')->name('categories.update')->middleware('permission:edit category');
-        Route::delete('/delete/{category}', 'destroy')->name('categories.destroy')->middleware('permission:delete category');
-    });
-
-    Route::prefix('sub-categories')->controller(SubcategoriesController::class)->group(function () {
-        Route::get('/', 'index')->name('subcategories.index')->middleware('permission:view subcategory');
-        Route::get('/create', 'create')->name('subcategories.create')->middleware('permission:create subcategory');
-        Route::post('/create', 'store')->name('subcategories.store')->middleware('permission:create subcategory');
-        Route::get('/edit/{subcategory}', 'edit')->name('subcategories.edit')->middleware('permission:edit subcategory');
-        Route::put('/edit/{subcategory}', 'update')->name('subcategories.update')->middleware('permission:edit subcategory');
-        Route::delete('/delete/{subcategory}', 'destroy')->name('subcategories.destroy')->middleware('permission:delete subcategory');
-    });
-
-    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index')->middleware('permission:view customer');
-    Route::get('/customer/create', [CustomerController::class, 'create'])->name('customer.create')->middleware('permission:create customer');
-    Route::post('/customer/create', [CustomerController::class, 'store'])->name('customer.store')->middleware('permission:create customer');
-    Route::get('/customer/edit/{customer_id}', [CustomerController::class, 'edit'])->name('customer.edit')->middleware('permission:edit customer');
-    Route::put('/customer/edit/{customer_id}', [CustomerController::class, 'update'])->name('customer.update')->middleware('permission:edit customer');
-    Route::delete('/customer/delete/{customer_id}', [CustomerController::class, 'destroy'])->name('customer.destroy')->middleware('permission:delete customer');
-
-
-    Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('permission:view user');
-    Route::get('/user/create', [UserController::class, 'create'])->name('user.create')->middleware('permission:create user');
-    Route::post('/user/create', [UserController::class, 'store'])->name('user.store')->middleware('permission:create user');
-    Route::get('/user/edit/{user_id}', [UserController::class, 'edit'])->name('user.edit')->middleware('permission:edit user');
-    Route::put('/user/edit/{user_id}', [UserController::class, 'update'])->name('user.update')->middleware('permission:edit user');
-    Route::delete('/user/delete/{user_id}', [UserController::class, 'destroy'])->name('user.destroy')->middleware('permission:delete user');
-
-
-    Route::get('/staffs', [StaffController::class, 'index'])->name('staffs.index')->middleware('permission:view staff');
-    Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create')->middleware('permission:create staff');
-    Route::post('/staff/create', [StaffController::class, 'store'])->name('staff.store')->middleware('permission:create staff');
-    Route::get('/staff/edit/{staff_id}', [StaffController::class, 'edit'])->name('staff.edit')->middleware('permission:edit staff');
-    Route::put('/staff/edit/{staff_id}', [StaffController::class, 'update'])->name('staff.update')->middleware('permission:edit staff');
-    Route::delete('/staff/delete/{staff_id}', [StaffController::class, 'destroy'])->name('staff.destroy')->middleware('permission:delete staff');
-
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index')->middleware('permission:view transaction');
-    Route::get('/transaction/create', [TransactionController::class, 'create'])->name('transaction.create')->middleware('permission:create transaction');
-    Route::post('/transaction/create', [TransactionController::class, 'store'])->name('transaction.store')->middleware('permission:create transaction');
-    Route::get('/transaction/edit/{transaction_id}', [TransactionController::class, 'edit'])->name('transaction.edit')->middleware('permission:edit transaction');
-    Route::put('/transaction/edit/{transaction_id}', [TransactionController::class, 'update'])->name('transaction.update')->middleware('permission:edit transaction');
-    Route::delete('/transaction/delete/{transaction_id}', [TransactionController::class, 'destroy'])->name('transaction.destroy')->middleware('permission:delete transaction');
-
-
-    Route::get('/banks', [BankController::class, 'index'])->name('banks.index')->middleware('permission:view bank');
-    Route::get('/banks/create', [BankController::class, 'create'])->name('banks.create')->middleware('permission:create bank');
-    Route::post('/banks/create', [BankController::class, 'store'])->name('banks.store')->middleware('permission:create bank');
-    Route::get('/banks/edit/{bank}', [BankController::class, 'edit'])->name('banks.edit')->middleware('permission:edit bank');
-    Route::put('/banks/edit/{bank}', [BankController::class, 'update'])->name('banks.update')->middleware('permission:edit bank');
-    Route::delete('/banks/delete/{bank}', [BankController::class, 'destroy'])->name('banks.destroy')->middleware('permission:delete bank');
-
-
-    Route::prefix('products')->name('products.')->middleware('auth')->group(function () {
-        Route::get('/', [ProductController::class, 'index'])->name('index')->middleware('permission:view product');
-        Route::get('/create', [ProductController::class, 'create'])->name('create')->middleware('permission:create product');
-        Route::post('/', [ProductController::class, 'store'])->name('store')->middleware('permission:create product');
-        Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit')->middleware('permission:edit product');
-        Route::put('/{product}', [ProductController::class, 'update'])->name('update')->middleware('permission:edit product');
-        Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy')->middleware('permission:delete product');
-    });
-
-    Route::prefix('attributes')->name('attributes.')->middleware(['auth'])->group(function () {
-        Route::get('/', [AttributeController::class, 'index'])->name('index')->middleware('permission:view attribute');
-        Route::get('/create', [AttributeController::class, 'create'])->name('create')->middleware('permission:create attribute');
-        Route::post('/', [AttributeController::class, 'store'])->name('store')->middleware('permission:create attribute');
-        Route::get('/{attribute}/edit', [AttributeController::class, 'edit'])->name('edit')->middleware('permission:edit attribute');
-        Route::put('/{attribute}', [AttributeController::class, 'update'])->name('update')->middleware('permission:edit attribute');
-        Route::delete('/{attribute}', [AttributeController::class, 'destroy'])->name('destroy')->middleware('permission:delete attribute');
-    });
-
-
-    Route::prefix('orders')->name('orders.')->middleware(['auth'])->group(function () {
-        Route::get('/', [OrderController::class, 'index'])->name('index')->middleware('permission:view order');
-        Route::get('/create', [OrderController::class, 'create'])->name('create')->middleware('permission:create order');
-        Route::post('/', [OrderController::class, 'store'])->name('store')->middleware('permission:create order');
-        Route::get('/show/{id}', [OrderController::class, 'show'])->name('show')->middleware('permission:view order'); // <-- added
-        Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit')->middleware('permission:edit order');
-        Route::put('/{order}', [OrderController::class, 'update'])->name('update')->middleware('permission:edit order');
-        Route::delete('/delete/{id}', [OrderController::class, 'destroy'])->name('destroy')->middleware('permission:delete order');
-    });
-
-    Route::prefix('settings')->name('settings.')->middleware(['auth'])->group(function () {
-        Route::get('/', [SettingController::class, 'index'])
-            ->name('index')
-            ->middleware('permission:view settings');
-        // Update without parameter
-        Route::post('/', [SettingController::class, 'update'])
-            ->name('update')
-            ->middleware('permission:edit settings');
-    });
-
-    Route::prefix('purchases')
-        ->name('purchases.')
-        ->middleware(['auth'])
-        ->group(function () {
-            Route::get('/', [PurchaseController::class, 'index'])
-                ->name('index')
-                ->middleware('permission:view purchase');
-
-            Route::get('/create', [PurchaseController::class, 'create'])
-                ->name('create')
-                ->middleware('permission:create purchase');
-
-            Route::post('/', [PurchaseController::class, 'store'])
-                ->name('store')
-                ->middleware('permission:create purchase');
-
-            Route::get('/{purchase}', [PurchaseController::class, 'show'])
-                ->name('show')
-                ->middleware('permission:view purchase');
-
-            Route::get('/{purchase}/edit', [PurchaseController::class, 'edit'])
-                ->name('edit')
-                ->middleware('permission:edit purchase');
-
-            Route::put('/{purchase}', [PurchaseController::class, 'update'])
-                ->name('update')
-                ->middleware('permission:edit purchase');
-
-            Route::delete('/{purchase}', [PurchaseController::class, 'destroy'])
-                ->name('destroy')
-                ->middleware('permission:delete purchase');
-        });
-
-    Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/salaries', [SalaryController::class, 'index'])->name('salaries.index');
-        Route::get('/salaries/create', [SalaryController::class, 'create'])->name('salaries.create');
-        Route::post('/salaries', [SalaryController::class, 'store'])->name('salaries.store');
-
-        Route::get('/advance-salaries', [AdvanceSalaryController::class, 'index'])->name('advance-salaries.index');
-        Route::get('/advance-salaries/create', [AdvanceSalaryController::class, 'create'])->name('advance-salaries.create');
-        Route::post('/advance-salaries', [AdvanceSalaryController::class, 'store'])->name('advance-salaries.store');
-    });
-
-    Route::put('/salaries/{salary}/mark-paid', [SalaryController::class, 'markPaid'])
-        ->name('salaries.markPaid')
-        ->middleware(['auth']);
 });
 
 Route::fallback(function () {
@@ -197,5 +15,20 @@ Route::get('/clear', function () {
     return 'Cleared!';
 });
 
-
 require __DIR__ . '/auth.php';
+require __DIR__ . '/modules/BankRoutes.php';
+require __DIR__ . '/modules/ProfileRoutes.php';
+require __DIR__ . '/modules/DashboardRoutes.php';
+require __DIR__ . '/modules/RoleRoutes.php';
+require __DIR__ . '/modules/CategoryRoutes.php';
+require __DIR__ . '/modules/SubCategoryRoutes.php';
+require __DIR__ . '/modules/CustomerRoutes.php';
+require __DIR__ . '/modules/UserRoutes.php';
+require __DIR__ . '/modules/StaffRoutes.php';
+require __DIR__ . '/modules/TransactionRoutes.php';
+require __DIR__ . '/modules/ProductRoutes.php';
+require __DIR__ . '/modules/AttributeRoutes.php';
+require __DIR__ . '/modules/OrderRoutes.php';
+require __DIR__ . '/modules/SettingRoutes.php';
+require __DIR__ . '/modules/PurchaseRoutes.php';
+require __DIR__ . '/modules/SalaryRoutes.php';

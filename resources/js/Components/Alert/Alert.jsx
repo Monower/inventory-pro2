@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { Info, X } from 'lucide-react';
 
 const Alert = ({ flash }) => {
-    console.log("inside flash", flash);
+    // console.log("inside flash", flash);
     const [visible, setVisible] = useState(true);
 
-    console.log("visible, flash?.success, flash?.error", visible, flash?.success, flash?.error);
+    // console.log("visible, flash?.success, flash?.error", visible, flash?.success, flash?.error);
 
     // useEffect(() => {
     //     const timer = setTimeout(() => {
