@@ -45,6 +45,9 @@ const Index = () => {
                                         SI
                                     </th>
                                     <th className="custom-th">
+                                        Image
+                                    </th>
+                                    <th className="custom-th">
                                         Name
                                     </th>
                                     <th className="custom-th">Selling price</th>
@@ -63,6 +66,13 @@ const Index = () => {
                                     >
                                         <td className="custom-body-td">
                                             {index + 1}
+                                        </td>
+                                        <td>
+                                            <img
+                                                src={"/storage/"+product.product_image}
+                                                alt={product.name}
+                                                className="w-16 h-16 object-cover rounded"
+                                            />
                                         </td>
                                         <td className="custom-body-td">
                                             {product.name}
