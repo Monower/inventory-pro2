@@ -3,6 +3,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import React, { useState } from "react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import { dateTimeFormater } from "@/util/DateFormater";
 
 const Index = () => {
     const { products, company_name } = usePage().props;
@@ -41,26 +42,28 @@ const Index = () => {
                             <thead className="custom-thead">
                                 <tr>
                                     <th className="custom-th rounded-l-md">
+                                        SI
+                                    </th>
+                                    <th className="custom-th">
                                         Name
                                     </th>
                                     <th className="custom-th">Selling price</th>
                                     <th className="custom-th">Stock</th>
-                                    <th className="custom-th">Unit</th>
-                                    <th className="custom-th">Sub category</th>
-                                    <th className="custom-th">
-                                        Attribute value
-                                    </th>
+                                    <th className="custom-th">Created at</th>
                                     <th className="custom-th rounded-r-md">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredProducts.map((product) => (
+                                {filteredProducts.map((product,index) => (
                                     <tr
                                         key={product.id}
                                         className="custom-body-tr"
                                     >
+                                        <td className="custom-body-td">
+                                            {index + 1}
+                                        </td>
                                         <td className="custom-body-td">
                                             {product.name}
                                         </td>
@@ -71,14 +74,7 @@ const Index = () => {
                                             {product.stock}
                                         </td>
                                         <td className="custom-body-td">
-                                            {product.unit}
-                                        </td>
-                                        <td className="custom-body-td">
-                                            {product.sub_category?.name || "-"}
-                                        </td>
-                                        <td className="custom-body-td">
-                                            {product.attribute_value?.name ||
-                                                "-"}
+                                            {dateTimeFormater(product.created_at)}
                                         </td>
                                         <td className="custom-body-td text-center flex items-center gap-2">
                                             <Link
@@ -98,25 +94,6 @@ const Index = () => {
                                             >
                                                 <Trash2Icon className="w-4 h-4 inline" />
                                             </button>
-                                            {/* <Link
-                                                href={route(
-                                                    "products.destroy",
-                                                    product.id
-                                                )}
-                                                method="delete"
-                                                as="button"
-                                                className="delete-button"
-                                                onClick={(e) => {
-                                                    if (
-                                                        !confirm(
-                                                            "Are you sure you want to delete this product?"
-                                                        )
-                                                    )
-                                                        e.preventDefault();
-                                                }}
-                                            >
-                                                <Trash2Icon className="w-4 h-4 inline" />
-                                            </Link> */}
                                         </td>
                                     </tr>
                                 ))}
