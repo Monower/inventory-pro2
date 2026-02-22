@@ -69,7 +69,7 @@ const Index = () => {
                                         </td>
                                         <td>
                                             <img
-                                                src={"/storage/"+product.product_image}
+                                                src={"/storage/app/public/"+product.product_image}
                                                 alt={product.name}
                                                 className="w-16 h-16 object-cover rounded"
                                             />
