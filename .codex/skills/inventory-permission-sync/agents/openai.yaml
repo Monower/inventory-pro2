@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inventory Permission Sync"
+  short_description: "Keep routes and Spatie permissions aligned"
+  default_prompt: "Use $inventory-permission-sync to align route middleware, seeders, and role permissions for this project."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inventory Release Check"
+  short_description: "Run pre-release checks for this codebase"
+  default_prompt: "Use $inventory-release-check to run a targeted quality and deployment readiness scan."

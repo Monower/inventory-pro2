@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inventory Laravel Module"
+  short_description: "Build modules in this Laravel Inertia app"
+  default_prompt: "Use $inventory-laravel-module to implement a new module end-to-end in this repository."
