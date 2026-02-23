@@ -2,7 +2,7 @@ import { Link, usePage, Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import React, { useState } from "react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
-import { EditIcon, Trash2Icon } from "lucide-react";
+import { EditIcon, EyeIcon, Trash2Icon } from "lucide-react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
 const Index = () => {
@@ -87,6 +87,15 @@ const Index = () => {
                                             {dateTimeFormater(product.created_at)}
                                         </td>
                                         <td className="custom-body-td text-center flex items-center gap-2">
+                                            <Link
+                                                href={route(
+                                                    "products.show",
+                                                    product.id
+                                                )}
+                                                className="show-button"
+                                            >
+                                                <EyeIcon className="w-4 h-4 inline" />
+                                            </Link>
                                             <Link
                                                 href={route(
                                                     "products.edit",
