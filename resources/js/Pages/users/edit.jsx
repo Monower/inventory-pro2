@@ -57,7 +57,7 @@ const Edit = ({ user, roles }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-3 gap-2 mb-4">
                         {/* Name */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
+                        <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Name</legend>
                             <input
                                 type="text"
@@ -66,7 +66,7 @@ const Edit = ({ user, roles }) => {
                                 onChange={(e) =>
                                     setData("name", e.target.value)
                                 }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                className="custom-input"
                             />
                             {errors.name && (
                                 <p className="text-red-500 text-xs mt-1">
@@ -76,7 +76,7 @@ const Edit = ({ user, roles }) => {
                         </fieldset>
 
                         {/* Email */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
+                        <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Email</legend>
                             <input
                                 type="email"
@@ -85,7 +85,7 @@ const Edit = ({ user, roles }) => {
                                 onChange={(e) =>
                                     setData("email", e.target.value)
                                 }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                className="custom-input"
                             />
                             {errors.email && (
                                 <p className="text-red-500 text-xs mt-1">
@@ -95,7 +95,7 @@ const Edit = ({ user, roles }) => {
                         </fieldset>
 
                         {/* Password */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
+                        <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Password</legend>
                             <input
                                 type="password"
@@ -105,7 +105,7 @@ const Edit = ({ user, roles }) => {
                                     setData("password", e.target.value)
                                 }
                                 placeholder="Leave empty to keep current password"
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                className="custom-input"
                             />
                             {errors.password && (
                                 <p className="text-red-500 text-xs mt-1">
@@ -115,7 +115,7 @@ const Edit = ({ user, roles }) => {
                         </fieldset>
 
                         {/* Phone */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
+                        <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Phone</legend>
                             <input
                                 type="number"
@@ -124,7 +124,7 @@ const Edit = ({ user, roles }) => {
                                 onChange={(e) =>
                                     setData("phone", e.target.value)
                                 }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                className="custom-input"
                             />
                             {errors.phone && (
                                 <p className="text-red-500 text-xs mt-1">
@@ -134,14 +134,14 @@ const Edit = ({ user, roles }) => {
                         </fieldset>
 
                         {/* Role */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
+                        <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Role</legend>
                             <select
                                 value={data.role}
                                 onChange={(e) =>
                                     setData("role", e.target.value)
                                 }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                className="custom-input"
                             >
                                 <option value="">Select role</option>
                                 {roles.map((role) => (
@@ -158,7 +158,7 @@ const Edit = ({ user, roles }) => {
                         </fieldset>
 
                         {/* Image */}
-                        <fieldset className="border border-gray-300 bg-white p-2">
+                        <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Image</legend>
                             <input
                                 ref={fileInputRef}
@@ -169,7 +169,7 @@ const Edit = ({ user, roles }) => {
                                     setData("image", e.target.files[0]);
                                     setData("remove_image", false);
                                 }}
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm ml-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                                className="custom-input ml-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border file:border-input file:text-sm file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:opacity-90"
                             />
                             {errors.image && (
                                 <p className="text-red-500 text-xs mt-1">

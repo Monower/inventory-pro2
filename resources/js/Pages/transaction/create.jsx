@@ -29,7 +29,7 @@ const Create = () => {
                 <div>
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-3 gap-2 mb-4">
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Name
@@ -41,17 +41,17 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("name", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter transaction name"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Payment method
                                     </label>
                                 </legend>
-                                <select name="paymentMethod" onChange={(e) => setData("paymentMethod", e.target.value)} className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm">
+                                <select name="paymentMethod" onChange={(e) => setData("paymentMethod", e.target.value)} className="custom-input">
                                     <option value="cash">Cash</option>
                                     <option value="bank">Bank</option>
                                     <option value="mobileBanking">Mobile banking</option>
@@ -62,7 +62,7 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("paymentMethod", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter payment method"
                                 /> */}
                             </fieldset>
@@ -78,11 +78,11 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("transaction_type", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter transaction type"
                                 />
                             </fieldset> */}
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label>Source</label>
                                 </legend>
@@ -92,11 +92,11 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("source", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter source name"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label>Amount</label>
                                 </legend>
@@ -106,7 +106,7 @@ const Create = () => {
                                     onChange={(e) =>
                                         setData("amount", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter amount"
                                 />
                             </fieldset>

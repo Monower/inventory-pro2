@@ -32,6 +32,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem
   }
+  .dark,
   [data-theme="dark"] {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -68,6 +69,45 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="time"],
+  input[type="month"],
+  input[type="week"],
+  select,
+  textarea {
+    @apply w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring;
+  }
+
+  option {
+    background-color: hsl(var(--card));
+    color: hsl(var(--foreground));
+  }
+
+  input[type="file"] {
+    @apply text-sm text-foreground;
+  }
+
+  input[type="file"]::file-selector-button {
+    @apply mr-3 rounded-md border border-input bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    @apply opacity-90;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    @apply border-input bg-background text-primary focus:ring-ring;
   }
 
   td {
@@ -132,5 +172,81 @@
   
   .modal-input {
     @apply w-full bg-transparent text-[hsl(var(--foreground))] focus:outline-none focus:ring-0 placeholder:text-[hsl(var(--muted-foreground))] text-sm placeholder:text-sm p-2
+  }
+}
+
+@layer utilities {
+  /* Compatibility layer for legacy light-only utility classes used across older pages. */
+  .dark .bg-white {
+    background-color: hsl(var(--card));
+  }
+
+  .dark .bg-gray-50,
+  .dark .bg-gray-100 {
+    background-color: hsl(var(--muted));
+  }
+
+  .dark .bg-gray-200,
+  .dark .bg-gray-300 {
+    background-color: hsl(var(--secondary));
+  }
+
+  .dark .text-black,
+  .dark .text-gray-800,
+  .dark .text-gray-900 {
+    color: hsl(var(--foreground));
+  }
+
+  .dark .text-gray-400,
+  .dark .text-gray-500,
+  .dark .text-gray-600,
+  .dark .text-gray-700 {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .dark .border-gray-200,
+  .dark .border-gray-300 {
+    border-color: hsl(var(--border));
+  }
+
+  .dark .hover\:bg-gray-50:hover,
+  .dark .hover\:bg-gray-100:hover,
+  .dark .focus\:bg-gray-50:focus,
+  .dark .focus\:bg-gray-100:focus {
+    background-color: hsl(var(--secondary));
+  }
+
+  .dark .hover\:text-gray-700:hover,
+  .dark .hover\:text-gray-800:hover,
+  .dark .hover\:text-gray-900:hover,
+  .dark .focus\:text-gray-700:focus,
+  .dark .focus\:text-gray-800:focus,
+  .dark .focus\:text-gray-900:focus {
+    color: hsl(var(--foreground));
+  }
+
+  .dark .placeholder\:text-gray-400::placeholder,
+  .dark .placeholder\:text-gray-500::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .dark .focus\:border-indigo-500:focus {
+    border-color: hsl(var(--ring));
+  }
+
+  .dark .focus\:ring-indigo-200:focus,
+  .dark .focus\:ring-indigo-500:focus {
+    --tw-ring-color: hsl(var(--ring));
+  }
+
+  .dark .file\:bg-blue-500::file-selector-button {
+    background-color: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--border));
+  }
+
+  .dark .hover\:file\:bg-blue-600:hover::file-selector-button {
+    background-color: hsl(var(--secondary));
+    opacity: 0.9;
   }
 }

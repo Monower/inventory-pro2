@@ -48,7 +48,7 @@ export default function Login({ status, canResetPassword }) {
                         type="text"
                         name="phone"
                         value={data.phone}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-accent focus:ring-opacity-50 pr-12" // extra padding for counter
+                        className="mt-1 block w-full pr-12"
                         autoComplete={false}
                         autoFocus
                         maxLength={11} // limit input
@@ -56,7 +56,7 @@ export default function Login({ status, canResetPassword }) {
                     />
 
                     {/* Character counter positioned to the right */}
-                    <span className="absolute top-[69%] right-3 transform -translate-y-1/2 text-sm text-gray-500">
+                    <span className="absolute top-[69%] right-3 transform -translate-y-1/2 text-sm text-muted-foreground">
                         {data.phone.length}/11
                     </span>
 
@@ -71,7 +71,7 @@ export default function Login({ status, canResetPassword }) {
                         type="email"
                         name="email"
                         value={data.email}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                        className="mt-1 block w-full custom-input"
                         autoComplete="username"
                         autoFocus
                         onChange={(e) => setData("email", e.target.value)}
@@ -88,7 +88,7 @@ export default function Login({ status, canResetPassword }) {
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-accent focus:ring-opacity-50"
+                        className="mt-1 block w-full"
                         autoComplete="current-password"
                         onChange={(e) => setData("password", e.target.value)}
                     />
@@ -121,7 +121,7 @@ export default function Login({ status, canResetPassword }) {
 
                     <button
                         type="submit"
-                        className="w-full bg-foreground text-secondary py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition"
+                        className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition"
                         disabled={processing}
                     >
                         Log in

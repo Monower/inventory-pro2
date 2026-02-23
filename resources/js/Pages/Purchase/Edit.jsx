@@ -82,7 +82,7 @@ export default function Edit() {
                         <label>Supplier Name:</label>
                         <input
                             type="text"
-                            className="border p-2 w-full"
+                            className="w-full"
                             value={form.supplier_name}
                             onChange={(e) =>
                                 setForm({ ...form, supplier_name: e.target.value })
@@ -95,7 +95,7 @@ export default function Edit() {
                         <label>Purchase Date:</label>
                         <input
                             type="date"
-                            className="border p-2 w-full"
+                            className="w-full"
                             value={form.purchase_date}
                             onChange={(e) =>
                                 setForm({ ...form, purchase_date: e.target.value })
@@ -107,7 +107,7 @@ export default function Edit() {
                     <div className="mb-3">
                         <label>Payment Status:</label>
                         <select
-                            className="border p-2 w-full"
+                            className="w-full"
                             value={form.payment_status}
                             onChange={(e) =>
                                 setForm({ ...form, payment_status: e.target.value })
@@ -125,7 +125,7 @@ export default function Edit() {
                         {form.items.map((item, i) => (
                             <div key={i} className="grid grid-cols-3 gap-2 mb-2">
                                 <select
-                                    className="border p-2"
+                                    className="w-full"
                                     value={item.product_id}
                                     onChange={(e) =>
                                         updateItem(i, "product_id", e.target.value)
@@ -141,7 +141,7 @@ export default function Edit() {
 
                                 <input
                                     type="number"
-                                    className="border p-2"
+                                    className="w-full"
                                     placeholder="Qty"
                                     value={item.quantity}
                                     min={1}
@@ -152,7 +152,7 @@ export default function Edit() {
 
                                 <input
                                     type="number"
-                                    className="border p-2"
+                                    className="w-full"
                                     placeholder="Buying Price"
                                     value={item.buying_price}
                                     min={0}
@@ -195,7 +195,7 @@ export default function Edit() {
                                     <label>New Payment:</label>
                                     <input
                                         type="number"
-                                        className="border p-2 w-full"
+                                        className="w-full"
                                         value={form.new_paid}
                                         min={0}
                                         placeholder={`Max: ${remainingAmount}`}

@@ -19,7 +19,7 @@ const Create = ({ categories }) => {
         <AuthenticatedLayout>
             <Head title={`Create Subcategory - ${company_name}`} />
             <div className="w-full h-[50vh] flex justify-center items-center">
-                <div className="bg-white p-4 rounded">
+                <div className="bg-card text-card-foreground p-4 rounded border border-border">
                     <h1 className="text-md font-bold">Create Subcategory</h1>
 
                     <div>
@@ -30,6 +30,7 @@ const Create = ({ categories }) => {
                                     onChange={(e) =>
                                         setData("category_id", e.target.value)
                                     }
+                                    className="w-full"
                                 >
                                     <option value="">Select Category</option>
                                     {categories?.map((category) => (
@@ -52,7 +53,7 @@ const Create = ({ categories }) => {
                                     onChange={(e) =>
                                         setData("name", e.target.value)
                                     }
-                                    className="border border-gray-300 rounded p-2 w-full placeholder:text-gray-400 placeholder:text-sm"
+                                    className="w-full"
                                     placeholder="Enter subcategory name"
                                 />
                             </fieldset>

@@ -74,7 +74,7 @@ const Edit = ({ role, permissions }) => {
                 <form onSubmit={handleSubmit}>
                     {/* Role name */}
                     <div className="mb-4">
-                        <fieldset className="border border-gray-300 bg-white p-2 rounded">
+                        <fieldset className="custom-fieldset p-2 rounded">
                             <legend className="text-sm mx-2">
                                 <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                     Role name
@@ -87,7 +87,7 @@ const Edit = ({ role, permissions }) => {
                                 onChange={(e) =>
                                     setData("name", e.target.value)
                                 }
-                                className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm p-0"
+                                className="custom-input p-0"
                                 placeholder="Enter role name"
                             />
                             {errors.name && (
@@ -106,7 +106,7 @@ const Edit = ({ role, permissions }) => {
                             ([resource, perms]) => (
                                 <fieldset
                                     key={resource}
-                                    className="border border-gray-300 bg-white p-2 rounded mb-3"
+                                    className="custom-fieldset p-2 rounded mb-3"
                                 >
                                     <legend className="text-sm font-semibold mx-2 capitalize">
                                         {resource}

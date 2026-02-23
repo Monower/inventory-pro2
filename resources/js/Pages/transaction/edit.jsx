@@ -30,7 +30,7 @@ const Edit = ({ transaction }) => {
                 <div>
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-3 gap-2 mb-4">
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Name
@@ -43,17 +43,17 @@ const Edit = ({ transaction }) => {
                                     onChange={(e) =>
                                         setData("name", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter transaction name"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Payment method
                                     </label>
                                 </legend>
-                                <select value={data.paymentMethod} name="paymentMethod" onChange={(e) => setData("paymentMethod", e.target.value)} className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm">
+                                <select value={data.paymentMethod} name="paymentMethod" onChange={(e) => setData("paymentMethod", e.target.value)} className="custom-input">
                                     <option value="cash">Cash</option>
                                     <option value="bank">Bank</option>
                                     <option value="mobileBanking">Mobile banking</option>
@@ -64,7 +64,7 @@ const Edit = ({ transaction }) => {
                                     onChange={(e) =>
                                         setData("paymentMethod", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter payment method"
                                 /> */}
                             </fieldset>
@@ -80,11 +80,11 @@ const Edit = ({ transaction }) => {
                                     onChange={(e) =>
                                         setData("transaction_type", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter transaction type"
                                 />
                             </fieldset> */}
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label>Source</label>
                                 </legend>
@@ -95,11 +95,11 @@ const Edit = ({ transaction }) => {
                                     onChange={(e) =>
                                         setData("source", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter source name"
                                 />
                             </fieldset>
-                            <fieldset className="border border-gray-300 bg-white">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label>Amount</label>
                                 </legend>
@@ -110,7 +110,7 @@ const Edit = ({ transaction }) => {
                                     onChange={(e) =>
                                         setData("amount", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter amount"
                                 />
                             </fieldset>

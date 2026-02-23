@@ -17,7 +17,7 @@ const Edit = ({category}) => {
         <AuthenticatedLayout>
             <Head title={`Edit Category - ${company_name}`} />
             <div className="w-full h-[50vh] flex justify-center items-center">
-                <div className="bg-white p-4 rounded">
+                <div className="bg-card text-card-foreground p-4 rounded border border-border">
                     <h1 className="text-md font-bold">Update Category</h1>
 
                     <form
@@ -29,7 +29,7 @@ const Edit = ({category}) => {
                             name="name"
                             value={data.name}
                             onChange={(e) => setData("name", e.target.value)}
-                            className="border border-gray-300 rounded p-2 w-full placeholder:text-gray-400 placeholder:text-sm"
+                            className="w-full"
                             // placeholder="Enter category name"
                         />
                         <div className="w-full flex justify-end gap-2">

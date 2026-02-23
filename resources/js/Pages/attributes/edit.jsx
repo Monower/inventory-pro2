@@ -46,7 +46,7 @@ const Edit = ({ attribute }) => {
   return (
     <AuthenticatedLayout>
       <Head title={`Edit Attribute - ${company_name}`} />
-      <section className="max-w-2xl mx-auto p-4 bg-white rounded shadow">
+      <section className="max-w-2xl mx-auto p-4 bg-card text-card-foreground rounded shadow border border-border">
         <h3 className="text-xl font-semibold mb-4">Edit Attribute</h3>
 
         <form onSubmit={handleSubmit}>
@@ -59,7 +59,7 @@ const Edit = ({ attribute }) => {
               type="text"
               value={data.name}
               onChange={(e) => setData("name", e.target.value)}
-              className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full"
               placeholder="Enter attribute name"
             />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -74,7 +74,7 @@ const Edit = ({ attribute }) => {
                   value={value.name}
                   onChange={(e) => setValueAtIndex(e.target.value, index)}
                   placeholder="Enter value"
-                  className="flex-grow border border-gray-300 rounded p-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full flex-grow"
                 />
                 {data.values.length > 1 && (
                   <button

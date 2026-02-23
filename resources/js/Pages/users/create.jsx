@@ -51,7 +51,7 @@ const Create = ({ roles }) => {
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-3 gap-2 mb-4">
                             {/* Name */}
-                            <fieldset className="border border-gray-300 bg-white p-2">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Name
@@ -64,7 +64,7 @@ const Create = ({ roles }) => {
                                     onChange={(e) =>
                                         setData("name", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter user name"
                                 />
                                 {errors.name && (
@@ -75,7 +75,7 @@ const Create = ({ roles }) => {
                             </fieldset>
 
                             {/* Email */}
-                            <fieldset className="border border-gray-300 bg-white p-2">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Email
@@ -88,7 +88,7 @@ const Create = ({ roles }) => {
                                     onChange={(e) =>
                                         setData("email", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter user email"
                                 />
                                 {errors.email && (
@@ -99,7 +99,7 @@ const Create = ({ roles }) => {
                             </fieldset>
 
                             {/* Password */}
-                            <fieldset className="border border-gray-300 bg-white p-2">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Password
@@ -112,7 +112,7 @@ const Create = ({ roles }) => {
                                     onChange={(e) =>
                                         setData("password", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter user password"
                                 />
                                 {errors.password && (
@@ -123,7 +123,7 @@ const Create = ({ roles }) => {
                             </fieldset>
 
                             {/* Phone */}
-                            <fieldset className="border border-gray-300 bg-white p-2">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label>Phone</label>
                                 </legend>
@@ -134,7 +134,7 @@ const Create = ({ roles }) => {
                                     onChange={(e) =>
                                         setData("phone", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                     placeholder="Enter user phone"
                                 />
                                 {errors.phone && (
@@ -145,7 +145,7 @@ const Create = ({ roles }) => {
                             </fieldset>
 
                             {/* Role */}
-                            <fieldset className="border border-gray-300 bg-white p-2">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
                                         Role
@@ -156,7 +156,7 @@ const Create = ({ roles }) => {
                                     onChange={(e) =>
                                         setData("role", e.target.value)
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm"
+                                    className="custom-input"
                                 >
                                     <option value="">Select role</option>
                                     {roles.map((role) => (
@@ -173,7 +173,7 @@ const Create = ({ roles }) => {
                             </fieldset>
 
                             {/* Image */}
-                            <fieldset className="border border-gray-300 bg-white p-2">
+                            <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label>Image</label>
                                 </legend>
@@ -185,7 +185,7 @@ const Create = ({ roles }) => {
                                     onChange={(e) =>
                                         setData("image", e.target.files[0])
                                     }
-                                    className="border-none w-full focus:outline-none focus:ring-0 placeholder:text-gray-400 placeholder:text-sm ml-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                                    className="custom-input ml-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border file:border-input file:text-sm file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:opacity-90"
                                 />
                                 {errors.image && (
                                     <p className="text-red-500 text-xs mt-1">

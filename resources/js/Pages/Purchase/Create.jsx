@@ -93,7 +93,7 @@ export default function Create({ products }) {
                             <label>Supplier Name</label>
                             <input
                                 type="text"
-                                className="border p-2 w-full"
+                                className="w-full"
                                 value={data.supplier_name}
                                 onChange={(e) =>
                                     setData("supplier_name", e.target.value)
@@ -105,7 +105,7 @@ export default function Create({ products }) {
                             <label>Purchase Date</label>
                             <input
                                 type="date"
-                                className="border p-2 w-full"
+                                className="w-full"
                                 value={data.purchase_date}
                                 onChange={(e) =>
                                     setData("purchase_date", e.target.value)
@@ -119,7 +119,7 @@ export default function Create({ products }) {
                     <div>
                         <label>Payment Status</label>
                         <select
-                            className="border p-2 w-full"
+                            className="w-full"
                             value={data.payment_status}
                             onChange={(e) =>
                                 setData("payment_status", e.target.value)
@@ -150,7 +150,7 @@ export default function Create({ products }) {
                                 <tr key={i}>
                                     <td className="border p-2">
                                         <select
-                                            className="border p-1 w-full"
+                                            className="w-full py-1"
                                             value={row.product_id}
                                             onChange={(e) =>
                                                 handleChange(
@@ -174,7 +174,7 @@ export default function Create({ products }) {
                                         <input
                                             type="number"
                                             min="1"
-                                            className="border p-1 w-full"
+                                            className="w-full py-1"
                                             value={row.quantity}
                                             onChange={(e) =>
                                                 handleChange(
@@ -190,7 +190,7 @@ export default function Create({ products }) {
                                         <input
                                             type="number"
                                             min="0"
-                                            className="border p-1 w-full"
+                                            className="w-full py-1"
                                             value={row.buying_price}
                                             onChange={(e) =>
                                                 handleChange(
@@ -239,7 +239,7 @@ export default function Create({ products }) {
                             <input
                                 type="number"
                                 min="0"
-                                className="border p-2 w-full"
+                                className="w-full"
                                 value={data.paid_amount}
                                 onChange={(e) =>
                                     setData(

@@ -3,7 +3,7 @@ export default function ApplicationLogo({ logo }) {
         <img
             src={logo} // full public path starting with '/'
             alt="Logo"
-            className="h-12 w-12 fill-current text-gray-500 rounded"
+            className="h-12 w-12 rounded"
         />
     );
 }
