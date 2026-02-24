@@ -349,7 +349,7 @@ const Edit = ({ product, categories, attributes }) => {
                                 {imagePreview && (
                                     <div className="relative mt-2 max-w-xs">
                                         <img
-                                            src={imagePreview}
+                                            src={"/storage/app/public/" + imagePreview}
                                             alt="Preview"
                                             className="w-full h-auto rounded"
                                         />
