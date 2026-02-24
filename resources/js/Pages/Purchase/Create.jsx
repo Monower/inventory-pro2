@@ -88,7 +88,7 @@ export default function Create({ products }) {
 
                 <form onSubmit={submit} className="space-y-4">
                     {/* Supplier & Date */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label>Supplier Name</label>
                             <input
@@ -134,91 +134,93 @@ export default function Create({ products }) {
                     {/* Products */}
                     <h2 className="font-semibold mt-6">Products</h2>
 
-                    <table className="w-full border mt-2">
-                        <thead className="bg-gray-100">
-                            <tr>
-                                <th className="border p-2">Product</th>
-                                <th className="border p-2">Quantity</th>
-                                <th className="border p-2">Buying Price</th>
-                                <th className="border p-2">Total</th>
-                                <th className="border p-2"></th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {rows.map((row, i) => (
-                                <tr key={i}>
-                                    <td className="border p-2">
-                                        <select
-                                            className="w-full py-1"
-                                            value={row.product_id}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    i,
-                                                    "product_id",
-                                                    e.target.value
-                                                )
-                                            }
-                                            required
-                                        >
-                                            <option value="">Select</option>
-                                            {products.map((p) => (
-                                                <option key={p.id} value={p.id}>
-                                                    {p.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </td>
-
-                                    <td className="border p-2">
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            className="w-full py-1"
-                                            value={row.quantity}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    i,
-                                                    "quantity",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </td>
-
-                                    <td className="border p-2">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            className="w-full py-1"
-                                            value={row.buying_price}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    i,
-                                                    "buying_price",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    </td>
-
-                                    <td className="border p-2">
-                                        ৳ {(row.quantity * row.buying_price).toFixed(2)}
-                                    </td>
-
-                                    <td className="border p-2 text-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => removeRow(i)}
-                                            className="text-red-600"
-                                        >
-                                            ✕
-                                        </button>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border mt-2 min-w-[700px]">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="border p-2">Product</th>
+                                    <th className="border p-2">Quantity</th>
+                                    <th className="border p-2">Buying Price</th>
+                                    <th className="border p-2">Total</th>
+                                    <th className="border p-2"></th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+
+                            <tbody>
+                                {rows.map((row, i) => (
+                                    <tr key={i}>
+                                        <td className="border p-2">
+                                            <select
+                                                className="w-full py-1"
+                                                value={row.product_id}
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        i,
+                                                        "product_id",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                required
+                                            >
+                                                <option value="">Select</option>
+                                                {products.map((p) => (
+                                                    <option key={p.id} value={p.id}>
+                                                        {p.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
+
+                                        <td className="border p-2">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                className="w-full py-1"
+                                                value={row.quantity}
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        i,
+                                                        "quantity",
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </td>
+
+                                        <td className="border p-2">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="w-full py-1"
+                                                value={row.buying_price}
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        i,
+                                                        "buying_price",
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+                                        </td>
+
+                                        <td className="border p-2">
+                                            ৳ {(row.quantity * row.buying_price).toFixed(2)}
+                                        </td>
+
+                                        <td className="border p-2 text-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeRow(i)}
+                                                className="text-red-600"
+                                            >
+                                                ✕
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                     <button
                         type="button"
@@ -229,7 +231,7 @@ export default function Create({ products }) {
                     </button>
 
                     {/* Total & Paid Amount */}
-                    <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         <div className="text-lg font-semibold flex items-end">
                             Total Amount: ৳ {totalAmount.toFixed(2)}
                         </div>

@@ -28,7 +28,7 @@ const Create = () => {
 
                 <div>
                     <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">

@@ -55,7 +55,7 @@ const Edit = ({ user, roles }) => {
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                         {/* Name */}
                         <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Name</legend>

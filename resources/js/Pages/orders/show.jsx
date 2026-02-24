@@ -14,7 +14,7 @@ const Show = ({ order }) => {
         <AuthenticatedLayout>
             <Head title={`View order - ${company_name}`} />
             <section>
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-2">
                         <BackButton url={"orders.index"} />
                         <h3 className="heading">
@@ -103,49 +103,51 @@ const Show = ({ order }) => {
                     <h4 className="text-lg font-semibold mb-4">
                         Products in order
                     </h4>
-                    <table className="w-full text-sm border border-gray-200 rounded-lg">
-                        <thead className="custom-thead">
-                            <tr>
-                                <th className="custom-th rounded-l-md">
-                                    Product name
-                                </th>
-                                <th className="custom-th">Unit price</th>
-                                <th className="custom-th">Quantity</th>
-                                <th className="custom-th rounded-r-md">
-                                    Total
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {order?.items?.map((item) => (
-                                <tr key={item.id} className="custom-body-tr">
-                                    <td className="custom-body-td">
-                                        {item?.product?.name}
-                                    </td>
-                                    <td className="custom-body-td">
-                                        {item?.price}
-                                    </td>
-                                    <td className="custom-body-td">
-                                        {item?.quantity}
-                                    </td>
-                                    <td className="custom-body-td">
-                                        {item?.price * item?.quantity}
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[640px] text-sm border border-gray-200 rounded-lg">
+                            <thead className="custom-thead">
+                                <tr>
+                                    <th className="custom-th rounded-l-md">
+                                        Product name
+                                    </th>
+                                    <th className="custom-th">Unit price</th>
+                                    <th className="custom-th">Quantity</th>
+                                    <th className="custom-th rounded-r-md">
+                                        Total
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                        <tfoot>
-                            <tr className="custom-body-tr">
-                                <td
-                                    className="custom-body-td text-right"
-                                    colSpan={3}
-                                >
-                                    Total:
-                                </td>
-                                <td className="custom-body-td">{totalPrice}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {order?.items?.map((item) => (
+                                    <tr key={item.id} className="custom-body-tr">
+                                        <td className="custom-body-td">
+                                            {item?.product?.name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item?.price}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item?.quantity}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item?.price * item?.quantity}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr className="custom-body-tr">
+                                    <td
+                                        className="custom-body-td text-right"
+                                        colSpan={3}
+                                    >
+                                        Total:
+                                    </td>
+                                    <td className="custom-body-td">{totalPrice}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </section>
         </AuthenticatedLayout>

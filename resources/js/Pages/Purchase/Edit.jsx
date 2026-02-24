@@ -123,7 +123,7 @@ export default function Edit() {
                     <div>
                         <h2 className="font-semibold mb-2">Items</h2>
                         {form.items.map((item, i) => (
-                            <div key={i} className="grid grid-cols-3 gap-2 mb-2">
+                            <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
                                 <select
                                     className="w-full"
                                     value={item.product_id}

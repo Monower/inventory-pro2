@@ -266,7 +266,7 @@ const Create = ({ customers, products, banks }) => {
                         <h3 className="heading">Checkout</h3>
                         <div className="grid gap-6">
                             {/* Summary */}
-                            <div className="grid grid-cols-2 gap-4 bg-background* border border-ring shadow-md py-50 p-4 rounded-lg">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-background* border border-ring shadow-md py-50 p-4 rounded-lg">
                                 <div>
                                     <p className="text-primary">Total price</p>
                                     <h3 className="text-xl font-bold text-primary">
