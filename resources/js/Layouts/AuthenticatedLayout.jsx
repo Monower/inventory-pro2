@@ -134,7 +134,25 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        <div className="-me-2 flex items-center lg:hidden">
+                        <div className="-me-2 flex items-center gap-2 lg:hidden">
+                            <button
+                                type="button"
+                                onClick={toggleTheme}
+                                className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
+                                title="Toggle Theme"
+                            >
+                                {theme === "light" ? (
+                                    <Moon
+                                        className="text-foreground"
+                                        size={20}
+                                    />
+                                ) : (
+                                    <Sun
+                                        className="text-foreground"
+                                        size={20}
+                                    />
+                                )}
+                            </button>
                             <button
                                 onClick={() =>
                                     setShowingNavigationDropdown(
