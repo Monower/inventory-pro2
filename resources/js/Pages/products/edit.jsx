@@ -5,7 +5,9 @@ import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ product, categories, attributes }) => {
     const {  company_name } = usePage().props;
-    const imageBaseUrl = "/storage/";
+    const existingImagePath = product.product_image
+        ? `/storage/app/public/${product.product_image}`
+        : null;
 
     const { data, setData, put, errors, processing } = useForm({
         name: product.name || "",
@@ -34,9 +36,7 @@ const Edit = ({ product, categories, attributes }) => {
     );
     const [dropdownValues, setDropdownValues] = useState([]);
     const [currentDropdownValue, setCurrentDropdownValue] = useState("");
-    const [imagePreview, setImagePreview] = useState(
-        product.product_image ? imageBaseUrl + product.product_image : null
-    );
+    const [imagePreview, setImagePreview] = useState(existingImagePath);
 
     // Sync selectedAttribute with form data
     useEffect(() => {
@@ -76,11 +76,7 @@ const Edit = ({ product, categories, attributes }) => {
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
         } else {
-            setImagePreview(
-                product.product_image
-                    ? imageBaseUrl + product.product_image
-                    : null
-            );
+            setImagePreview(existingImagePath);
         }
     };
 
@@ -349,7 +345,7 @@ const Edit = ({ product, categories, attributes }) => {
                                 {imagePreview && (
                                     <div className="relative mt-2 max-w-xs">
                                         <img
-                                            src={"/storage/app/public/" + imagePreview}
+                                            src={imagePreview}
                                             alt="Preview"
                                             className="w-full h-auto rounded"
                                         />
