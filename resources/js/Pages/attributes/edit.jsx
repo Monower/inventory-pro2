@@ -1,6 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useForm, usePage, Head, Link } from "@inertiajs/react";
+import { useEffect } from "react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ attribute }) => {
   const { company_name } = usePage().props;
@@ -46,63 +47,91 @@ const Edit = ({ attribute }) => {
   return (
     <AuthenticatedLayout>
       <Head title={`Edit Attribute - ${company_name}`} />
-      <section className="max-w-2xl mx-auto p-4 bg-card text-card-foreground rounded shadow border border-border">
-        <h3 className="text-xl font-semibold mb-4">Edit Attribute</h3>
+      <section>
+        <div className="mb-4 flex items-center gap-4">
+          <BackButton url={"attributes.index"} />
+          <h3 className="heading">Update attribute</h3>
+        </div>
 
         <form onSubmit={handleSubmit}>
-          <fieldset className="mb-4">
-            <label className="block mb-1 text-sm" htmlFor="name">
-              Attribute Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={data.name}
-              onChange={(e) => setData("name", e.target.value)}
-              className="w-full"
-              placeholder="Enter attribute name"
-            />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-          </fieldset>
+          <div className="grid grid-cols-1 gap-3 mb-4">
+            <fieldset className="custom-fieldset p-2">
+              <legend className="text-sm mx-2">
+                <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                  Attribute name
+                </label>
+              </legend>
+              <input
+                id="name"
+                type="text"
+                value={data.name}
+                onChange={(e) => setData("name", e.target.value)}
+                className="custom-input"
+                placeholder="Enter attribute name"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+              )}
+            </fieldset>
 
-          <fieldset className="mb-4">
-            <label className="block mb-1 text-sm">Attribute Values</label>
-            {data.values.map((value, index) => (
-              <div className="flex items-center mb-2" key={index}>
-                <input
-                  type="text"
-                  value={value.name}
-                  onChange={(e) => setValueAtIndex(e.target.value, index)}
-                  placeholder="Enter value"
-                  className="w-full flex-grow"
-                />
-                {data.values.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeValueField(index)}
-                    className="ml-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded"
+            <fieldset className="custom-fieldset p-2">
+              <legend className="text-sm mx-2">
+                <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                  Attribute values
+                </label>
+              </legend>
+              <div className="space-y-2">
+                {data.values.map((value, index) => (
+                  <div
+                    className="flex flex-col sm:flex-row items-start sm:items-center gap-2"
+                    key={index}
                   >
-                    &times;
-                  </button>
-                )}
+                    <input
+                      type="text"
+                      value={value.name}
+                      onChange={(e) => setValueAtIndex(e.target.value, index)}
+                      placeholder="Enter value"
+                      className="custom-input border border-ring rounded-md"
+                    />
+                    {data.values.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeValueField(index)}
+                        className="delete-button"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-            <button
-              type="button"
-              onClick={addValueField}
-              className="bg-green-500 hover:bg-green-600 text-white rounded px-4 py-2"
-            >
-              Add Value
-            </button>
-          </fieldset>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={addValueField}
+                  className="create-button"
+                >
+                  Add value
+                </button>
+              </div>
+            </fieldset>
+          </div>
 
-          <button
-            type="submit"
-            disabled={processing}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-2"
-          >
-            Update
-          </button>
+          <div className="w-full flex justify-end">
+            <Link
+              href={route("attributes.index")}
+              className="delete-button mr-2 text-center"
+            >
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={processing}
+              className="create-button"
+            >
+              {processing ? "Updating..." : "Update"}
+            </button>
+          </div>
         </form>
       </section>
     </AuthenticatedLayout>

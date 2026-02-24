@@ -1,28 +1,12 @@
 import { Link, usePage, useForm, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import DataTable from "@/Components/DataTable/DataTable";
-import React, { useState } from "react";
+import NoDataFound from "@/Components/NoDataFound/NoDataFound";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = () => {
     const { attributes, company_name } = usePage().props;
     const { delete: destroy, processing } = useForm();
-    const [search, setSearch] = useState("");
-
-    const filteredAttributes = attributes.data.filter((attr) =>
-        attr.name.toLowerCase().includes(search.toLowerCase())
-    );
-
-    // ---- Columns for DataTable ----
-    const columns = [
-        { key: "name", label: "Name" },
-        { key: "values", label: "Values" },
-    ];
-
-    // ---- Format data for DataTable ----
-    const tableData = filteredAttributes.map((attr) => ({
-        ...attr,
-        values: attr.values.map((v) => v.name).join(", "),
-    }));
+    const list = attributes?.data ?? [];
 
     // ---- Delete handler ----
     const handleDelete = (id) => {
@@ -34,52 +18,66 @@ const Index = () => {
     return (
         <AuthenticatedLayout>
             <Head title={`Attributes - ${company_name}`} />
-            <div className="p-4 max-w-5xl mx-auto">
+            <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="heading">Attributes</h2>
+                    <h3 className="heading">Attributes</h3>
                     <Link
                         href={route("attributes.create")}
                         className="create-button"
                     >
-                        Add Attribute
+                        Create
                     </Link>
                 </div>
 
-                {/* Search Input (optional) */}
-                {/* 
-                <input
-                    type="text"
-                    placeholder="Search attributes..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="border border-gray-300 rounded px-3 py-2 mb-4 w-full max-w-md"
-                /> 
-                */}
-
-                {/* ---- Reusable DataTable ---- */}
-                <DataTable
-                    columns={columns}
-                    data={tableData}
-                    actions={(row) => (
-                        <div className="flex gap-2">
-                            <Link
-                                href={route("attributes.edit", row.id)}
-                                className="edit-button"
-                            >
-                                Edit
-                            </Link>
-                            <button
-                                onClick={() => handleDelete(row.id)}
-                                disabled={processing}
-                                className="delete-button"
-                            >
-                                Delete
-                            </button>
-                        </div>
+                <div className="table-div">
+                    {list.length === 0 ? (
+                        <NoDataFound />
+                    ) : (
+                        <table className="custom-table">
+                            <thead className="custom-thead">
+                                <tr>
+                                    <th className="custom-th rounded-l-md">SI</th>
+                                    <th className="custom-th">Name</th>
+                                    <th className="custom-th">Values</th>
+                                    <th className="custom-th rounded-r-md">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {list.map((attr, index) => (
+                                    <tr key={attr.id} className="custom-body-tr">
+                                        <td className="custom-body-td">
+                                            {index + 1}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {attr.name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {attr.values?.map((v) => v.name).join(", ")}
+                                        </td>
+                                        <td className="custom-body-td text-center flex items-center gap-2">
+                                            <Link
+                                                href={route("attributes.edit", attr.id)}
+                                                className="edit-button"
+                                            >
+                                                <EditIcon className="w-4 h-4 inline" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(attr.id)}
+                                                disabled={processing}
+                                                className="delete-button"
+                                            >
+                                                <Trash2Icon className="w-4 h-4 inline" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
-                    noDataMessage="No attributes found."
-                />
-            </div>
+                </div>
+            </section>
         </AuthenticatedLayout>
     );
 };
