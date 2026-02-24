@@ -1,43 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
+import { BiChevronDown } from "react-icons/bi";
 
-export default function SidebarDropdown({ title, icon, children }) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function SidebarDropdown({
+    title,
+    icon,
+    children,
+    active = false,
+    defaultOpen = false,
+}) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
+    useEffect(() => {
+        setIsOpen(defaultOpen);
+    }, [defaultOpen]);
 
-  return (
-    <div>
-      {/* Dropdown Trigger */}
-      <button
-        onClick={toggleDropdown}
-        className="flex items-center px-4 py-3 rounded-md text-primary w-full text-left"
-      >
-        {icon && <span className="mr-2">{icon}</span>}
-        <span className="sidebar-text flex-1">{title}</span>
-        {/* <i className={`fas fa-chevron-down transition-transform ${isOpen ? 'rotate-180' : ''}`}></i> */}
-      </button>
+    const toggleDropdown = () => {
+        setIsOpen((prev) => !prev);
+    };
 
-      {/* Dropdown Content */}
-      {isOpen && (
-        <div className="ml-10 mt-2 space-y-2">
-          {children}
-        </div>
-      )}
-      {/* {isOpen && (
-        <div className="ml-10 mt-2 space-y-2">
-          {childrenLinks.map((link, index) => (
-            <a
-              key={index}
-              href={link.href}
-              className="block text-gray-600 hover:text-gray-800"
+    return (
+        <div>
+            <button
+                onClick={toggleDropdown}
+                className={
+                    "flex w-full items-center px-4 py-3 rounded-md text-left transition-colors duration-200 " +
+                    (active
+                        ? "text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 border border-violet-200 dark:border-violet-700/60"
+                        : "text-primary hover:bg-muted")
+                }
             >
-              {link.label}
-            </a>
-          ))}
+                {icon && <span className="mr-2">{icon}</span>}
+                <span className="sidebar-text flex-1">{title}</span>
+                <BiChevronDown
+                    className={
+                        "h-5 w-5 transition-transform duration-200 " +
+                        (isOpen ? "rotate-180" : "")
+                    }
+                />
+            </button>
+
+            {isOpen && <div className="ml-10 mt-2 space-y-2">{children}</div>}
         </div>
-      )} */}
-    </div>
-  );
+    );
 }
