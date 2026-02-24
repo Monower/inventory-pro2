@@ -3,12 +3,7 @@ import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
 import Sidebar from "./Sidebar";
-import SidebarDropdown from "@/Components/SidebarDropdown";
-import { BsBoxes } from "react-icons/bs";
-import { BsPersonBoundingBox } from "react-icons/bs";
-import { AiOutlineBorderlessTable } from "react-icons/ai";
-import { CiDollar } from "react-icons/ci";
-import { PiGearSixLight } from "react-icons/pi";
+import Menu from "@/Components/Menu/Menu";
 import { useState, useEffect } from "react";
 import { Sun, Moon } from "lucide-react";
 import { applyTheme, resolveTheme } from "@/lib/theme";
@@ -18,8 +13,6 @@ export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const { settings } = usePage().props;
     const { url } = usePage();
-    const { auth } = usePage().props;
-    const permissions = auth.user?.permissions || [];
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
 
@@ -203,127 +196,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route("dashboard")}
-                            active={route().current("dashboard")}
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={"/customers"}
-                            active={route().current("dashboard")}
-                        >
-                            Customer
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink
-                            href={"/staffs"}
-                            active={route().current("dashboard")}
-                        >
-                            Staffs
-                        </ResponsiveNavLink>
-
-                        <SidebarDropdown title="Product" icon={<BsBoxes />}>
-                            <div className="flex flex-col mt-2 space-y-2">
-                                {permissions.includes("view product") && (
-                                    <Link href="/products">Product list</Link>
-                                )}
-                                {permissions.includes("create product") && (
-                                    <Link href="/products/create">
-                                        Create product
-                                    </Link>
-                                )}
-                                {permissions.includes("view category") && (
-                                    <Link href="/categories">
-                                        Category list
-                                    </Link>
-                                )}
-                                {permissions.includes("view subcategory") && (
-                                    <Link href="/sub-categories">
-                                        Sub-category list
-                                    </Link>
-                                )}
-                                {permissions.includes("view attribute") && (
-                                    <Link href="/attributes">
-                                        Attribute list
-                                    </Link>
-                                )}
-                                {/* {permissions.includes(
-                                    "view attribute value"
-                                ) && (
-                                    <Link href="/attribute-values">
-                                        Attribute value list
-                                    </Link>
-                                )} */}
-                                {permissions.includes("view purchase") && (
-                                    <Link href="/purchases">Purchases</Link>
-                                )}
-                            </div>
-                        </SidebarDropdown>
-
-                        {(permissions.includes("view role") ||
-                            permissions.includes("view user")) && (
-                            <SidebarDropdown
-                                title="User management"
-                                icon={<BsPersonBoundingBox />}
-                            >
-                                <div className="flex flex-col mt-2 space-y-2">
-                                    {permissions.includes("view role") && (
-                                        <Link href="/roles">User role</Link>
-                                    )}
-                                    {permissions.includes("view user") && (
-                                        <Link href="/users">User list</Link>
-                                    )}
-                                </div>
-                            </SidebarDropdown>
-                        )}
-
-                        {permissions.includes("view category") && (
-                            <SidebarDropdown
-                                title="Order"
-                                icon={<AiOutlineBorderlessTable />}
-                            >
-                                <div className="flex flex-col mt-2 space-y-2">
-                                    <Link href="/banks">Bank list</Link>
-                                    <Link href="/orders/create">
-                                        Create order
-                                    </Link>
-                                    <Link href="/orders">Order list</Link>
-                                </div>
-                            </SidebarDropdown>
-                        )}
-
-                        {permissions.includes("view transaction") && (
-                            <Link
-                                href="/transactions"
-                                className={
-                                    url.includes("transaction")
-                                        ? "flex items-center px-4 py-3 rounded-md text-primary bg-primary-foreground gap-2"
-                                        : "flex items-center px-4 py-3 rounded-md text-primary gap-2"
-                                }
-                            >
-                                <CiDollar />
-                                <span className="sidebar-text">
-                                    Transaction tracker
-                                </span>
-                            </Link>
-                        )}
-
-                        {(permissions.includes("view settings") ||
-                            permissions.includes("view profile")) && (
-                            <SidebarDropdown
-                                title="Settings"
-                                icon={<PiGearSixLight />}
-                            >
-                                <div className="flex flex-col mt-2 space-y-2">
-                                    <Link href="/profile">Profile</Link>
-                                </div>
-                                <div className="flex flex-col mt-2 space-y-2">
-                                    <Link href="/settings">
-                                        General settings
-                                    </Link>
-                                </div>
-                            </SidebarDropdown>
-                        )}
+                        <Menu url={url} />
                     </div>
 
                     <div className="border-t border-border pb-1 pt-4">
