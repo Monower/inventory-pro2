@@ -34,14 +34,14 @@ const Index = ({ transactions }) => {
             <Head title="Transactions" />
 
             <section>
-                <div className="flex justify-between items-center mb-4">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h3 className="heading">Transactions</h3>
 
-                    <div className="flex gap-2">
-                        <Link href="/transaction/create?type=add_money" className="create-button">
+                    <div className="grid grid-cols-1 gap-2 sm:flex sm:gap-2 w-full sm:w-auto">
+                        <Link href="/transaction/create?type=add_money" className="create-button text-center">
                             Add money
                         </Link>
-                        <Link href="/transaction/create?type=expense" className="edit-button">
+                        <Link href="/transaction/create?type=expense" className="edit-button text-center">
                             Add expenses
                         </Link>
                     </div>

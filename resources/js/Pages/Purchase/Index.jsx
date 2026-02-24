@@ -1,7 +1,8 @@
 import React from "react";
 import { Link, usePage, useForm, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import DataTable from "@/Components/DataTable/DataTable";
+import NoDataFound from "@/Components/NoDataFound/NoDataFound";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 export default function Index() {
     const { purchase_items, company_name } = usePage().props;
@@ -13,72 +14,97 @@ export default function Index() {
         }
     };
 
-    // ---- Columns for DataTable ----
-    const columns = [
-        { key: "invoice_no", label: "Invoice" },
-        { key: "product_name", label: "Product" },
-        { key: "supplier_name", label: "Supplier" },
-        { key: "quantity", label: "Quantity" },
-        { key: "buying_price", label: "Unit Price" },
-        { key: "total_amount", label: "Total" },
-        { key: "paid_amount", label: "Paid" },
-        { key: "payment_status", label: "Payment Status" },
-        { key: "purchase_date", label: "Date" },
-    ];
-
-    // ---- Format data for DataTable ----
-    const tableData = purchase_items.map((item) => ({
-        ...item,
-        invoice_no: item.purchase.invoice_no,
-        product_name: item.product.name,
-        supplier_name: item.purchase.supplier_name,
-        quantity: item.quantity,
-        purchase_date: item.purchase.purchase_date,
-        buying_price: item.buying_price,
-        total_amount: item.purchase.total_amount,
-        paid_amount: item.purchase.paid_amount,
-        payment_status: item.purchase.payment_status,
-        id: item.purchase.id, // for actions
-    }));
-
     return (
         <AuthenticatedLayout>
             <Head title={`Purchases - ${company_name}`} />
-            <div className="p-6">
-                <div className="flex justify-between mb-4">
-                    <h1 className="text-xl font-semibold">All Purchases</h1>
+            <section>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="heading">Purchases</h3>
                     <Link
                         href={route("purchases.create")}
                         className="create-button"
                     >
-                        + New Purchase
+                        Create
                     </Link>
                 </div>
 
-                {/* ---- Reusable DataTable ---- */}
-                <DataTable
-                    columns={columns}
-                    data={tableData}
-                    actions={(row) => (
-                        <div className="flex gap-2">
-                            <Link
-                                href={route("purchases.edit", row.id)}
-                                className="bg-yellow-500 text-white px-3 py-1 rounded"
-                            >
-                                Edit
-                            </Link>
-                            <button
-                                onClick={() => handleDelete(row.id)}
-                                className="bg-red-600 text-white px-3 py-1 rounded"
-                                disabled={processing}
-                            >
-                                {processing ? "Deleting..." : "Delete"}
-                            </button>
-                        </div>
+                <div className="table-div">
+                    {purchase_items.length === 0 ? (
+                        <NoDataFound />
+                    ) : (
+                        <table className="custom-table">
+                            <thead className="custom-thead">
+                                <tr>
+                                    <th className="custom-th rounded-l-md">SI</th>
+                                    <th className="custom-th">Invoice</th>
+                                    <th className="custom-th">Product</th>
+                                    <th className="custom-th">Supplier</th>
+                                    <th className="custom-th">Quantity</th>
+                                    <th className="custom-th">Unit Price</th>
+                                    <th className="custom-th">Total</th>
+                                    <th className="custom-th">Paid</th>
+                                    <th className="custom-th">Payment Status</th>
+                                    <th className="custom-th">Date</th>
+                                    <th className="custom-th rounded-r-md">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {purchase_items.map((item, index) => (
+                                    <tr key={item.id} className="custom-body-tr">
+                                        <td className="custom-body-td">
+                                            {index + 1}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.purchase?.invoice_no}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.product?.name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.purchase?.supplier_name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.quantity}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.buying_price}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.purchase?.total_amount}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.purchase?.paid_amount}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.purchase?.payment_status}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.purchase?.purchase_date}
+                                        </td>
+                                        <td className="custom-body-td text-center flex items-center gap-2">
+                                            <Link
+                                                href={route("purchases.edit", item.purchase?.id)}
+                                                className="edit-button"
+                                            >
+                                                <EditIcon className="w-4 h-4 inline" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(item.purchase?.id)}
+                                                className="delete-button"
+                                                disabled={processing}
+                                            >
+                                                <Trash2Icon className="w-4 h-4 inline" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
-                    noDataMessage="No purchases found."
-                />
-            </div>
+                </div>
+            </section>
         </AuthenticatedLayout>
     );
 }
