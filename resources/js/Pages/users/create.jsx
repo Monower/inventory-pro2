@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, Head, usePage } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = ({ roles }) => {
+    const { company_name } = usePage().props;
     const { data, setData, post, errors } = useForm({
         name: "",
         email: "",
@@ -42,9 +44,11 @@ const Create = ({ roles }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Create User - ${company_name}`} />
             <section>
-                <div className="mb-4">
-                    <h3 className="text-xl font-semibold">Add new user</h3>
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"users.index"} />
+                    <h3 className="heading">Add new user</h3>
                 </div>
 
                 <div>

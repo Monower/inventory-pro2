@@ -1,9 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm, Head } from "@inertiajs/react";
+import { Link, useForm, Head, usePage } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { EditIcon, Trash2Icon } from "lucide-react";
 
 const Index = ({ transactions }) => {
+    const { company_name } = usePage().props;
     const { setData, delete: destroy } = useForm({ id: null });
 
     const handleDelete = (id) => {
@@ -31,8 +32,7 @@ const Index = ({ transactions }) => {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Transactions" />
-
+            <Head title={`Transactions - ${company_name}`} />
             <section>
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h3 className="heading">Transactions</h3>

@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
+import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ user, roles }) => {
+    const { company_name } = usePage().props;
     const initialRole = user.roles[0] ? user.roles[0].name : "";
 
     const { data, setData, put, errors, post } = useForm({
@@ -49,9 +51,11 @@ const Edit = ({ user, roles }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Edit user - ${company_name}`} />
             <section>
-                <div className="mb-4">
-                    <h3 className="text-xl font-semibold">Edit user</h3>
+                <div className="mb-4 flex items-center gap-4">
+                    <BackButton url={"users.index"} />
+                    <h3 className="heading">Edit user</h3>
                 </div>
 
                 <form onSubmit={handleSubmit}>

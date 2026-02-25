@@ -1,9 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = () => {
-    const { url } = usePage();
+    const { url, company_name } = usePage();
     const searchParams = new URLSearchParams(new URL(url, window.location.origin).search);
     const { data, setData, post, errors } = useForm({
         name: "",
@@ -20,6 +20,7 @@ const Create = () => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Create Transaction - ${company_name}`} />
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"transactions.index"} />

@@ -49,7 +49,7 @@ const Index = ({ users }) => {
 
     return (
         <AuthenticatedLayout>
-            {/* <Head title={`Create Role - ${company_name}`} /> */}
+            <Head title={`Users - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Users</h3>

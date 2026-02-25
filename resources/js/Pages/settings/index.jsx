@@ -1,9 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage, Head } from "@inertiajs/react";
 import { useState, useRef, useEffect } from "react";
 import { X, Sun, Moon } from "lucide-react";
 
 const Index = ({ settings }) => {
+    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors, wasSuccessful } = useForm({
         company_name: settings?.company_name || "",
         logo: null,
@@ -69,6 +70,7 @@ const Index = ({ settings }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Settings - ${company_name}`} />
             <section className="max-w-2xl mx-auto bg-card text-card-foreground shadow-md rounded-2xl p-6 transition-colors duration-300">
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-2xl font-semibold">General Settings</h3>

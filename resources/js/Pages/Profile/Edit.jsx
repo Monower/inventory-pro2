@@ -1,10 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
 export default function Edit({ mustVerifyEmail, status }) {
+    const { company_name } = usePage().props;
     return (
         <AuthenticatedLayout
             // header={
@@ -13,7 +14,7 @@ export default function Edit({ mustVerifyEmail, status }) {
             //     </h2>
             // }
         >
-            <Head title="Profile" />
+            <Head title={`Profile - ${company_name}`} />
 
             <div className="py-2">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
