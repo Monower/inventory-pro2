@@ -97,8 +97,8 @@ const Create = ({ categories, attributes }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Add Product - ${company_name}`} />
+        <AuthenticatedLayout title="Add Product">
+            {/* <Head title={`Add Product - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"products.index"} />

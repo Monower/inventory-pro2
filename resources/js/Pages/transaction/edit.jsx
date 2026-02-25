@@ -118,7 +118,7 @@ const Edit = ({ transaction }) => {
                         </div>
 
                         <div>
-                            <button className="bg-blue-500 text-white p-1 px-2 rounded">
+                            <button className="edit-button">
                                 Update
                             </button>
                         </div>

@@ -23,8 +23,8 @@ const Index = () => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Products - ${company_name}`} />
+        <AuthenticatedLayout title="Products">
+            {/* <Head title={`Products - ${company_name}`} /> */}
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Products</h3>

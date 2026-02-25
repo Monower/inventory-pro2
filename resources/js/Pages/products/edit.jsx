@@ -136,8 +136,8 @@ const Edit = ({ product, categories, attributes }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Edit Product - ${company_name}`} />
+        <AuthenticatedLayout title="Edit Product">
+            {/* <Head title={`Edit Product - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"products.index"} />

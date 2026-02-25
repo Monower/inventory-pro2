@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm, Head } from "@inertiajs/react";
+import { Link, useForm} from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { usePage } from "@inertiajs/react";
 import { Trash2Icon, EyeIcon, EditIcon } from "lucide-react";
@@ -7,7 +7,7 @@ import Alert from "@/Components/Alert/Alert";
 import { dateTimeFormater } from "@/util/DateFormater";
 
 const Index = ({ orders }) => {
-    const { company_name, flash } = usePage().props;
+    const { flash } = usePage().props;
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
@@ -46,8 +46,7 @@ const Index = ({ orders }) => {
     }));
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Orders - ${company_name}`} />
+        <AuthenticatedLayout title="Orders">
             <section>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">

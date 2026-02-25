@@ -7,8 +7,8 @@ const Show = ({ product }) => {
     const { company_name } = usePage().props;
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`View product - ${company_name}`} />
+        <AuthenticatedLayout title="View product">
+            {/* <Head title={`View product - ${company_name}`} /> */}
 
             <section>
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

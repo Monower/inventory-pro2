@@ -1,7 +1,7 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, Head } from "@inertiajs/react";
 import Sidebar from "./Sidebar";
 import Menu from "@/Components/Menu/Menu";
 import { useState, useEffect } from "react";
@@ -9,9 +9,9 @@ import { Sun, Moon } from "lucide-react";
 import { applyTheme, resolveTheme } from "@/lib/theme";
 
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
-    const { settings } = usePage().props;
+    const { settings, company_name } = usePage().props;
     const { url } = usePage();
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
@@ -31,6 +31,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-background">
+            <Head title={title + " - " + company_name} />
             <nav className="bg-background">
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">

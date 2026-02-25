@@ -126,8 +126,8 @@ const Edit = ({ order, customers, products, banks }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Edit order - ${company_name}`} />
+        <AuthenticatedLayout title="Edit order">
+            {/* <Head title={`Edit order - ${company_name}`} /> */}
 
             <section>
                 <div className="mb-4 flex items-center gap-4">

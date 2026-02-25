@@ -37,7 +37,7 @@ const Index = ({ roles }) => {
 
                     <Link
                         href="/roles/create"
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                        className="create-button"
                     >
                         Create
                     </Link>
@@ -51,14 +51,14 @@ const Index = ({ roles }) => {
                             <div className="flex gap-2">
                                 <Link
                                     href={route("role.edit", row.id)}
-                                    className="bg-blue-500 text-white py-1 px-2 rounded"
+                                    className="edit-button"
                                 >
                                     Edit
                                 </Link>
                                 <button
                                     onClick={() => handleDelete(row.id)}
                                     disabled={processing}
-                                    className="bg-red-500 text-white py-1 px-2 rounded"
+                                    className="delete-button"
                                 >
                                     {processing ? "Deleting..." : "Delete"}
                                 </button>

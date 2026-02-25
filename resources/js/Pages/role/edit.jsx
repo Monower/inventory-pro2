@@ -167,7 +167,7 @@ const Edit = ({ role, permissions }) => {
                     <div>
                         <button
                             type="submit"
-                            className="bg-blue-500 text-white p-1 px-2 rounded"
+                            className="edit-button"
                         >
                             Update
                         </button>

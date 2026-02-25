@@ -78,8 +78,8 @@ const Create = ({ customers, products, banks }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Create order - ${company_name}`} />
+        <AuthenticatedLayout title="Create order">
+            {/* <Head title={`Create order - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"orders.index"} />

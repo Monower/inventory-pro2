@@ -114,7 +114,7 @@ const Create = () => {
                         </div>
 
                         <div>
-                            <button className="bg-blue-500 text-white p-1 px-2 rounded">
+                            <button className="create-button">
                                 Save
                             </button>
                         </div>
