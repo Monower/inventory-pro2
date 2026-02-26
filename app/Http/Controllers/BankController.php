@@ -13,9 +13,21 @@ class BankController extends Controller
      */
     public function index()
     {
-        $banks = Bank::all();
+        $q = trim((string) request()->query('q', ''));
+
+        $banks = Bank::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%");
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('bank/index', [
             'banks' => $banks,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

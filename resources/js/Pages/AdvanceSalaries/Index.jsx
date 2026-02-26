@@ -2,9 +2,12 @@ import React from "react";
 import { Link, usePage, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 export default function AdvanceIndex() {
-    const { advances, flash, company_name } = usePage().props;
+    const { advances, company_name, filters } = usePage().props;
+    const list = advances?.data ?? [];
 
     return (
         <AuthenticatedLayout>
@@ -19,15 +22,15 @@ export default function AdvanceIndex() {
                         Add Advance
                     </Link>
                 </div>
-
-                {flash?.success && (
-                    <div className="bg-green-100 text-green-800 p-3 rounded mb-4">
-                        {flash.success}
-                    </div>
-                )}
+                <IndexFilters
+                    routeName="advance-salaries.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search advances..."
+                    className="mb-4"
+                />
 
                 <div className="table-div">
-                    {advances?.length === 0 ? (
+                    {list.length === 0 ? (
                         <NoDataFound />
                     ) : (
                         <table className="custom-table">
@@ -42,9 +45,9 @@ export default function AdvanceIndex() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {advances.map((a, index) => (
+                                {list.map((a, index) => (
                                     <tr key={a.id} className="custom-body-tr">
-                                        <td className="custom-body-td">{index + 1}</td>
+                                        <td className="custom-body-td">{(advances.current_page - 1) * advances.per_page + index + 1}</td>
                                         <td className="custom-body-td">{a.staff.name}</td>
                                         <td className="custom-body-td">{a.amount}</td>
                                         <td className="custom-body-td">
@@ -70,6 +73,7 @@ export default function AdvanceIndex() {
                         </table>
                     )}
                 </div>
+                <Pagination links={advances?.links} />
             </section>
         </AuthenticatedLayout>
     );

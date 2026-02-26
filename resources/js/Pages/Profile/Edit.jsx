@@ -7,30 +7,31 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 export default function Edit({ mustVerifyEmail, status }) {
     const { company_name } = usePage().props;
     return (
-        <AuthenticatedLayout
-            // header={
-            //     <h2 className="text-xl font-semibold leading-tight text-gray-800">
-            //         Profile
-            //     </h2>
-            // }
-        >
+        <AuthenticatedLayout title="Profile">
             <Head title={`Profile - ${company_name}`} />
 
-            <div className="py-2">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+            <div className="mx-auto max-w-7xl py-3">
+                <div className="mb-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+                    <h1 className="text-2xl font-semibold text-foreground">My Profile</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Keep your account details, password, and avatar up to date.
+                    </p>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}
                             status={status}
-                            className="max-w-xl"
+                            className="w-full"
                         />
                     </div>
 
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdatePasswordForm className="max-w-xl" />
+                    <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                        <UpdatePasswordForm className="w-full" />
                     </div>
 
-                    {/* <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                    {/* <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
                         <DeleteUserForm className="max-w-xl" />
                     </div> */}
                 </div>

@@ -5,14 +5,15 @@ import { useState } from "react";
 import { dateFormater } from "@/util/DateFormater";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ categories }) => {
-    const { company_name } = usePage().props;
+    const { company_name, filters } = usePage().props;
+    const list = categories?.data ?? [];
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null); // null = create, object = edit
     const [clientErrors, setClientErrors] = useState({});
-
-    console.log('categories: ',categories.length);
 
     const {
         data,
@@ -96,6 +97,12 @@ const Index = ({ categories }) => {
                         Create new
                     </button>
                 </div>
+                <IndexFilters
+                    routeName="categories.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search categories..."
+                    className="mb-4"
+                />
 
                 {/* Modal for Create / Edit */}
                 <Modal
@@ -166,7 +173,7 @@ const Index = ({ categories }) => {
 
                 {/* Table */}
                 <div className="table-div">
-                    {categories?.length > 0 ? (
+                    {list.length > 0 ? (
                         <table className="w-full text-left border-collapse border">
                             <thead className="custom-thead">
                                 <tr>
@@ -181,12 +188,12 @@ const Index = ({ categories }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {categories.map((category, index) => (
+                                {list.map((category, index) => (
                                     <tr
                                         key={category.id}
                                         className="custom-body-tr"
                                     >
-                                        <td>{index + 1}</td>
+                                        <td>{(categories.current_page - 1) * categories.per_page + index + 1}</td>
                                         <td>{category.name}</td>
                                         <td>
                                             {dateFormater(category.created_at)}
@@ -222,6 +229,7 @@ const Index = ({ categories }) => {
                         <NoDataFound />
                     )}
                 </div>
+                <Pagination links={categories?.links} />
             </section>
         </AuthenticatedLayout>
     );

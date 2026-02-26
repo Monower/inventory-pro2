@@ -14,13 +14,30 @@ class SubcategoriesController extends Controller
      */
     public function index()
     {
-        $subcategories = SubCategory::with('category')->latest()->get();
+        $q = trim((string) request()->query('q', ''));
+
+        $subcategories = SubCategory::with('category')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhereHas('category', function ($categoryQuery) use ($q) {
+                            $categoryQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         $categories = Category::select('id', 'name')->get();
 
         // Pass both subcategories and categories for the modal create/edit
         return Inertia::render('subcategories/index', [
             'subcategories' => $subcategories,
             'categories' => $categories,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

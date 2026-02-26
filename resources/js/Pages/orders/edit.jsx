@@ -5,7 +5,8 @@ import { useState, useEffect } from "react";
 import { useForm, Head, usePage, Link } from "@inertiajs/react";
 
 const Edit = ({ order, customers, products, banks }) => {
-    const { company_name, flash } = usePage().props;
+    const { company_name } = usePage().props;
+    const [clientError, setClientError] = useState("");
 
     /* -----------------------------
         Form
@@ -113,15 +114,16 @@ const Edit = ({ order, customers, products, banks }) => {
         e.preventDefault();
 
         if (cart.length === 0) {
-            alert("Cart cannot be empty.");
+            setClientError("Cart cannot be empty.");
             return;
         }
 
         if (paidAmount > totalPrice) {
-            alert("Payment amount cannot exceed total amount.");
+            setClientError("Payment amount cannot exceed total amount.");
             return;
         }
 
+        setClientError("");
         put(route("orders.update", order.id));
     };
 
@@ -156,9 +158,9 @@ const Edit = ({ order, customers, products, banks }) => {
                         }}
                     />
                 )}
-
-                {/* Flash */}
-                {(flash?.success || flash?.error) && <Alert flash={flash} />}
+                {clientError && (
+                    <Alert flash={{ error: clientError }} autoHideMs={3000} />
+                )}
 
                 {/* Products & Cart */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -305,7 +307,7 @@ const Edit = ({ order, customers, products, banks }) => {
 
                     {/* Customer */}
                     <div>
-                        <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
+                        <label className="required-label mb-1">
                             Select customer
                         </label>
                         <select
@@ -326,7 +328,7 @@ const Edit = ({ order, customers, products, banks }) => {
 
                     {/* Payment */}
                     <div>
-                        <label className="block text-sm font-medium text-primary mb-2 after:content-['_*'] after:text-red-500">
+                        <label className="required-label mb-2">
                             Payment method
                         </label>
                         <div className="flex flex-wrap gap-4 mb-4">
@@ -379,7 +381,7 @@ const Edit = ({ order, customers, products, banks }) => {
 
                     {/* PAYMENT INPUT (CLAMPED) */}
                     <div>
-                        <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
+                        <label className="required-label mb-1">
                             Payment amount
                         </label>
                         <input

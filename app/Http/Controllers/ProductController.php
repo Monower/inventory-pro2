@@ -15,9 +15,31 @@ class ProductController extends Controller
     // Display a listing of the products
     public function index()
     {
-        $products = Product::with(['subCategory', 'attributeValue'])->paginate(10);
+        $q = trim((string) request()->query('q', ''));
+
+        $products = Product::with(['subCategory', 'attributeValue'])
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('selling_price', 'like', "%{$q}%")
+                        ->orWhere('stock', 'like', "%{$q}%")
+                        ->orWhereHas('subCategory', function ($categoryQuery) use ($q) {
+                            $categoryQuery->where('name', 'like', "%{$q}%");
+                        })
+                        ->orWhereHas('attributeValue', function ($attributeQuery) use ($q) {
+                            $attributeQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('products/index', [
             'products' => $products,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

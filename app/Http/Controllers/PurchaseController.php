@@ -14,10 +14,29 @@ class PurchaseController extends Controller
 {
     public function index()
     {
-        $purchase_items = PurchaseItem::with(['purchase', 'product'])->latest()->get();
+        $q = trim((string) request()->query('q', ''));
+
+        $purchase_items = PurchaseItem::with(['purchase', 'product'])
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->whereHas('product', function ($productQuery) use ($q) {
+                        $productQuery->where('name', 'like', "%{$q}%");
+                    })->orWhereHas('purchase', function ($purchaseQuery) use ($q) {
+                        $purchaseQuery->where('invoice_no', 'like', "%{$q}%")
+                            ->orWhere('supplier_name', 'like', "%{$q}%")
+                            ->orWhere('payment_status', 'like', "%{$q}%");
+                    });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Purchase/Index', [
-            'purchase_items' => $purchase_items
+            'purchase_items' => $purchase_items,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

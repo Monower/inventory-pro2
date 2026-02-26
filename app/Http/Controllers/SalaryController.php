@@ -12,9 +12,27 @@ class SalaryController extends Controller
 {
     public function index()
     {
-        $salaries = Salary::with('staff')->latest()->get();
+        $q = trim((string) request()->query('q', ''));
+
+        $salaries = Salary::with('staff')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('month', 'like', "%{$q}%")
+                        ->orWhere('net_salary', 'like', "%{$q}%")
+                        ->orWhereHas('staff', function ($staffQuery) use ($q) {
+                            $staffQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('Salaries/Index', [
-            'salaries' => $salaries
+            'salaries' => $salaries,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

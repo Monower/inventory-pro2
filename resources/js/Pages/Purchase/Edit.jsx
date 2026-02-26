@@ -5,6 +5,7 @@ import BackButton from "@/Components/BackButton/BackButton";
 
 export default function Edit() {
     const { purchase, products, company_name } = usePage().props;
+    const [clientError, setClientError] = useState("");
 
     const previousPaid = Number(purchase.paid_amount || 0); // total paid before this edit
 
@@ -49,16 +50,17 @@ export default function Edit() {
 
         // Validation
         if (form.new_paid < 0) {
-            alert("Payment cannot be negative.");
+            setClientError("Payment cannot be negative.");
             return;
         }
 
         if (cumulativePaid > totalAmount) {
-            alert(
+            setClientError(
                 `The payment exceeds the total amount by ৳ ${(cumulativePaid - totalAmount).toFixed(2)}.`
             );
             return;
         }
+        setClientError("");
 
         // Submit only the new payment to backend
         router.put(route("purchases.update", purchase.id), {
@@ -75,11 +77,16 @@ export default function Edit() {
                     <BackButton url={"purchases.index"} />
                     <h3 className="text-xl font-semibold">Edit Purchase</h3>
                 </div>
+                {clientError && (
+                    <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+                        {clientError}
+                    </p>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     {/* Supplier */}
                     <div className="mb-3">
-                        <label>Supplier Name:</label>
+                        <label className="required-label">Supplier Name:</label>
                         <input
                             type="text"
                             className="w-full"
@@ -92,7 +99,7 @@ export default function Edit() {
 
                     {/* Purchase Date */}
                     <div className="mb-3">
-                        <label>Purchase Date:</label>
+                        <label className="required-label">Purchase Date:</label>
                         <input
                             type="date"
                             className="w-full"
@@ -105,7 +112,7 @@ export default function Edit() {
 
                     {/* Payment Status */}
                     <div className="mb-3">
-                        <label>Payment Status:</label>
+                        <label className="required-label">Payment Status:</label>
                         <select
                             className="w-full"
                             value={form.payment_status}
@@ -192,7 +199,7 @@ export default function Edit() {
                         {(form.payment_status === "partial" || form.payment_status === "unpaid") &&
                             remainingAmount > 0 && (
                                 <div className="mt-2">
-                                    <label>New Payment:</label>
+                                    <label className="required-label">New Payment:</label>
                                     <input
                                         type="number"
                                         className="w-full"

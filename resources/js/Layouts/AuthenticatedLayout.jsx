@@ -2,6 +2,7 @@ import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage, Head } from "@inertiajs/react";
+import Alert from "@/Components/Alert/Alert";
 import Sidebar from "./Sidebar";
 import Menu from "@/Components/Menu/Menu";
 import { useState, useEffect } from "react";
@@ -11,7 +12,7 @@ import { applyTheme, resolveTheme } from "@/lib/theme";
 
 export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
-    const { settings, company_name } = usePage().props;
+    const { settings, company_name, flash } = usePage().props;
     const { url } = usePage();
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
@@ -236,7 +237,10 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
 
             <div className="flex">
                 <Sidebar url={url} />
-                <main className="w-full min-w-0 p-4 px-4">{children}</main>
+                <main className="w-full min-w-0 p-4 px-4">
+                    {(flash?.success || flash?.error) && <Alert flash={flash} />}
+                    {children}
+                </main>
             </div>
         </div>
     );

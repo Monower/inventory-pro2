@@ -37,6 +37,7 @@ const Edit = ({ product, categories, attributes }) => {
     const [dropdownValues, setDropdownValues] = useState([]);
     const [currentDropdownValue, setCurrentDropdownValue] = useState("");
     const [imagePreview, setImagePreview] = useState(existingImagePath);
+    const [clientError, setClientError] = useState("");
 
     // Sync selectedAttribute with form data
     useEffect(() => {
@@ -129,9 +130,10 @@ const Edit = ({ product, categories, attributes }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!data.attribute_value_ids.length) {
-            alert("Please select at least one attribute value.");
+            setClientError("Please select at least one attribute value.");
             return;
         }
+        setClientError("");
         put(route("products.update", product.id));
     };
 
@@ -143,6 +145,11 @@ const Edit = ({ product, categories, attributes }) => {
                     <BackButton url={"products.index"} />
                     <h3 className="text-xl font-semibold">Edit Product</h3>
                 </div>
+                {clientError && (
+                    <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+                        {clientError}
+                    </p>
+                )}
 
                 <div>
                     <form onSubmit={handleSubmit} encType="multipart/form-data">

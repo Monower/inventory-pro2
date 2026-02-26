@@ -2,9 +2,12 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, usePage, Head } from "@inertiajs/react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ staffs }) => {
-    const { auth, company_name } = usePage().props;
+    const { auth, company_name, filters } = usePage().props;
+    const list = staffs?.data ?? [];
     const canCreateStaff = auth?.user?.permissions.includes("create staff");
     const {
         setData,
@@ -34,9 +37,15 @@ const Index = ({ staffs }) => {
                         </Link>
                     )}
                 </div>
+                <IndexFilters
+                    routeName="staffs.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search employees..."
+                    className="mb-4"
+                />
 
                 <div className="table-div">
-                    {staffs?.length === 0 ? (
+                    {list.length === 0 ? (
                         <NoDataFound />
                     ) : (
                         <table className="custom-table">
@@ -52,12 +61,12 @@ const Index = ({ staffs }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {staffs.map((staff, index) => (
+                                {list.map((staff, index) => (
                                     <tr
                                         key={index}
                                         className="custom-body-tr"
                                     >
-                                        <td className="custom-body-td">{index + 1}</td>
+                                        <td className="custom-body-td">{(staffs.current_page - 1) * staffs.per_page + index + 1}</td>
                                         <td className="custom-body-td">{staff?.name}</td>
                                         <td className="custom-body-td">{staff?.phone}</td>
                                         <td className="custom-body-td">{staff?.salary}</td>
@@ -88,6 +97,7 @@ const Index = ({ staffs }) => {
                         </table>
                     )}
                 </div>
+                <Pagination links={staffs?.links} />
             </section>
         </AuthenticatedLayout>
     );

@@ -1,19 +1,15 @@
 import { Link, usePage, Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import React, { useState } from "react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, EyeIcon, Trash2Icon } from "lucide-react";
 import { dateTimeFormater } from "@/util/DateFormater";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = () => {
-    const { products, company_name } = usePage().props;
-    const [search, setSearch] = useState("");
+    const { products, company_name, filters } = usePage().props;
+    const list = products?.data ?? [];
     const { setData, delete: destroy } = useForm({ id: null });
-
-    // Filter products locally (can be replaced with server-side search)
-    const filteredProducts = products.data.filter((product) =>
-        product.name.toLowerCase().includes(search.toLowerCase())
-    );
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this product?")) {
@@ -35,9 +31,15 @@ const Index = () => {
                         Add Product
                     </Link>
                 </div>
+                <IndexFilters
+                    routeName="products.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search products..."
+                    className="mb-4"
+                />
 
                 <div className="table-div">
-                    {filteredProducts.length > 0 ? (
+                    {list.length > 0 ? (
                         <table className="custom-table">
                             <thead className="custom-thead">
                                 <tr>
@@ -59,13 +61,13 @@ const Index = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredProducts.map((product,index) => (
+                                {list.map((product, index) => (
                                     <tr
                                         key={product.id}
                                         className="custom-body-tr"
                                     >
                                         <td className="custom-body-td">
-                                            {index + 1}
+                                            {(products.current_page - 1) * products.per_page + index + 1}
                                         </td>
                                         <td>
                                             <img
@@ -122,6 +124,7 @@ const Index = () => {
                         <NoDataFound />
                     )}
                 </div>
+                <Pagination links={products?.links} />
             </section>
         </AuthenticatedLayout>
     );

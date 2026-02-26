@@ -14,16 +14,12 @@ export default function UpdateProfileInformation({
     const user = usePage().props.auth.user;
     const [avatarPreview, setAvatarPreview] = useState(user.avatar || "");
 
-    console.log("user: ", user);
-
     const {
         data,
         setData,
-        patch,
         errors,
         processing,
         recentlySuccessful,
-        put,
         post,
     } = useForm({
         name: user.name,
@@ -68,10 +64,10 @@ export default function UpdateProfileInformation({
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
+                <h2 className="text-lg font-medium text-foreground">
                     Profile Information
                 </h2>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-muted-foreground">
                     Update your account's profile information, phone, and
                     avatar.
                 </p>
@@ -80,7 +76,7 @@ export default function UpdateProfileInformation({
             <form onSubmit={submit} className="mt-6 space-y-6">
                 {/* Name */}
                 <div>
-                    <InputLabel htmlFor="name" value="Name" />
+                    <InputLabel htmlFor="name" value="Name" required />
                     <TextInput
                         id="name"
                         className="mt-1 block w-full"
@@ -109,7 +105,7 @@ export default function UpdateProfileInformation({
 
                 {/* Email */}
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value="Email" required />
                     <TextInput
                         id="email"
                         type="email"
@@ -124,7 +120,11 @@ export default function UpdateProfileInformation({
 
                 {/* Avatar */}
                 <div>
-                    <InputLabel htmlFor="avatar" value="Avatar" />
+                    <InputLabel
+                        htmlFor="avatar"
+                        value="Avatar"
+                        hint="PNG/JPG up to 2 MB"
+                    />
                     <input
                         id="avatar"
                         type="file"

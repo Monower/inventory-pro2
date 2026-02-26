@@ -3,9 +3,12 @@ import { Link, usePage, router, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 export default function SalaryIndex() {
-    const { salaries, flash, company_name } = usePage().props;
+    const { salaries, company_name, filters } = usePage().props;
+    const list = salaries?.data ?? [];
 
     const markAsPaid = (id) => {
         if (confirm("Mark this salary as paid?")) {
@@ -33,15 +36,15 @@ export default function SalaryIndex() {
                         Generate salary
                     </Link>
                 </div>
-
-                {flash?.success && (
-                    <div className="bg-green-100 text-green-800 p-3 rounded mb-4">
-                        {flash.success}
-                    </div>
-                )}
+                <IndexFilters
+                    routeName="salaries.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search salaries..."
+                    className="mb-4"
+                />
 
                 <div className="table-div">
-                    {salaries?.length === 0 ? (
+                    {list.length === 0 ? (
                         <NoDataFound />
                     ) : (
                         <table className="custom-table">
@@ -55,7 +58,7 @@ export default function SalaryIndex() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {salaries.map((s) => (
+                                {list.map((s) => (
                                     <tr
                                         key={s.id}
                                         className="custom-body-tr"
@@ -92,6 +95,7 @@ export default function SalaryIndex() {
                         </table>
                     )}
                 </div>
+                <Pagination links={salaries?.links} />
             </section>
         </AuthenticatedLayout>
     );

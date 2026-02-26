@@ -2,9 +2,11 @@ import { Link, usePage, useForm, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = () => {
-    const { attributes, company_name } = usePage().props;
+    const { attributes, company_name, filters } = usePage().props;
     const { delete: destroy, processing } = useForm();
     const list = attributes?.data ?? [];
 
@@ -28,6 +30,12 @@ const Index = () => {
                         Create
                     </Link>
                 </div>
+                <IndexFilters
+                    routeName="attributes.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search attributes..."
+                    className="mb-4"
+                />
 
                 <div className="table-div">
                     {list.length === 0 ? (
@@ -48,7 +56,7 @@ const Index = () => {
                                 {list.map((attr, index) => (
                                     <tr key={attr.id} className="custom-body-tr">
                                         <td className="custom-body-td">
-                                            {index + 1}
+                                            {(attributes.current_page - 1) * attributes.per_page + index + 1}
                                         </td>
                                         <td className="custom-body-td">
                                             {attr.name}
@@ -77,6 +85,7 @@ const Index = () => {
                         </table>
                     )}
                 </div>
+                <Pagination links={attributes?.links} />
             </section>
         </AuthenticatedLayout>
     );

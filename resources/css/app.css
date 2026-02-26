@@ -250,3 +250,18 @@
     opacity: 0.9;
   }
 }
+
+@layer components {
+  .required-label {
+    @apply block text-sm font-medium text-primary;
+  }
+
+  .required-label::after {
+    content: " *";
+    @apply text-destructive;
+  }
+
+  .field-help {
+    @apply mt-1 text-xs text-muted-foreground;
+  }
+}

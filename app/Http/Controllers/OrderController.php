@@ -16,8 +16,29 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with('customer', 'items.product')->latest()->get();
-        return Inertia::render('orders/index', compact('orders'));
+        $q = trim((string) request()->query('q', ''));
+
+        $orders = Order::with('customer', 'items.product')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('order_number', 'like', "%{$q}%")
+                        ->orWhere('total_amount', 'like', "%{$q}%")
+                        ->orWhere('payment_status', 'like', "%{$q}%")
+                        ->orWhereHas('customer', function ($customerQuery) use ($q) {
+                            $customerQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('orders/index', [
+            'orders' => $orders,
+            'filters' => [
+                'q' => $q,
+            ],
+        ]);
     }
 
     public function create()

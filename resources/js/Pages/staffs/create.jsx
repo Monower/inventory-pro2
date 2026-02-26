@@ -1,6 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
+import { useState } from "react";
+import Alert from "@/Components/Alert/Alert";
 
 const Create = () => {
     const { company_name } = usePage().props;
@@ -11,18 +13,19 @@ const Create = () => {
         address: "",
         salary: "",
     });
+    const [clientError, setClientError] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
         if (data?.name?.trim() === "") {
-            alert("Employee name field is required.");
+            setClientError("Employee name field is required.");
             return;
         } else if (data?.phone?.trim() === "") {
-            alert("Employee phone field is required.");
+            setClientError("Employee phone field is required.");
             return;
         }
-
+        setClientError("");
         post(route("staff.store"));
     };
 
@@ -34,6 +37,7 @@ const Create = () => {
                     <BackButton url={"staffs.index"} />
                     <h3 className="heading">Add employee</h3>
                 </div>
+                {clientError && <Alert flash={{ error: clientError }} autoHideMs={3000} />}
 
                 <div>
                     <form onSubmit={handleSubmit}>
@@ -41,7 +45,7 @@ const Create = () => {
                             <div>
                                 <fieldset className="custom-fieldset">
                                     <legend className="text-sm mx-2">
-                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        <label className="required-label">
                                             Name
                                         </label>
                                     </legend>
@@ -65,7 +69,7 @@ const Create = () => {
                             <div>
                                 <fieldset className="custom-fieldset">
                                     <legend className="text-sm mx-2">
-                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        <label className="required-label">
                                             Phone
                                         </label>
                                     </legend>

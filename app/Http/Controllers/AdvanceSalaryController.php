@@ -11,9 +11,28 @@ class AdvanceSalaryController extends Controller
 {
     public function index()
     {
-        $advances = AdvanceSalary::with('staff')->latest()->get();
+        $q = trim((string) request()->query('q', ''));
+
+        $advances = AdvanceSalary::with('staff')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('amount', 'like', "%{$q}%")
+                        ->orWhere('remaining_amount', 'like', "%{$q}%")
+                        ->orWhere('status', 'like', "%{$q}%")
+                        ->orWhereHas('staff', function ($staffQuery) use ($q) {
+                            $staffQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('AdvanceSalaries/Index', [
-            'advances' => $advances
+            'advances' => $advances,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

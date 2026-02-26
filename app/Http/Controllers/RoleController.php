@@ -15,8 +15,27 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::with('permissions')->get();
-        return Inertia::render('role/index', compact('roles'));
+        $q = trim((string) request()->query('q', ''));
+
+        $roles = Role::with('permissions')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhereHas('permissions', function ($permissionQuery) use ($q) {
+                            $permissionQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('role/index', [
+            'roles' => $roles,
+            'filters' => [
+                'q' => $q,
+            ],
+        ]);
     }
 
     /**

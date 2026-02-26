@@ -57,11 +57,10 @@ class SettingController extends Controller
             // Generate unique filename with timestamp
             $filename = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('logos', $filename, 'public');
-            $fullPath = 'app/public/' . $path;
 
             Setting::updateOrCreate(
                 ['name' => 'logo'],
-                ['value' => $fullPath]
+                ['value' => $path]
             );
         }
 

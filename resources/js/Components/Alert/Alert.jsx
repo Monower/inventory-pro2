@@ -1,43 +1,56 @@
 import { useState, useEffect } from "react";
-import { Info, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, X } from "lucide-react";
 
-const Alert = ({ flash }) => {
-    // console.log("inside flash", flash);
+const Alert = ({ flash, autoHideMs = 4500 }) => {
     const [visible, setVisible] = useState(true);
+    const hasSuccess = Boolean(flash?.success);
+    const hasError = Boolean(flash?.error);
 
-    // console.log("visible, flash?.success, flash?.error", visible, flash?.success, flash?.error);
+    useEffect(() => {
+        setVisible(true);
+    }, [flash?.success, flash?.error]);
 
-    // useEffect(() => {
-    //     const timer = setTimeout(() => {
-    //         setVisible(false);
-    //     }, 3000); // auto disappear after 4 seconds
+    useEffect(() => {
+        if (!autoHideMs || (!hasSuccess && !hasError)) {
+            return;
+        }
 
-    //     return () => clearTimeout(timer); // cleanup on unmount
-    // }, []);
+        const timer = setTimeout(() => {
+            setVisible(false);
+        }, autoHideMs);
 
-    if (!visible || (!flash?.success && !flash?.error)) return null;
+        return () => clearTimeout(timer);
+    }, [autoHideMs, hasSuccess, hasError, flash?.success, flash?.error]);
+
+    if (!visible || (!hasSuccess && !hasError)) return null;
+
+    const isSuccess = hasSuccess;
 
     return (
         <div
-            className={`relative rounded-lg py-5 px-6 mb-4 text-base flex items-center justify-between ${
-                flash?.success
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
+            className={`relative mb-4 flex items-start justify-between rounded-lg border px-4 py-3 text-sm ${
+                isSuccess
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-red-200 bg-red-50 text-red-800"
             }`}
+            role="alert"
         >
-            {/* Message */}
-            <div className="flex items-center gap-2">
-                <Info />
-                {flash.success ?? flash.error}
+            <div className="flex items-start gap-2 pr-8">
+                {isSuccess ? (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                ) : (
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                )}
+                <div>{flash.success ?? flash.error}</div>
             </div>
 
-            {/* Close button */}
             <button
+                type="button"
                 onClick={() => setVisible(false)}
-                className="text-lg font-bold leading-none hover:text-gray-800"
+                className="absolute right-2 top-2 rounded p-1 hover:bg-black/5"
                 aria-label="Close alert"
             >
-                <X />
+                <X className="h-4 w-4" />
             </button>
         </div>
     );

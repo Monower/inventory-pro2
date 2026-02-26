@@ -3,9 +3,12 @@ import { Link, usePage, useForm, Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 export default function Index() {
-    const { purchase_items, company_name } = usePage().props;
+    const { purchase_items, company_name, filters } = usePage().props;
+    const list = purchase_items?.data ?? [];
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
@@ -27,9 +30,15 @@ export default function Index() {
                         Create
                     </Link>
                 </div>
+                <IndexFilters
+                    routeName="purchases.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search purchases..."
+                    className="mb-4"
+                />
 
                 <div className="table-div">
-                    {purchase_items.length === 0 ? (
+                    {list.length === 0 ? (
                         <NoDataFound />
                     ) : (
                         <table className="custom-table">
@@ -51,10 +60,10 @@ export default function Index() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {purchase_items.map((item, index) => (
+                                {list.map((item, index) => (
                                     <tr key={item.id} className="custom-body-tr">
                                         <td className="custom-body-td">
-                                            {index + 1}
+                                            {(purchase_items.current_page - 1) * purchase_items.per_page + index + 1}
                                         </td>
                                         <td className="custom-body-td">
                                             {item.purchase?.invoice_no}
@@ -104,6 +113,7 @@ export default function Index() {
                         </table>
                     )}
                 </div>
+                <Pagination links={purchase_items?.links} />
             </section>
         </AuthenticatedLayout>
     );

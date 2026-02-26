@@ -10,8 +10,22 @@ class CategoriesController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
-        return Inertia::render('Categories/Index', compact('categories'));
+        $q = trim((string) request()->query('q', ''));
+
+        $categories = Category::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%");
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('Categories/Index', [
+            'categories' => $categories,
+            'filters' => [
+                'q' => $q,
+            ],
+        ]);
     }
 
     public function create()

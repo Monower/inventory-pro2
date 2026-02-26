@@ -13,8 +13,27 @@ class AttributeController extends Controller
     // List all attributes with their values
     public function index()
     {
-        $attributes = Attribute::with('values')->paginate(10);
-        return Inertia::render('attributes/index', ['attributes' => $attributes]);
+        $q = trim((string) request()->query('q', ''));
+
+        $attributes = Attribute::with('values')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhereHas('values', function ($valueQuery) use ($q) {
+                            $valueQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('attributes/index', [
+            'attributes' => $attributes,
+            'filters' => [
+                'q' => $q,
+            ],
+        ]);
     }
 
     // Show form to create new attribute

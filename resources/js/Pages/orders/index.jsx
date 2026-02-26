@@ -1,13 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm} from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
-import { usePage } from "@inertiajs/react";
 import { Trash2Icon, EyeIcon, EditIcon } from "lucide-react";
-import Alert from "@/Components/Alert/Alert";
 import { dateTimeFormater } from "@/util/DateFormater";
+import { usePage } from "@inertiajs/react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ orders }) => {
-    const { flash } = usePage().props;
+    const { filters } = usePage().props;
+    const list = orders?.data ?? [];
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
@@ -32,8 +34,8 @@ const Index = ({ orders }) => {
     ];
 
     // Convert raw orders → formatted table rows
-    const formattedData = orders.map((o, i) => ({
-        si: i + 1,
+    const formattedData = list.map((o, i) => ({
+        si: (orders.current_page - 1) * orders.per_page + i + 1,
         id: o.id,
         order_number: o.order_number,
         // customer_name: o.customer?.name || "-",
@@ -58,8 +60,12 @@ const Index = ({ orders }) => {
                         Create
                     </Link>
                 </div>
-
-                <Alert flash={flash} />
+                <IndexFilters
+                    routeName="orders.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search orders..."
+                    className="mb-4"
+                />
 
                 {/* Data Table */}
                 <DataTable
@@ -118,6 +124,7 @@ const Index = ({ orders }) => {
                         </div>
                     )}
                 />
+                <Pagination links={orders?.links} />
             </section>
         </AuthenticatedLayout>
     );

@@ -13,9 +13,27 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        $transactions = Transaction::all();
+        $q = trim((string) request()->query('q', ''));
+
+        $transactions = Transaction::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('payment_method', 'like', "%{$q}%")
+                        ->orWhere('transaction_type', 'like', "%{$q}%")
+                        ->orWhere('source', 'like', "%{$q}%")
+                        ->orWhere('amount', 'like', "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('transaction/index', [
-            'transactions' => $transactions
+            'transactions' => $transactions,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

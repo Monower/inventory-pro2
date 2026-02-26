@@ -15,11 +15,28 @@ class UserController extends Controller
      */
     public function index()
     {
-        // Get all users with their roles
-        $users = User::with('roles')->get();
+        $q = trim((string) request()->query('q', ''));
+
+        $users = User::with('roles')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%")
+                        ->orWhere('phone', 'like', "%{$q}%")
+                        ->orWhereHas('roles', function ($roleQuery) use ($q) {
+                            $roleQuery->where('name', 'like', "%{$q}%");
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('users/index', [
-            'users' => $users
+            'users' => $users,
+            'filters' => [
+                'q' => $q,
+            ],
         ]);
     }
 

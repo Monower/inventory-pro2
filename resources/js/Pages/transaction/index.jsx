@@ -2,9 +2,12 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, Head, usePage } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ transactions }) => {
-    const { company_name } = usePage().props;
+    const { company_name, filters } = usePage().props;
+    const list = transactions?.data ?? [];
     const { setData, delete: destroy } = useForm({ id: null });
 
     const handleDelete = (id) => {
@@ -23,9 +26,9 @@ const Index = ({ transactions }) => {
         { key: "amount", label: "Amount" },
     ];
 
-    const formattedData = transactions.map((t, i) => ({
+    const formattedData = list.map((t, i) => ({
         ...t,
-        si: i + 1,
+        si: (transactions.current_page - 1) * transactions.per_page + i + 1,
         transaction_type:
             t.transaction_type === "add_money" ? "Add Money" : "Expense",
     }));
@@ -46,6 +49,12 @@ const Index = ({ transactions }) => {
                         </Link>
                     </div>
                 </div>
+                <IndexFilters
+                    routeName="transactions.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search transactions..."
+                    className="mb-4"
+                />
 
                 <DataTable
                     columns={columns}
@@ -76,6 +85,7 @@ const Index = ({ transactions }) => {
                         </div>
                     )}
                 />
+                <Pagination links={transactions?.links} />
             </section>
         </AuthenticatedLayout>
     );

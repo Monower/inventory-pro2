@@ -5,9 +5,12 @@ import { useState } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"; // optional icons
 import { EditIcon, Trash2Icon } from "lucide-react";
 import { usePage } from "@inertiajs/react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ customers }) => {
-    const { company_name } = usePage().props;
+    const { company_name, filters } = usePage().props;
+    const list = customers?.data ?? [];
     const { setData, delete: destroy } = useForm({ id: null });
     const [sortField, setSortField] = useState(null);
     const [sortOrder, setSortOrder] = useState("asc"); // or 'desc'
@@ -29,7 +32,7 @@ const Index = ({ customers }) => {
         }
     };
 
-    const sortedCustomers = [...customers].sort((a, b) => {
+    const sortedCustomers = [...list].sort((a, b) => {
         if (!sortField) return 0;
         const valueA = a[sortField]?.toString().toLowerCase() ?? "";
         const valueB = b[sortField]?.toString().toLowerCase() ?? "";
@@ -61,10 +64,16 @@ const Index = ({ customers }) => {
                         Create
                     </Link>
                 </div>
+                <IndexFilters
+                    routeName="customers.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search customers..."
+                    className="mb-4"
+                />
 
                 {/* Table */}
                 <div className="table-div">
-                    {customers.length === 0 ? (
+                    {list.length === 0 ? (
                         <NoDataFound />
                     ) : (
                         <table className="custom-table">
@@ -103,7 +112,7 @@ const Index = ({ customers }) => {
                                         className="custom-body-tr"
                                     >
                                         <td className="custom-body-td">
-                                            {index + 1}
+                                            {(customers.current_page - 1) * customers.per_page + index + 1}
                                         </td>
                                         <td className="custom-body-td">
                                             {customer?.name}
@@ -137,6 +146,7 @@ const Index = ({ customers }) => {
                         </table>
                     )}
                 </div>
+                <Pagination links={customers?.links} />
             </section>
         </AuthenticatedLayout>
     );

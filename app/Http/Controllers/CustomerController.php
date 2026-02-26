@@ -8,9 +8,28 @@ use App\Models\Customer;
 
 class CustomerController extends Controller
 {
-    public function index(){
-        $customers = Customer::all();
-        return Inertia::render('customer/index', compact('customers'));
+    public function index(Request $request){
+        $q = trim((string) $request->query('q', ''));
+
+        $customers = Customer::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('phone', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%")
+                        ->orWhere('address', 'like', "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('customer/index', [
+            'customers' => $customers,
+            'filters' => [
+                'q' => $q,
+            ],
+        ]);
     }
 
 
@@ -21,22 +40,20 @@ class CustomerController extends Controller
 
     public function store(Request $request){
         $validated = $request->validate([
-            'name' => 'required|max:255',
-            'phone' => 'required|max:11|min:11', 
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|size:11',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string|max:1000',
         ]);
 
-        if($validated){
-            $customer = new Customer();
-            $customer->name = $request->name;
-            $customer->email = $request->email ?? '';
-            $customer->phone = $request->phone;
-            $customer->address = $request->address ?? '';
-            $customer->save();
+        Customer::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'] ?? '',
+            'phone' => $validated['phone'],
+            'address' => $validated['address'] ?? '',
+        ]);
 
-            return to_route('customers.index');
-        } else {
-            return redirect()->back()->withErrors(['errors' => $validated]);
-        }
+        return to_route('customers.index')->with('success', 'Customer created successfully.');
     }
 
 
@@ -49,28 +66,35 @@ class CustomerController extends Controller
     public function update(Request $request, $customer_id){
 
         $validated = $request->validate([
-            'name' => 'required|max:255',
-            'phone' => 'required|max:11|min:11', 
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|size:11',
+            'email' => 'nullable|email|max:255',
+            'address' => 'nullable|string|max:1000',
         ]);
 
-        if($validated){
-            $customer = Customer::find($customer_id);
-            $customer->name = $request->name;
-            $customer->email = $request->email ?? '';
-            $customer->phone = $request->phone;
-            $customer->address = $request->address ?? '';
-            $customer->save();
+        $customer = Customer::find($customer_id);
 
-            return to_route('customers.index');
-        } else {
-            return redirect()->back()->withErrors(['errors' => $validated]);
+        if (!$customer) {
+            return to_route('customers.index')->with('error', 'Customer not found.');
         }
+
+        $customer->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'] ?? '',
+            'phone' => $validated['phone'],
+            'address' => $validated['address'] ?? '',
+        ]);
+
+        return to_route('customers.index')->with('success', 'Customer updated successfully.');
     }
 
 
     public function destroy($customer_id){
         $customer = Customer::find($customer_id);
+        if (!$customer) {
+            return to_route('customers.index')->with('error', 'Customer not found.');
+        }
         $customer->delete();
-        return to_route('customers.index');
+        return to_route('customers.index')->with('success', 'Customer deleted successfully.');
     }
 }

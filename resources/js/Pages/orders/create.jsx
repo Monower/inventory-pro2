@@ -6,6 +6,7 @@ import Alert from "@/Components/Alert/Alert";
 
 const Create = ({ customers, products, banks }) => {
     const [cart, setCart] = useState([]);
+    const [clientError, setClientError] = useState("");
 
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
@@ -69,9 +70,10 @@ const Create = ({ customers, products, banks }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (cart.length === 0) {
-            alert("Cart is empty.");
+            setClientError("Cart is empty.");
             return;
         }
+        setClientError("");
         post("/orders");
     };
 
@@ -101,6 +103,9 @@ const Create = ({ customers, products, banks }) => {
                             ),
                         }}
                     />
+                )}
+                {clientError && (
+                    <Alert flash={{ error: clientError }} autoHideMs={3000} />
                 )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -283,7 +288,7 @@ const Create = ({ customers, products, banks }) => {
 
                             {/* Customer */}
                             <div>
-                                <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
+                                <label className="required-label mb-1">
                                     Select customer
                                 </label>
                                 <select
@@ -312,7 +317,7 @@ const Create = ({ customers, products, banks }) => {
 
                             {/* Payment Method */}
                             <div>
-                                <label className="block text-sm font-medium text-primary mb-2 after:content-['_*'] after:text-red-500">
+                                <label className="required-label mb-2">
                                     Payment method
                                 </label>
                                 <div className="flex flex-wrap gap-6">
@@ -418,7 +423,7 @@ const Create = ({ customers, products, banks }) => {
 
                             {/* Payment Amount */}
                             <div>
-                                <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
+                                <label className="required-label mb-1">
                                     Payment amount
                                 </label>
                                 <input

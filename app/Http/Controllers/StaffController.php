@@ -13,8 +13,28 @@ class StaffController extends Controller
      */
     public function index()
     {
-        $staffs = Staff::all();
-        return Inertia::render('staffs/index', ['staffs' => $staffs]);
+        $q = trim((string) request()->query('q', ''));
+
+        $staffs = Staff::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('phone', 'like', "%{$q}%")
+                        ->orWhere('salary', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%")
+                        ->orWhere('address', 'like', "%{$q}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('staffs/index', [
+            'staffs' => $staffs,
+            'filters' => [
+                'q' => $q,
+            ],
+        ]);
     }
 
     /**
@@ -31,23 +51,22 @@ class StaffController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|max:255',
-            'phone' => 'required|max:11|min:11',
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|size:11',
+            'email' => 'nullable|email|max:255',
+            'salary' => 'nullable|numeric|min:0',
+            'address' => 'nullable|string|max:1000',
         ]);
 
-        if ($validated) {
-            $staff = new Staff();
-            $staff->name = $request->name;
-            $staff->phone = $request->phone;
-            $staff->email = $request->email ?? '';
-            $staff->salary = $request->salary ?? 0;
-            $staff->address = $request->address ?? '';
-            $staff->save();
+        Staff::create([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'] ?? '',
+            'salary' => $validated['salary'] ?? 0,
+            'address' => $validated['address'] ?? '',
+        ]);
 
-            return to_route('staffs.index');
-        } else {
-            return redirect()->back()->withErrors(['errors' => $validated]);
-        }
+        return to_route('staffs.index')->with('success', 'Employee created successfully.');
     }
 
     /**
@@ -74,29 +93,28 @@ class StaffController extends Controller
     public function update(Request $request, $staff_id)
     {
         $validated = $request->validate([
-            'name' => 'required|max:255',
-            'phone' => 'required|max:11|min:11',
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|size:11',
+            'email' => 'nullable|email|max:255',
+            'salary' => 'nullable|numeric|min:0',
+            'address' => 'nullable|string|max:1000',
         ]);
 
-        if ($validated) {
-            $staff = Staff::find($staff_id);
+        $staff = Staff::find($staff_id);
 
-            if (!$staff) {
-                return redirect()->back()->withErrors(['errors' => 'Employee not found']);
-            }
-
-
-            $staff->name = $request->name;
-            $staff->phone = $request->phone;
-            $staff->email = $request->email ?? '';
-            $staff->salary = $request->salary ?? 0;
-            $staff->address = $request->address ?? '';
-            $staff->save();
-
-            return to_route('staffs.index');
-        } else {
-            return redirect()->back()->withErrors(['errors' => $validated]);
+        if (!$staff) {
+            return to_route('staffs.index')->with('error', 'Employee not found.');
         }
+
+        $staff->update([
+            'name' => $validated['name'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'] ?? '',
+            'salary' => $validated['salary'] ?? 0,
+            'address' => $validated['address'] ?? '',
+        ]);
+
+        return to_route('staffs.index')->with('success', 'Employee updated successfully.');
     }
 
     /**
@@ -105,7 +123,10 @@ class StaffController extends Controller
     public function destroy($staff_id)
     {
         $staff = Staff::find($staff_id);
+        if (!$staff) {
+            return to_route('staffs.index')->with('error', 'Employee not found.');
+        }
         $staff->delete();
-        return to_route('staffs.index');
+        return to_route('staffs.index')->with('success', 'Employee deleted successfully.');
     }
 }

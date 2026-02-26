@@ -1,9 +1,12 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, usePage, Head } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ roles }) => {
-    const { company_name } = usePage().props;
+    const { company_name, filters } = usePage().props;
+    const list = roles?.data ?? [];
     const { setData, delete: destroy, processing } = useForm({ id: null });
 
     const handleDelete = (id) => {
@@ -21,9 +24,9 @@ const Index = ({ roles }) => {
     ];
 
     // ---- Format data for DataTable ----
-    const tableData = roles.map((role, index) => ({
+    const tableData = list.map((role, index) => ({
         ...role,
-        si: index + 1,
+        si: (roles.current_page - 1) * roles.per_page + index + 1,
         permissions: role.permissions.map((p) => p.name).join(", "),
         id: role.id,
     }));
@@ -42,6 +45,12 @@ const Index = ({ roles }) => {
                         Create
                     </Link>
                 </div>
+                <IndexFilters
+                    routeName="roles.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search roles..."
+                    className="mb-4"
+                />
 
                 <DataTable
                     columns={columns}
@@ -67,6 +76,7 @@ const Index = ({ roles }) => {
                     }
                     noDataMessage="No roles found."
                 />
+                <Pagination links={roles?.links} />
             </section>
         </AuthenticatedLayout>
     );

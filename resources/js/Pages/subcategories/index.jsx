@@ -5,9 +5,12 @@ import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
 import { dateFormater } from "@/util/DateFormater";
 import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ subcategories, categories }) => {
-    const { company_name } = usePage().props;
+    const { company_name, filters } = usePage().props;
+    const list = subcategories?.data ?? [];
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [clientErrors, setClientErrors] = useState({});
@@ -93,9 +96,9 @@ const Index = ({ subcategories, categories }) => {
         { key: "created_at", label: "Created At" },
     ];
 
-    const tableData = subcategories.map((sub, index) => ({
+    const tableData = list.map((sub, index) => ({
         ...sub,
-        si: index + 1,
+        si: (subcategories.current_page - 1) * subcategories.per_page + index + 1,
         category_name: sub.category?.name || "-",
         created_at: dateFormater(sub.created_at),
     }));
@@ -114,6 +117,12 @@ const Index = ({ subcategories, categories }) => {
                         Create new
                     </button>
                 </div>
+                <IndexFilters
+                    routeName="subcategories.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search subcategories..."
+                    className="mb-4"
+                />
 
                 {/* ---- Modal (Create / Edit) ---- */}
                 <Modal
@@ -235,6 +244,7 @@ const Index = ({ subcategories, categories }) => {
                         </div>
                     )}
                 />
+                <Pagination links={subcategories?.links} />
             </section>
         </AuthenticatedLayout>
     );

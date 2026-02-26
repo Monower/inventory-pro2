@@ -1,179 +1,152 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import InputLabel from "@/Components/InputLabel";
+import InputError from "@/Components/InputError";
 import { useForm, usePage, Head } from "@inertiajs/react";
-import { useState, useRef, useEffect } from "react";
-import { X, Sun, Moon } from "lucide-react";
+import { useRef, useState } from "react";
+import { Upload, X } from "lucide-react";
 
 const Index = ({ settings }) => {
     const { company_name } = usePage().props;
-    const { data, setData, post, processing, errors, wasSuccessful } = useForm({
+
+    const { data, setData, post, processing, errors } = useForm({
         company_name: settings?.company_name || "",
         logo: null,
     });
 
     const [logoPreview, setLogoPreview] = useState(settings?.logo_url || null);
     const fileInputRef = useRef(null);
-    const [notification, setNotification] = useState(null);
-
-    // 🌗 Theme state
-    // const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
-
-    // // Apply theme to <html>
-    // useEffect(() => {
-    //     document.documentElement.setAttribute("data-theme", theme);
-    //     localStorage.setItem("theme", theme);
-    // }, [theme]);
-
-    // // Toggle handler
-    // const toggleTheme = () => {
-    //     setTheme((prev) => (prev === "light" ? "dark" : "light"));
-    // };
-
-    // Success notification
-    useEffect(() => {
-        if (wasSuccessful) {
-            setNotification({ type: "success", message: "Settings updated successfully!" });
-            const timer = setTimeout(() => setNotification(null), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [wasSuccessful]);
-
-    // Error notification
-    useEffect(() => {
-        if (Object.keys(errors).length > 0) {
-            setNotification({ type: "error", message: "Please fix the errors in the form." });
-            const timer = setTimeout(() => setNotification(null), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [errors]);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            setData("logo", file);
-            setLogoPreview(URL.createObjectURL(file));
+        if (!file) {
+            return;
         }
+
+        setData("logo", file);
+        setLogoPreview(URL.createObjectURL(file));
     };
 
     const removeLogo = () => {
         setData("logo", null);
-        setLogoPreview(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
+        setLogoPreview(settings?.logo_url || null);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         const formData = new FormData();
         formData.append("company_name", data.company_name);
-        if (data.logo) formData.append("logo", data.logo);
+
+        if (data.logo) {
+            formData.append("logo", data.logo);
+        }
+
         post(route("settings.update"), formData, { forceFormData: true });
     };
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout title="Settings">
             <Head title={`Settings - ${company_name}`} />
-            <section className="max-w-2xl mx-auto bg-card text-card-foreground shadow-md rounded-2xl p-6 transition-colors duration-300">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-2xl font-semibold">General Settings</h3>
 
-                    {/* 🌙 Theme Toggle Button */}
-                    {/* <button
-                        type="button"
-                        onClick={toggleTheme}
-                        className="p-2 rounded-lg border border-border hover:bg-muted transition-colors"
-                        title="Toggle Theme"
-                    >
-                        {theme === "light" ? (
-                            <Moon className="text-foreground" size={20} />
-                        ) : (
-                            <Sun className="text-foreground" size={20} />
-                        )}
-                    </button> */}
+            <section className="mx-auto w-full max-w-4xl space-y-6">
+                <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                    <h1 className="text-2xl font-semibold text-foreground">General Settings</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Configure your workspace branding shown across dashboard, login,
+                        and documents.
+                    </p>
                 </div>
 
-                {/* Notification */}
-                {notification && (
-                    <div
-                        className={`mb-4 p-3 rounded ${
-                            notification.type === "success"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                        }`}
-                    >
-                        {notification.message}
-                    </div>
-                )}
+                <form
+                    onSubmit={handleSubmit}
+                    className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                >
+                    <div className="grid gap-6 md:grid-cols-[1fr_220px]">
+                        <div className="space-y-4">
+                            <div>
+                                <InputLabel
+                                    htmlFor="company_name"
+                                    value="Company Name"
+                                    required
+                                />
+                                <input
+                                    id="company_name"
+                                    type="text"
+                                    value={data.company_name}
+                                    onChange={(e) =>
+                                        setData("company_name", e.target.value)
+                                    }
+                                    className="mt-1"
+                                    placeholder="Enter company name"
+                                    required
+                                />
+                                <InputError className="mt-2" message={errors.company_name} />
+                            </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Company Name */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Company Name</label>
-                        <input
-                            type="text"
-                            value={data.company_name}
-                            onChange={(e) => setData("company_name", e.target.value)}
-                            className="border border-input bg-background rounded-lg p-2.5 w-full focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-muted-foreground placeholder:text-sm"
-                            placeholder="Enter company name"
-                            required
-                        />
-                        {errors.company_name && (
-                            <p className="text-sm text-red-500 mt-1">{errors.company_name}</p>
-                        )}
-                    </div>
+                            <div>
+                                <InputLabel
+                                    htmlFor="logo"
+                                    value="Company Logo"
+                                    hint="PNG/JPG up to 2 MB"
+                                />
+                                <div className="mt-2 flex items-center gap-3">
+                                    <label
+                                        htmlFor="logo"
+                                        className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-secondary px-4 py-2 text-sm text-secondary-foreground hover:opacity-90"
+                                    >
+                                        <Upload className="h-4 w-4" />
+                                        Upload logo
+                                    </label>
+                                    {data.logo && (
+                                        <button
+                                            type="button"
+                                            onClick={removeLogo}
+                                            className="inline-flex items-center gap-1 text-sm text-destructive"
+                                        >
+                                            <X className="h-4 w-4" />
+                                            Remove selected
+                                        </button>
+                                    )}
+                                </div>
+                                <input
+                                    id="logo"
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="sr-only"
+                                />
+                                <InputError className="mt-2" message={errors.logo} />
+                            </div>
+                        </div>
 
-                    {/* Logo Upload */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Company Logo</label>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="block w-full text-sm text-foreground 
-                                       file:mr-4 file:py-2 file:px-4 
-                                       file:rounded-lg file:border-0 
-                                       file:text-sm file:font-semibold 
-                                       file:bg-primary/10 file:text-primary 
-                                       hover:file:bg-primary/20"
-                        />
-                        {errors.logo && (
-                            <p className="text-sm text-red-500 mt-1">{errors.logo}</p>
-                        )}
-
-                        {/* Preview / Current Logo */}
-                        {logoPreview ? (
-                            <div className="relative mt-4 w-32">
+                        <div className="rounded-lg border border-dashed border-border p-4">
+                            <p className="mb-2 text-sm font-medium text-foreground">Logo Preview</p>
+                            {logoPreview ? (
                                 <img
                                     src={logoPreview}
-                                    alt="Logo Preview"
-                                    className="rounded-lg shadow-md w-full h-auto"
+                                    alt="Company logo preview"
+                                    className="h-36 w-full rounded-md object-contain"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={removeLogo}
-                                    className="absolute -top-2 -right-2 bg-destructive text-white p-1 rounded-full shadow hover:bg-red-600"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </div>
-                        ) : settings?.logo_url ? (
-                            <div className="mt-4 w-32">
-                                <img
-                                    src={settings.logo_url}
-                                    alt="Current Logo"
-                                    className="rounded-lg shadow-md w-full h-auto"
-                                />
-                            </div>
-                        ) : null}
+                            ) : (
+                                <div className="flex h-36 items-center justify-center rounded-md bg-muted text-sm text-muted-foreground">
+                                    No logo selected
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Save Button */}
-                    <div className="flex justify-end">
+                    <div className="mt-6 flex justify-end">
                         <button
                             type="submit"
                             disabled={processing}
-                            className="bg-primary text-primary-foreground font-medium py-2 px-6 rounded-lg shadow hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                            className="create-button px-5 py-2"
                         >
-                            {processing ? "Saving..." : "Save Settings"}
+                            {processing ? "Saving..." : "Save Changes"}
                         </button>
                     </div>
                 </form>

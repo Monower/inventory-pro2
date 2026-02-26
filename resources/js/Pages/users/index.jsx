@@ -1,9 +1,12 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, usePage, Head } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ users }) => {
-    const { company_name } = usePage().props;
+    const { company_name, filters } = usePage().props;
+    const list = users?.data ?? [];
     const { setData, delete: destroy, processing } = useForm({ id: null });
 
     const handleDelete = (id) => {
@@ -24,9 +27,9 @@ const Index = ({ users }) => {
     ];
 
     // ---- Format data for DataTable ----
-    const tableData = users.map((user, index) => ({
+    const tableData = list.map((user, index) => ({
         ...user,
-        si: index + 1,
+        si: (users.current_page - 1) * users.per_page + index + 1,
         avatar: user.avatar ? (
             <img
                 src={"/storage/" + user.avatar}
@@ -61,6 +64,12 @@ const Index = ({ users }) => {
                         Create
                     </Link>
                 </div>
+                <IndexFilters
+                    routeName="users.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search users..."
+                    className="mb-4"
+                />
 
                 <DataTable
                     columns={columns}
@@ -84,6 +93,7 @@ const Index = ({ users }) => {
                     )}
                     noDataMessage="No users found."
                 />
+                <Pagination links={users?.links} />
             </section>
         </AuthenticatedLayout>
     );

@@ -3,15 +3,17 @@ import { useForm, Head, usePage } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
-import Alert from "@/Components/Alert/Alert";
 import { Trash2Icon, EditIcon } from "lucide-react"
 import { dateTimeFormater } from "@/util/DateFormater";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ banks }) => {
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [clientErrors, setClientErrors] = useState({});
-    const { company_name, flash } = usePage().props;
+    const { company_name, filters } = usePage().props;
+    const list = banks?.data ?? [];
 
     const {
         data,
@@ -90,9 +92,9 @@ const Index = ({ banks }) => {
         { key: "updated_at", label: "Last updated at" },
     ];
 
-    const tableData = banks.map((bank, index) => ({
+    const tableData = list.map((bank, index) => ({
         ...bank,
-        si: index + 1,
+        si: (banks.current_page - 1) * banks.per_page + index + 1,
         created_at: dateTimeFormater(bank.created_at),
         updated_at: dateTimeFormater(bank.updated_at),
     }));
@@ -112,8 +114,12 @@ const Index = ({ banks }) => {
                         Add new
                     </button>
                 </div>
-
-                <Alert flash={flash} />
+                <IndexFilters
+                    routeName="banks.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search banks..."
+                    className="mb-4"
+                />
 
                 {/* ---- Modal (Create / Edit) ---- */}
                 <Modal
@@ -209,6 +215,7 @@ const Index = ({ banks }) => {
                         </div>
                     )}
                 />
+                <Pagination links={banks?.links} />
             </section>
         </AuthenticatedLayout>
     );
