@@ -2,11 +2,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import { useState, useEffect } from "react";
 import { useForm, Head } from "@inertiajs/react";
-import { usePage } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 
 const Create = ({ customers, products, banks }) => {
-    const { company_name, flash } = usePage().props;
     const [cart, setCart] = useState([]);
 
     // useForm hook for the order
@@ -285,7 +283,7 @@ const Create = ({ customers, products, banks }) => {
 
                             {/* Customer */}
                             <div>
-                                <label className="block text-sm font-medium text-primary mb-1">
+                                <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
                                     Select customer
                                 </label>
                                 <select
@@ -314,7 +312,7 @@ const Create = ({ customers, products, banks }) => {
 
                             {/* Payment Method */}
                             <div>
-                                <label className="block text-sm font-medium text-primary mb-2">
+                                <label className="block text-sm font-medium text-primary mb-2 after:content-['_*'] after:text-red-500">
                                     Payment method
                                 </label>
                                 <div className="flex flex-wrap gap-6">
@@ -420,7 +418,7 @@ const Create = ({ customers, products, banks }) => {
 
                             {/* Payment Amount */}
                             <div>
-                                <label className="block text-sm font-medium text-primary mb-1">
+                                <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
                                     Payment amount
                                 </label>
                                 <input

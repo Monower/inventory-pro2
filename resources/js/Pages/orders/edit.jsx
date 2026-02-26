@@ -178,7 +178,8 @@ const Edit = ({ order, customers, products, banks }) => {
                                 <tbody>
                                     {products
                                         .filter(
-                                            (p) => !cart.find((c) => c.id === p.id)
+                                            (p) =>
+                                                !cart.find((c) => c.id === p.id)
                                         )
                                         .map((product) => (
                                             <tr key={product.id}>
@@ -224,7 +225,9 @@ const Edit = ({ order, customers, products, banks }) => {
                                             <th className="custom-th">Price</th>
                                             <th className="custom-th">Qty</th>
                                             <th className="custom-th">Total</th>
-                                            <th className="custom-th">Action</th>
+                                            <th className="custom-th">
+                                                Action
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -258,7 +261,9 @@ const Edit = ({ order, customers, products, banks }) => {
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            removeFromCart(item.id)
+                                                            removeFromCart(
+                                                                item.id
+                                                            )
                                                         }
                                                         className="bg-destructive text-white px-3 py-1 rounded"
                                                     >
@@ -299,37 +304,49 @@ const Edit = ({ order, customers, products, banks }) => {
                     </div>
 
                     {/* Customer */}
-                    <select
-                        value={data.customer_id}
-                        onChange={(e) => setData("customer_id", e.target.value)}
-                        className="custom-input mb-4"
-                    >
-                        <option value="">-- Select Customer --</option>
-                        {customers.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div>
+                        <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
+                            Select customer
+                        </label>
+                        <select
+                            value={data.customer_id}
+                            onChange={(e) =>
+                                setData("customer_id", e.target.value)
+                            }
+                            className="custom-input mb-4"
+                        >
+                            <option value="">-- Select customer --</option>
+                            {customers.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
                     {/* Payment */}
-                    <div className="flex flex-wrap gap-4 mb-4">
-                        {["cash", "bank", "mobile"].map((m) => (
-                            <label key={m} className="flex gap-2">
-                                <input
-                                    type="radio"
-                                    value={m}
-                                    checked={data.payment_method === m}
-                                    onChange={(e) =>
-                                        setData(
-                                            "payment_method",
-                                            e.target.value
-                                        )
-                                    }
-                                />
-                                {m}
-                            </label>
-                        ))}
+                    <div>
+                        <label className="block text-sm font-medium text-primary mb-2 after:content-['_*'] after:text-red-500">
+                            Payment method
+                        </label>
+                        <div className="flex flex-wrap gap-4 mb-4">
+                            {["cash", "bank", "mobile"].map((m) => (
+                                <label key={m} className="flex gap-2">
+                                    <input
+                                        type="radio"
+                                        value={m}
+                                        checked={data.payment_method === m}
+                                        onChange={(e) =>
+                                            setData(
+                                                "payment_method",
+                                                e.target.value
+                                            )
+                                        }
+                                    />
+                                    {m}
+                                </label>
+                            ))}
+                        </div>
                     </div>
 
                     {data.payment_method === "bank" && (
@@ -361,21 +378,26 @@ const Edit = ({ order, customers, products, banks }) => {
                     )}
 
                     {/* PAYMENT INPUT (CLAMPED) */}
-                    <input
-                        type="number"
-                        min="0"
-                        max={totalPrice}
-                        value={data.payment_amount}
-                        onChange={(e) => {
-                            const value = Number(e.target.value);
-                            setData(
-                                "payment_amount",
-                                value > totalPrice ? totalPrice : value
-                            );
-                        }}
-                        className="custom-input mb-4"
-                        placeholder="Payment amount"
-                    />
+                    <div>
+                        <label className="block text-sm font-medium text-primary mb-1 after:content-['_*'] after:text-red-500">
+                            Payment amount
+                        </label>
+                        <input
+                            type="number"
+                            min="0"
+                            max={totalPrice}
+                            value={data.payment_amount}
+                            onChange={(e) => {
+                                const value = Number(e.target.value);
+                                setData(
+                                    "payment_amount",
+                                    value > totalPrice ? totalPrice : value
+                                );
+                            }}
+                            className="custom-input mb-4"
+                            placeholder="Payment amount"
+                        />
+                    </div>
 
                     <div className="flex items-center gap-4">
                         <button
