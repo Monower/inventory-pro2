@@ -18,10 +18,7 @@ const Create = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if(data?.name?.trim() === "") {
-            setClientError("Customer name is required.");
-            return;
-        } else if(data?.phone?.trim() === "") {
+        if(data?.phone?.trim() === "") {
             setClientError("Customer phone is required.");
             return;
         }
@@ -44,30 +41,6 @@ const Create = () => {
                 <div>
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-                            {/* Name */}
-                            <div>
-                                <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label className="required-label">
-                                            Name
-                                        </label>
-                                    </legend>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        onChange={(e) =>
-                                            setData("name", e.target.value)
-                                        }
-                                        value={data.name}
-                                        className="custom-input"
-                                        placeholder="Enter customer name"
-                                        required
-                                    />
-                                </fieldset>
-                                <small className="text-destructive">
-                                    {errors.name}
-                                </small>
-                            </div>
 
                             {/* Phone */}
                             <div>
@@ -93,6 +66,32 @@ const Create = () => {
                                     {errors.phone}
                                 </small>
                             </div>
+
+                            {/* Name */}
+                            <div>
+                                <fieldset className="custom-fieldset">
+                                    <legend className="text-sm mx-2">
+                                        <label>
+                                            Name
+                                        </label>
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        onChange={(e) =>
+                                            setData("name", e.target.value)
+                                        }
+                                        value={data.name}
+                                        className="custom-input"
+                                        placeholder="Enter customer name"
+                                    />
+                                </fieldset>
+                                <small className="text-destructive">
+                                    {errors.name}
+                                </small>
+                            </div>
+
+                            
 
                             {/* Email */}
                             <div>

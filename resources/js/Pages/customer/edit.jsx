@@ -38,6 +38,31 @@ const Edit = ({ customer }) => {
                 <div>
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
+                            {/* Phone */}
+                            <div>
+                                <fieldset className="custom-fieldset">
+                                    <legend className="text-sm mx-2">
+                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                            Phone
+                                        </label>
+                                    </legend>
+                                    <input
+                                        value={data.phone}
+                                        type="number"
+                                        name="phone"
+                                        onChange={(e) =>
+                                            setData("phone", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Enter customer phone"
+                                    />
+                                </fieldset>
+                                <small className="text-destructive">
+                                    {errors.phone}
+                                </small>
+                            </div>
+
+
                             {/* Name */}
                             <div>
                                 <fieldset className="custom-fieldset">
@@ -62,29 +87,7 @@ const Edit = ({ customer }) => {
                                 </small>
                             </div>
 
-                            {/* Phone */}
-                            <div>
-                                <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                            Phone
-                                        </label>
-                                    </legend>
-                                    <input
-                                        value={data.phone}
-                                        type="number"
-                                        name="phone"
-                                        onChange={(e) =>
-                                            setData("phone", e.target.value)
-                                        }
-                                        className="custom-input"
-                                        placeholder="Enter customer phone"
-                                    />
-                                </fieldset>
-                                <small className="text-destructive">
-                                    {errors.phone}
-                                </small>
-                            </div>
+                            
 
                             {/* Email */}
                             <div>

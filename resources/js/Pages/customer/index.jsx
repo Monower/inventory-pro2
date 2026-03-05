@@ -82,14 +82,14 @@ const Index = ({ customers }) => {
                                     <th className="custom-th rounded-l-md">
                                         SI
                                     </th>
+                                    <th className="custom-th" /* onClick={() => handleSort("phone")} */>
+                                        Phone {/* {renderSortIcon("phone")} */}
+                                    </th>
                                     <th
                                         // onClick={() => handleSort("name")}
                                         className="custom-th cursor-pointer select-none"
                                     >
                                         Name {/* {renderSortIcon("name")} */}
-                                    </th>
-                                    <th className="custom-th" /* onClick={() => handleSort("phone")} */>
-                                        Phone {/* {renderSortIcon("phone")} */}
                                     </th>
                                     <th
                                         // onClick={() => handleSort("email")}
@@ -115,10 +115,10 @@ const Index = ({ customers }) => {
                                             {(customers.current_page - 1) * customers.per_page + index + 1}
                                         </td>
                                         <td className="custom-body-td">
-                                            {customer?.name}
+                                            {customer?.phone}
                                         </td>
                                         <td className="custom-body-td">
-                                            {customer?.phone}
+                                            {customer?.name?.length < 1 ? "N/A" : customer?.name}
                                         </td>
                                         <td className="custom-body-td">
                                             {customer?.email?.length < 1 ? "N/A" : customer?.email}
