@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -20,9 +21,11 @@ class AuthenticationTest extends TestCase
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
         $user = User::factory()->create();
+        Permission::findOrCreate('can login');
+        $user->givePermissionTo('can login');
 
         $response = $this->post('/login', [
-            'email' => $user->email,
+            'phone' => $user->phone,
             'password' => 'password',
         ]);
 
@@ -35,11 +38,35 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $this->post('/login', [
-            'email' => $user->email,
+            'phone' => $user->phone,
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+    }
+
+    public function test_login_rate_limiting_is_scoped_by_phone_number(): void
+    {
+        $lockedUser = User::factory()->create();
+        $allowedUser = User::factory()->create();
+
+        Permission::findOrCreate('can login');
+        $allowedUser->givePermissionTo('can login');
+
+        foreach (range(1, 5) as $attempt) {
+            $this->from('/login')->post('/login', [
+                'phone' => $lockedUser->phone,
+                'password' => 'wrong-password',
+            ]);
+        }
+
+        $response = $this->from('/login')->post('/login', [
+            'phone' => $allowedUser->phone,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticatedAs($allowedUser);
+        $response->assertRedirect(route('dashboard', absolute: false));
     }
 
     public function test_users_can_logout(): void
