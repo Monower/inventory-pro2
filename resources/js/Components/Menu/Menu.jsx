@@ -1,13 +1,26 @@
 import { Link, usePage } from "@inertiajs/react";
 import SidebarDropdown from "@/Components/SidebarDropdown";
-import { MdOutlineDashboard } from "react-icons/md";
-import { FaUsers } from "react-icons/fa";
-import { FaUserTie } from "react-icons/fa6";
-import { BsBoxes } from "react-icons/bs";
-import { BsPersonBoundingBox } from "react-icons/bs";
-import { AiOutlineBorderlessTable } from "react-icons/ai";
-import { CiDollar } from "react-icons/ci";
-import { PiGearSixLight } from "react-icons/pi";
+import {
+    BriefcaseBusiness,
+    CircleDollarSign,
+    CreditCard,
+    FolderKanban,
+    LayoutDashboard,
+    PackagePlus,
+    Settings2,
+    ShieldCheck,
+    ShoppingCart,
+    Users,
+} from "lucide-react";
+
+const MenuSection = ({ title, children }) => (
+    <div className="space-y-1 pt-3 first:pt-0">
+        <div className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+            {title}
+        </div>
+        <div className="space-y-1">{children}</div>
+    </div>
+);
 
 const Menu = ({ url }) => {
     const { auth } = usePage().props;
@@ -18,279 +31,345 @@ const Menu = ({ url }) => {
     const isPath = (path) => currentPath === path;
     const isPathPrefix = (prefix) =>
         currentPath === prefix || currentPath.startsWith(`${prefix}/`);
+
     const linkClass = (active) =>
-        "flex items-center px-4 py-3 rounded-md gap-2 border transition-colors duration-200 " +
+        "flex items-center gap-3 rounded-md border px-4 py-3 transition-colors duration-200 " +
         (active
-            ? "text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 border-violet-200 dark:border-violet-700/60"
-            : "text-primary border-transparent hover:bg-muted");
+            ? "border-violet-200 bg-violet-100 text-violet-600 dark:border-violet-700/60 dark:bg-violet-900/40 dark:text-violet-300"
+            : "border-transparent text-primary hover:bg-muted");
+
     const subLinkClass = (active) =>
         "menu-sublink block rounded-md px-2 py-1.5 transition-colors duration-200 " +
         (active
-            ? "text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 font-medium"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted");
+            ? "bg-violet-100 font-medium text-violet-600 dark:bg-violet-900/40 dark:text-violet-300"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground");
 
     const dashboardActive = isPath("/dashboard");
-    const orderActive = isPathPrefix("/orders") || isPathPrefix("/banks");
-    const productActive =
+    const catalogActive =
         isPathPrefix("/products") ||
         isPathPrefix("/categories") ||
         isPathPrefix("/sub-categories") ||
         isPathPrefix("/attributes") ||
-        isPathPrefix("/attribute-values") ||
-        isPathPrefix("/purchases");
-    const customerActive = isPathPrefix("/customers");
-    const employeeActive =
+        isPathPrefix("/attribute-values");
+    const inventoryActive = isPathPrefix("/purchases");
+    const financeActive =
+        isPathPrefix("/banks") || isPathPrefix("/transactions");
+    const peopleActive =
         isPathPrefix("/staffs") ||
         isPathPrefix("/salaries") ||
         isPathPrefix("/advance-salaries");
-    const userManagementActive =
-        isPathPrefix("/roles") || isPathPrefix("/users");
-    const transactionActive = isPathPrefix("/transactions");
-    const settingsActive =
-        isPathPrefix("/profile") || isPathPrefix("/settings");
+    const canViewSales =
+        permissions.includes("view order") ||
+        permissions.includes("view customer");
+    const canViewCatalog =
+        permissions.includes("view product") ||
+        permissions.includes("create product") ||
+        permissions.includes("view category") ||
+        permissions.includes("view subcategory") ||
+        permissions.includes("view attribute") ||
+        permissions.includes("view attribute value");
+    const canViewInventory = permissions.includes("view purchase");
+    const canViewFinance =
+        permissions.includes("view transaction") ||
+        permissions.includes("view bank");
+    const canViewPeople =
+        permissions.includes("view staff") ||
+        permissions.includes("view salary") ||
+        permissions.includes("view advance salary");
+    const canViewAdministration =
+        permissions.includes("view role") ||
+        permissions.includes("view user") ||
+        permissions.includes("view settings") ||
+        permissions.includes("edit profile");
 
     return (
-        <>
+        <div className="space-y-3">
             {permissions.includes("view dashboard") && (
-                <Link href="/dashboard" className={linkClass(dashboardActive)}>
-                    <MdOutlineDashboard />
-                    <span>Dashboard</span>
-                </Link>
+                <MenuSection title="Overview">
+                    <Link
+                        href="/dashboard"
+                        className={linkClass(dashboardActive)}
+                    >
+                        <LayoutDashboard size={18} />
+                        <span>Dashboard</span>
+                    </Link>
+                </MenuSection>
             )}
 
-            {permissions.includes("view order") && (
-                <SidebarDropdown
-                    title="Orders"
-                    icon={<AiOutlineBorderlessTable />}
-                    active={orderActive}
-                    defaultOpen={orderActive}
-                >
-                    <div className="flex flex-col mt-2 space-y-2">
-                        <Link
-                            href="/orders/create"
-                            className={subLinkClass(isPath("/orders/create"))}
+            {canViewSales && (
+                <MenuSection title="Sales">
+                    {permissions.includes("view order") && (
+                        <SidebarDropdown
+                            title="Order Management"
+                            icon={<ShoppingCart size={18} />}
+                            active={isPathPrefix("/orders")}
+                            defaultOpen={isPathPrefix("/orders")}
                         >
-                            Create Order
-                        </Link>
+                            <div className="mt-2 flex flex-col space-y-2">
+                                <Link
+                                    href="/orders"
+                                    className={subLinkClass(isPath("/orders"))}
+                                >
+                                    Order List
+                                </Link>
+                                <Link
+                                    href="/orders/create"
+                                    className={subLinkClass(
+                                        isPath("/orders/create")
+                                    )}
+                                >
+                                    Create Order
+                                </Link>
+                            </div>
+                        </SidebarDropdown>
+                    )}
+                    {permissions.includes("view customer") && (
                         <Link
-                            href="/orders"
-                            className={subLinkClass(isPath("/orders"))}
+                            href="/customers"
+                            className={linkClass(isPathPrefix("/customers"))}
                         >
-                            Orders
+                            <Users size={18} />
+                            <span>Customers</span>
                         </Link>
+                    )}
+                </MenuSection>
+            )}
+
+            {(canViewCatalog || canViewInventory) && (
+                <MenuSection title="Catalog & Inventory">
+                    {canViewCatalog && (
+                        <SidebarDropdown
+                            title="Product Catalog"
+                            icon={<FolderKanban size={18} />}
+                            active={catalogActive}
+                            defaultOpen={catalogActive}
+                        >
+                            <div className="mt-2 flex flex-col space-y-2">
+                                {permissions.includes("view product") && (
+                                    <Link
+                                        href="/products"
+                                        className={subLinkClass(
+                                            isPath("/products")
+                                        )}
+                                    >
+                                        Products
+                                    </Link>
+                                )}
+                                {permissions.includes("create product") && (
+                                    <Link
+                                        href="/products/create"
+                                        className={subLinkClass(
+                                            isPath("/products/create")
+                                        )}
+                                    >
+                                        Create Product
+                                    </Link>
+                                )}
+                                {permissions.includes("view category") && (
+                                    <Link
+                                        href="/categories"
+                                        className={subLinkClass(
+                                            isPathPrefix("/categories")
+                                        )}
+                                    >
+                                        Categories
+                                    </Link>
+                                )}
+                                {permissions.includes("view subcategory") && (
+                                    <Link
+                                        href="/sub-categories"
+                                        className={subLinkClass(
+                                            isPathPrefix("/sub-categories")
+                                        )}
+                                    >
+                                        Subcategories
+                                    </Link>
+                                )}
+                                {permissions.includes("view attribute") && (
+                                    <Link
+                                        href="/attributes"
+                                        className={subLinkClass(
+                                            isPathPrefix("/attributes")
+                                        )}
+                                    >
+                                        Attributes
+                                    </Link>
+                                )}
+                                {permissions.includes(
+                                    "view attribute value"
+                                ) && (
+                                    <Link
+                                        href="/attribute-values"
+                                        className={subLinkClass(
+                                            isPathPrefix("/attribute-values")
+                                        )}
+                                    >
+                                        Attribute Values
+                                    </Link>
+                                )}
+                            </div>
+                        </SidebarDropdown>
+                    )}
+                    {canViewInventory && (
+                        <Link
+                            href="/purchases"
+                            className={linkClass(inventoryActive)}
+                        >
+                            <PackagePlus size={18} />
+                            <span>Purchases</span>
+                        </Link>
+                    )}
+                </MenuSection>
+            )}
+
+            {canViewFinance && (
+                <MenuSection title="Finance">
+                    {permissions.includes("view bank") && (
                         <Link
                             href="/banks"
-                            className={subLinkClass(isPathPrefix("/banks"))}
+                            className={linkClass(isPathPrefix("/banks"))}
                         >
-                            Banks
+                            <CreditCard size={18} />
+                            <span>Bank Accounts</span>
                         </Link>
-                    </div>
-                </SidebarDropdown>
-            )}
-
-            {(permissions.includes("view product") ||
-                permissions.includes("create product") ||
-                permissions.includes("view category") ||
-                permissions.includes("view subcategory") ||
-                permissions.includes("view attribute") ||
-                permissions.includes("view attribute value")) && (
-                <SidebarDropdown
-                    title="Products"
-                    icon={<BsBoxes />}
-                    active={productActive}
-                    defaultOpen={productActive}
-                >
-                    <div className="flex flex-col mt-2 space-y-2">
-                        {permissions.includes("view product") && (
-                            <Link
-                                href="/products"
-                                className={subLinkClass(isPath("/products"))}
-                            >
-                                Products
-                            </Link>
-                        )}
-                        {permissions.includes("create product") && (
-                            <Link
-                                href="/products/create"
-                                className={subLinkClass(
-                                    isPath("/products/create")
-                                )}
-                            >
-                                Create Product
-                            </Link>
-                        )}
-                        {permissions.includes("view category") && (
-                            <Link
-                                href="/categories"
-                                className={subLinkClass(isPathPrefix("/categories"))}
-                            >
-                                Categories
-                            </Link>
-                        )}
-                        {permissions.includes("view subcategory") && (
-                            <Link
-                                href="/sub-categories"
-                                className={subLinkClass(
-                                    isPathPrefix("/sub-categories")
-                                )}
-                            >
-                                Subcategories
-                            </Link>
-                        )}
-                        {permissions.includes("view attribute") && (
-                            <Link
-                                href="/attributes"
-                                className={subLinkClass(isPathPrefix("/attributes"))}
-                            >
-                                Attributes
-                            </Link>
-                        )}
-                        {permissions.includes("view attribute value") && (
-                            <Link
-                                href="/attribute-values"
-                                className={subLinkClass(
-                                    isPathPrefix("/attribute-values")
-                                )}
-                            >
-                                Attribute Values
-                            </Link>
-                        )}
-                        {permissions.includes("view purchase") && (
-                            <Link
-                                href="/purchases"
-                                className={subLinkClass(isPathPrefix("/purchases"))}
-                            >
-                                Purchases
-                            </Link>
-                        )}
-                    </div>
-                </SidebarDropdown>
-            )}
-
-            {permissions.includes("view customer") && (
-                <Link href="/customers" className={linkClass(customerActive)}>
-                    <FaUsers />
-                    <span>Customers</span>
-                </Link>
-            )}
-
-            {(permissions.includes("view staff") ||
-                permissions.includes("view salary") ||
-                permissions.includes("view advance salary")) && (
-                <SidebarDropdown
-                    title="Employee Management"
-                    icon={<FaUserTie />}
-                    active={employeeActive}
-                    defaultOpen={employeeActive}
-                >
-                    <div className="flex flex-col mt-2 space-y-2">
-                        {permissions.includes("view staff") && (
-                            <Link
-                                href="/staffs"
-                                className={subLinkClass(isPathPrefix("/staffs"))}
-                            >
-                                Employees
-                            </Link>
-                        )}
-                        {permissions.includes("view salary") && (
-                            <Link
-                                href="/salaries"
-                                className={subLinkClass(isPathPrefix("/salaries"))}
-                            >
-                                Salaries
-                            </Link>
-                        )}
-                        {permissions.includes("view advance salary") && (
-                            <Link
-                                href="/advance-salaries"
-                                className={subLinkClass(
-                                    isPathPrefix("/advance-salaries")
-                                )}
-                            >
-                                Advance Salaries
-                            </Link>
-                        )}
-                    </div>
-                </SidebarDropdown>
-            )}
-
-            {/* {permissions.includes("view staff") && (
-                <Link
-                    href="/staffs"
-                    className={
-                        url.includes("staff")
-                            ? "flex items-center px-4 py-3 rounded-md text-primary bg-primary-foreground gap-2"
-                            : "flex items-center px-4 py-3 rounded-md text-primary gap-2"
-                    }
-                >
-                    <FaUserTie />
-                    <span>Staffs</span>
-                </Link>
-            )} */}
-
-            
-
-            {(permissions.includes("view role") ||
-                permissions.includes("view user")) && (
-                <SidebarDropdown
-                    title="User Management"
-                    icon={<BsPersonBoundingBox />}
-                    active={userManagementActive}
-                    defaultOpen={userManagementActive}
-                >
-                    <div className="flex flex-col mt-2 space-y-2">
-                        {permissions.includes("view role") && (
-                            <Link
-                                href="/roles"
-                                className={subLinkClass(isPathPrefix("/roles"))}
-                            >
-                                Roles
-                            </Link>
-                        )}
-                        {permissions.includes("view user") && (
-                            <Link
-                                href="/users"
-                                className={subLinkClass(isPathPrefix("/users"))}
-                            >
-                                Users
-                            </Link>
-                        )}
-                    </div>
-                </SidebarDropdown>
-            )}
-
-            {permissions.includes("view transaction") && (
-                <Link href="/transactions" className={linkClass(transactionActive)}>
-                    <CiDollar />
-                    <span>Transaction tracker</span>
-                </Link>
-            )}
-
-            {(permissions.includes("view settings") ||
-                permissions.includes("view profile")) && (
-                <SidebarDropdown
-                    title="Settings"
-                    icon={<PiGearSixLight />}
-                    active={settingsActive}
-                    defaultOpen={settingsActive}
-                >
-                    <div className="flex flex-col mt-2 space-y-2">
+                    )}
+                    {permissions.includes("view transaction") && (
                         <Link
-                            href="/profile"
-                            className={subLinkClass(isPathPrefix("/profile"))}
+                            href="/transactions"
+                            className={linkClass(isPathPrefix("/transactions"))}
                         >
-                            Profile
+                            <CircleDollarSign size={18} />
+                            <span>Transactions</span>
                         </Link>
-                        <Link
-                            href="/settings"
-                            className={subLinkClass(isPathPrefix("/settings"))}
-                        >
-                            General settings
-                        </Link>
-                    </div>
-                </SidebarDropdown>
+                    )}
+                </MenuSection>
             )}
-        </>
+
+            {canViewPeople && (
+                <MenuSection title="People">
+                    <SidebarDropdown
+                        title="Staff & Payroll"
+                        icon={<BriefcaseBusiness size={18} />}
+                        active={peopleActive}
+                        defaultOpen={peopleActive}
+                    >
+                        <div className="mt-2 flex flex-col space-y-2">
+                            {permissions.includes("view staff") && (
+                                <Link
+                                    href="/staffs"
+                                    className={subLinkClass(
+                                        isPathPrefix("/staffs")
+                                    )}
+                                >
+                                    Employees
+                                </Link>
+                            )}
+                            {permissions.includes("view salary") && (
+                                <Link
+                                    href="/salaries"
+                                    className={subLinkClass(
+                                        isPathPrefix("/salaries")
+                                    )}
+                                >
+                                    Salaries
+                                </Link>
+                            )}
+                            {permissions.includes("view advance salary") && (
+                                <Link
+                                    href="/advance-salaries"
+                                    className={subLinkClass(
+                                        isPathPrefix("/advance-salaries")
+                                    )}
+                                >
+                                    Advance Salaries
+                                </Link>
+                            )}
+                        </div>
+                    </SidebarDropdown>
+                </MenuSection>
+            )}
+
+            {canViewAdministration && (
+                <MenuSection title="Administration">
+                    {(permissions.includes("view role") ||
+                        permissions.includes("view user")) && (
+                        <SidebarDropdown
+                            title="Access Control"
+                            icon={<ShieldCheck size={18} />}
+                            active={
+                                isPathPrefix("/roles") ||
+                                isPathPrefix("/users")
+                            }
+                            defaultOpen={
+                                isPathPrefix("/roles") ||
+                                isPathPrefix("/users")
+                            }
+                        >
+                            <div className="mt-2 flex flex-col space-y-2">
+                                {permissions.includes("view role") && (
+                                    <Link
+                                        href="/roles"
+                                        className={subLinkClass(
+                                            isPathPrefix("/roles")
+                                        )}
+                                    >
+                                        Roles
+                                    </Link>
+                                )}
+                                {permissions.includes("view user") && (
+                                    <Link
+                                        href="/users"
+                                        className={subLinkClass(
+                                            isPathPrefix("/users")
+                                        )}
+                                    >
+                                        Users
+                                    </Link>
+                                )}
+                            </div>
+                        </SidebarDropdown>
+                    )}
+                    {(permissions.includes("view settings") ||
+                        permissions.includes("edit profile")) && (
+                        <SidebarDropdown
+                            title="System Settings"
+                            icon={<Settings2 size={18} />}
+                            active={
+                                isPathPrefix("/profile") ||
+                                isPathPrefix("/settings")
+                            }
+                            defaultOpen={
+                                isPathPrefix("/profile") ||
+                                isPathPrefix("/settings")
+                            }
+                        >
+                            <div className="mt-2 flex flex-col space-y-2">
+                                {permissions.includes("edit profile") && (
+                                    <Link
+                                        href="/profile"
+                                        className={subLinkClass(
+                                            isPathPrefix("/profile")
+                                        )}
+                                    >
+                                        Profile
+                                    </Link>
+                                )}
+                                {permissions.includes("view settings") && (
+                                    <Link
+                                        href="/settings"
+                                        className={subLinkClass(
+                                            isPathPrefix("/settings")
+                                        )}
+                                    >
+                                        General Settings
+                                    </Link>
+                                )}
+                            </div>
+                        </SidebarDropdown>
+                    )}
+                </MenuSection>
+            )}
+        </div>
     );
 };
 
