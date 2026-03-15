@@ -6,7 +6,7 @@ use App\Http\Controllers\AdvanceSalaryController;
 
 
 Route::middleware(['auth'])->group(function () {
-    Route::middleware(['auth', 'verified'])->group(function () {
+    Route::middleware(['auth'])->group(function () {
         Route::get('/salaries', [SalaryController::class, 'index'])
             ->name('salaries.index')
             ->middleware('permission:view salary');
