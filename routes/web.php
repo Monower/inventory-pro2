@@ -10,10 +10,13 @@ Route::fallback(function () {
     return to_route('login');
 });
 
-Route::post('/clear', function () {
-    Artisan::call('optimize:clear');
-    return 'Cleared!';
-})->middleware(['auth', 'permission:edit settings'])->name('system.clear');
+if (app()->environment(['local', 'testing'])) {
+    Route::post('/clear', function () {
+        Artisan::call('optimize:clear');
+
+        return 'Cleared!';
+    })->middleware(['auth', 'permission:edit settings'])->name('system.clear');
+}
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/modules/BankRoutes.php';

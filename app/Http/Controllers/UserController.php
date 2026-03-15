@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -46,7 +47,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::where('name', '!=', 'admin')->get();
+        $roles = $this->assignableRolesQuery(request()->user())->get();
         return Inertia::render('users/create', ['roles' => $roles]);
     }
 
@@ -55,14 +56,18 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // ✅ Validate request
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'phone'    => 'nullable|string|max:20',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'role'     => 'required|exists:roles,name',
+            'role'     => [
+                'required',
+                Rule::exists('roles', 'name')->where(
+                    fn ($query) => $this->assignableRolesQuery($request->user(), $query)
+                ),
+            ],
         ]);
 
         $imagePath = null;
@@ -106,8 +111,9 @@ class UserController extends Controller
      */
     public function edit($user_id)
     {
-        $user = User::with('roles')->find($user_id);
-        $roles = Role::where('name', '!=', 'admin')->get();
+        $user = User::with('roles')->findOrFail($user_id);
+        $this->ensureCanManageUser(request()->user(), $user);
+        $roles = $this->assignableRolesQuery(request()->user())->get();
         return Inertia::render('users/edit', ['user' => $user, 'roles' => $roles]);
     }
 
@@ -116,18 +122,21 @@ class UserController extends Controller
      */
     public function update(Request $request, $user_id)
     {
-
-        // dd($request->all());
         $user = User::findOrFail($user_id);
+        $this->ensureCanManageUser($request->user(), $user);
 
-        // Validate request
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
             'phone'    => 'nullable|string|max:20',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'role'     => 'required|exists:roles,name',
+            'role'     => [
+                'required',
+                Rule::exists('roles', 'name')->where(
+                    fn ($query) => $this->assignableRolesQuery($request->user(), $query)
+                ),
+            ],
             'remove_image' => 'nullable|boolean',
         ]);
 
@@ -169,8 +178,27 @@ class UserController extends Controller
      */
     public function destroy($user_id)
     {
-        $user = User::find($user_id);
+        $user = User::findOrFail($user_id);
+        $this->ensureCanManageUser(request()->user(), $user);
         $user->delete();
         return redirect()->route('users.index');
+    }
+
+    private function assignableRolesQuery(User $actor, $query = null)
+    {
+        $query ??= Role::query();
+
+        if ($actor->hasRole('admin')) {
+            return $query;
+        }
+
+        return $query->where('name', '!=', 'admin');
+    }
+
+    private function ensureCanManageUser(User $actor, User $subject): void
+    {
+        if (! $actor->hasRole('admin') && $subject->hasRole('admin')) {
+            abort(403, 'You are not allowed to manage admin accounts.');
+        }
     }
 }

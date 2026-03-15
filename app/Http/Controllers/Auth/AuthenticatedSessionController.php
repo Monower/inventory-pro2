@@ -35,6 +35,9 @@ class AuthenticatedSessionController extends Controller
             // Optionally, log out the user or handle unauthorized access as needed,
             // then redirect back with an error message
             auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return redirect()->route('login')->withErrors([
                 'permission' => 'You do not have permission to log in.',
             ]);
