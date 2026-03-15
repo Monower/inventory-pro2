@@ -128,7 +128,7 @@ const Edit = ({ order, customers, products, banks }) => {
     };
 
     return (
-        <AuthenticatedLayout title="Edit order">
+        <AuthenticatedLayout title="Edit Order">
             {/* <Head title={`Edit order - ${company_name}`} /> */}
 
             <section>
@@ -136,7 +136,7 @@ const Edit = ({ order, customers, products, banks }) => {
                     <BackButton url={"orders.index"} />
                     <div>
                         <h3 className="heading">
-                            Edit order: {order.order_number}
+                            Edit Order: {order.order_number}
                         </h3>
                         <p className="text-gray-500">
                             Manage products, customers and checkout below.
@@ -407,7 +407,7 @@ const Edit = ({ order, customers, products, banks }) => {
                             disabled={processing}
                             className="bg-green-600 text-white px-4 py-1 rounded-lg"
                         >
-                            {processing ? "Updating..." : "Update order"}
+                            {processing ? "Updating..." : "Save Order"}
                         </button>
 
                         <Link

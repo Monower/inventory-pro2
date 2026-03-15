@@ -114,7 +114,7 @@ const Index = ({ subcategories, categories }) => {
                         className="create-button"
                         disabled={processing}
                     >
-                        Create new
+                        Create Subcategory
                     </button>
                 </div>
                 <IndexFilters
@@ -128,7 +128,7 @@ const Index = ({ subcategories, categories }) => {
                 <Modal
                     open={open}
                     onOpenChange={setOpen}
-                    title={editing ? "Edit Subcategory" : "Create new Subcategory"}
+                    title={editing ? "Edit Subcategory" : "Create Subcategory"}
                     footer={
                         <>
                             <button

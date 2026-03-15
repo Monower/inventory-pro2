@@ -18,7 +18,7 @@ const Edit = ({category}) => {
             <Head title={`Edit Category - ${company_name}`} />
             <div className="w-full h-[50vh] flex justify-center items-center">
                 <div className="bg-card text-card-foreground p-4 rounded border border-border">
-                    <h1 className="text-md font-bold">Update Category</h1>
+                    <h1 className="text-md font-bold">Edit Category</h1>
 
                     <form
                         onSubmit={updateCategory}

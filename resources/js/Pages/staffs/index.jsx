@@ -18,7 +18,7 @@ const Index = ({ staffs }) => {
     });
 
     const handleDelete = (id) => {
-        if (confirm("Are you sure you want to delete this customer?")) {
+        if (confirm("Are you sure you want to delete this employee?")) {
             setData("id", id);
             destroy(route("staff.destroy", id));
         }
@@ -33,7 +33,7 @@ const Index = ({ staffs }) => {
 
                     {canCreateStaff && (
                         <Link href="/staff/create" className="create-button">
-                            Create
+                            Create Employee
                         </Link>
                     )}
                 </div>

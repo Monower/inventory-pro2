@@ -24,7 +24,7 @@ const Create = () => {
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"transactions.index"} />
-                    <h3 className="text-xl font-semibold">Add new transaction</h3>
+                    <h3 className="text-xl font-semibold">Create Transaction</h3>
                 </div>
 
                 <div>

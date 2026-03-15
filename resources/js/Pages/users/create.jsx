@@ -48,7 +48,7 @@ const Create = ({ roles }) => {
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"users.index"} />
-                    <h3 className="heading">Add new user</h3>
+                    <h3 className="heading">Create User</h3>
                 </div>
 
                 <div>

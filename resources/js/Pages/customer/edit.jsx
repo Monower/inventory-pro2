@@ -26,12 +26,12 @@ const Edit = ({ customer }) => {
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Update customer - ${company_name}`} />
+            <Head title={`Edit Customer - ${company_name}`} />
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"customers.index"} />
-                    <h1 className="heading">Update Customer</h1>
+                    <h1 className="heading">Edit Customer</h1>
                 </div>
 
                 {/* Form */}

@@ -38,7 +38,7 @@ class SalaryController extends Controller
 
     public function create()
     {
-        $staff = Staff::all();
+        $staff = Staff::query()->select('id', 'name', 'salary')->orderBy('name')->get();
         return Inertia::render('Salaries/Create', [
             'staff' => $staff
         ]);

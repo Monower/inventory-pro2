@@ -51,11 +51,11 @@ const Edit = ({ user, roles }) => {
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Edit user - ${company_name}`} />
+            <Head title={`Edit User - ${company_name}`} />
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"users.index"} />
-                    <h3 className="heading">Edit user</h3>
+                    <h3 className="heading">Edit User</h3>
                 </div>
 
                 <form onSubmit={handleSubmit}>

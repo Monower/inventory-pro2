@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Attribute;
-use App\Models\AttributeValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -46,8 +45,16 @@ class ProductController extends Controller
     // Show the form for creating a new product
     public function create()
     {
-        $categories = Category::with('subCategories')->get();
-        $attributes = Attribute::with('values')->get();
+        $categories = Category::query()
+            ->select('id', 'name')
+            ->with(['subCategories:id,category_id,name'])
+            ->orderBy('name')
+            ->get();
+        $attributes = Attribute::query()
+            ->select('id', 'name')
+            ->with(['values:id,attribute_id,name'])
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('products/create', [
             'categories' => $categories,
@@ -105,8 +112,16 @@ class ProductController extends Controller
     // Show the form for editing the specified product
     public function edit(Product $product)
     {
-        $categories = Category::with('subCategories')->get();
-        $attributes = Attribute::with('values')->get();
+        $categories = Category::query()
+            ->select('id', 'name')
+            ->with(['subCategories:id,category_id,name'])
+            ->orderBy('name')
+            ->get();
+        $attributes = Attribute::query()
+            ->select('id', 'name')
+            ->with(['values:id,attribute_id,name'])
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('products/edit', [
             'product' => $product->load('attributeValue'),

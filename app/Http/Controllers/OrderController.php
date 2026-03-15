@@ -43,9 +43,12 @@ class OrderController extends Controller
 
     public function create()
     {
-        $customers = Customer::all();
-        $products = Product::all();
-        $banks = Bank::all();
+        $customers = Customer::query()->select('id', 'name')->orderBy('name')->get();
+        $products = Product::query()
+            ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
+            ->orderBy('name')
+            ->get();
+        $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
         return Inertia::render('orders/create', compact('customers', 'products', 'banks'));
     }
 
@@ -88,6 +91,9 @@ class OrderController extends Controller
                 }
 
                 $paidAmount = $validated['payment_amount'];
+                if ($paidAmount > $totalAmount) {
+                    throw new \Exception('Payment amount cannot exceed total amount.');
+                }
                 $dueAmount = max($totalAmount - $paidAmount, 0);
                 $paymentStatus = $paidAmount == 0
                     ? 'pending'
@@ -100,6 +106,13 @@ class OrderController extends Controller
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
+                    'payment_method' => $validated['payment_method'],
+                    'bank_id' => $validated['payment_method'] === 'bank'
+                        ? $validated['bank_id']
+                        : null,
+                    'mfs' => $validated['payment_method'] === 'mobile'
+                        ? $validated['mfs']
+                        : null,
                 ]);
 
                 foreach ($validated['cart'] as $item) {
@@ -129,16 +142,19 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $order->load('items.product');
-        $customers = Customer::all();
-        $products = Product::all();
-        $banks = Bank::all();
+        $customers = Customer::query()->select('id', 'name')->orderBy('name')->get();
+        $products = Product::query()
+            ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
+            ->orderBy('name')
+            ->get();
+        $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
 
         return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks'));
     }
 
     public function update(Request $request, Order $order)
     {
-        $request->validate([
+        $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'cart' => 'required|array|min:1',
             'cart.*.product_id' => 'required|exists:products,id',
@@ -151,7 +167,7 @@ class OrderController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($request, $order) {
+            DB::transaction(function () use ($validated, $order) {
 
                 /* ----------------------------
                Restore previous stock
@@ -167,10 +183,10 @@ class OrderController extends Controller
                 $totalAmount = 0;
                 $products = Product::whereIn(
                     'id',
-                    collect($request->cart)->pluck('product_id')
+                    collect($validated['cart'])->pluck('product_id')
                 )->get()->keyBy('id');
 
-                foreach ($request->cart as $item) {
+                foreach ($validated['cart'] as $item) {
                     $product = $products[$item['product_id']];
 
                     if ($product->stock < $item['quantity']) {
@@ -183,11 +199,11 @@ class OrderController extends Controller
                 /* ----------------------------
                Prevent overpayment
             ----------------------------- */
-                if ($request->payment_amount > $totalAmount) {
+                if ($validated['payment_amount'] > $totalAmount) {
                     throw new \Exception("Payment amount cannot exceed total amount.");
                 }
 
-                $paidAmount = $request->payment_amount;
+                $paidAmount = $validated['payment_amount'];
                 $dueAmount = $totalAmount - $paidAmount;
 
                 $paymentStatus = $paidAmount == 0
@@ -198,24 +214,24 @@ class OrderController extends Controller
                Update order
             ----------------------------- */
                 $order->update([
-                    'customer_id' => $request->customer_id,
+                    'customer_id' => $validated['customer_id'],
                     'total_amount' => $totalAmount,
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
-                    'payment_method' => $request->payment_method,
-                    'bank_id' => $request->payment_method === 'bank'
-                        ? $request->bank_id
+                    'payment_method' => $validated['payment_method'],
+                    'bank_id' => $validated['payment_method'] === 'bank'
+                        ? $validated['bank_id']
                         : null,
-                    'mfs' => $request->payment_method === 'mobile'
-                        ? $request->mfs
+                    'mfs' => $validated['payment_method'] === 'mobile'
+                        ? $validated['mfs']
                         : null,
                 ]);
 
                 /* ----------------------------
                Create new items & deduct stock
             ----------------------------- */
-                foreach ($request->cart as $item) {
+                foreach ($validated['cart'] as $item) {
                     $product = $products[$item['product_id']];
 
                     OrderItem::create([

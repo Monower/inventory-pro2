@@ -11,7 +11,7 @@ const Index = ({ transactions }) => {
     const { setData, delete: destroy } = useForm({ id: null });
 
     const handleDelete = (id) => {
-        if (confirm("Are you sure you want to delete this customer?")) {
+        if (confirm("Are you sure you want to delete this transaction?")) {
             setData("id", id);
             destroy(route("transaction.destroy", id));
         }
@@ -42,10 +42,10 @@ const Index = ({ transactions }) => {
 
                     <div className="grid grid-cols-1 gap-2 sm:flex sm:gap-2 w-full sm:w-auto">
                         <Link href="/transaction/create?type=add_money" className="create-button text-center">
-                            Add money
+                            Create Income
                         </Link>
                         <Link href="/transaction/create?type=expense" className="edit-button text-center">
-                            Add expenses
+                            Create Expense
                         </Link>
                     </div>
                 </div>

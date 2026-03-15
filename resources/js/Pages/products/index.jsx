@@ -28,7 +28,7 @@ const Index = () => {
                         href={route("products.create")}
                         className="create-button"
                     >
-                        Add Product
+                        Create Product
                     </Link>
                 </div>
                 <IndexFilters

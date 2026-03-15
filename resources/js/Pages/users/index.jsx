@@ -61,7 +61,7 @@ const Index = ({ users }) => {
                         href="/user/create"
                         className="create-button"
                     >
-                        Create
+                        Create User
                     </Link>
                 </div>
                 <IndexFilters

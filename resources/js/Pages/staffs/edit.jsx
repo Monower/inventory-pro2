@@ -31,11 +31,11 @@ const Edit = ({ staff }) => {
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Update Employee - ${company_name}`} />
+            <Head title={`Edit Employee - ${company_name}`} />
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"staffs.index"} />
-                    <h3 className="heading">Update employee</h3>
+                    <h3 className="heading">Edit Employee</h3>
                 </div>
                 {clientError && <Alert flash={{ error: clientError }} autoHideMs={3000} />}
 

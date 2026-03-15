@@ -61,7 +61,7 @@ const Index = ({ customers }) => {
                         href="/customer/create"
                         className="create-button"
                     >
-                        Create
+                        Create Customer
                     </Link>
                 </div>
                 <IndexFilters

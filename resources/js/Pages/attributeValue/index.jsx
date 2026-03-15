@@ -1,9 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { Head, useForm, usePage } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import { useState } from "react";
+import NoDataFound from "@/Components/NoDataFound/NoDataFound";
+import { EditIcon, Trash2Icon } from "lucide-react";
+import IndexFilters from "@/Components/IndexFilters";
+import Pagination from "@/Components/Pagination";
 
 const Index = ({ values, attributes }) => {
+    const { company_name, filters } = usePage().props;
+    const list = values?.data ?? [];
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [clientErrors, setClientErrors] = useState({});
@@ -32,7 +38,7 @@ const Index = ({ values, attributes }) => {
     const openEditModal = (item) => {
         setData({
             attribute_id: item.attribute_id,
-            value: item.value,
+            value: item.name,
         });
         setEditing(item);
         setClientErrors({});
@@ -80,29 +86,36 @@ const Index = ({ values, attributes }) => {
 
     return (
         <AuthenticatedLayout>
+            <Head title={`Attribute values - ${company_name}`} />
             <section>
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Attribute Values</h3>
+                    <h3 className="heading">Attribute Values</h3>
                     <button
                         onClick={openCreateModal}
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
+                        className="create-button"
                         disabled={processing}
                     >
-                        Create new
+                        Create Attribute Value
                     </button>
                 </div>
+                <IndexFilters
+                    routeName="attributeValues.index"
+                    initialQuery={filters?.q || ""}
+                    placeholder="Search attribute values..."
+                    className="mb-4"
+                />
 
                 {/* Modal for Create / Edit */}
                 <Modal
                     open={open}
                     onOpenChange={setOpen}
-                    title={editing ? "Edit Attribute Value" : "Create new Attribute Value"}
+                    title={editing ? "Edit Attribute Value" : "Create Attribute Value"}
                     footer={
                         <>
                             <button
                                 type="button"
                                 onClick={() => setOpen(false)}
-                                className="px-3 py-1 rounded bg-gray-300"
+                                className="delete-button"
                                 disabled={processing}
                             >
                                 Cancel
@@ -111,10 +124,10 @@ const Index = ({ values, attributes }) => {
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={processing}
-                                className={`px-3 py-1 rounded text-white ${
+                                className={`create-button ${
                                     processing
-                                        ? "bg-blue-300 cursor-not-allowed"
-                                        : "bg-blue-500 hover:bg-blue-600"
+                                        ? "cursor-not-allowed"
+                                        : "hover:bg-blue-600"
                                 }`}
                             >
                                 {processing
@@ -142,7 +155,7 @@ const Index = ({ values, attributes }) => {
                                 onChange={(e) =>
                                     setData("attribute_id", e.target.value)
                                 }
-                                className={`w-full border rounded px-2 py-1 ${
+                                className={`modal-input w-full ${
                                     clientErrors.attribute_id || errors.attribute_id
                                         ? "border-red-500"
                                         : "border-gray-300"
@@ -176,12 +189,13 @@ const Index = ({ values, attributes }) => {
                                 onChange={(e) =>
                                     setData("value", e.target.value)
                                 }
-                                className={`w-full border rounded px-2 py-1 ${
+                                className={`modal-input w-full ${
                                     clientErrors.value || errors.value
                                         ? "border-red-500"
                                         : "border-gray-300"
                                 }`}
                                 disabled={processing}
+                                placeholder="Enter attribute value"
                             />
                             {(clientErrors.value || errors.value) && (
                                 <div className="text-red-500 text-sm mt-1">
@@ -192,59 +206,59 @@ const Index = ({ values, attributes }) => {
                     </form>
                 </Modal>
 
-                <div className="bg-white p-4 rounded shadow">
-                    <table className="w-full text-left border-collapse border">
-                        <thead className="border-b">
-                            <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">
-                                <th>SI</th>
-                                <th>Attribute</th>
-                                <th>Value</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {values.map((item, index) => (
-                                <tr
-                                    key={item.id}
-                                    className="[&>td]:border [&>td]:py-1 [&>td]:px-2"
-                                >
-                                    <td>{index + 1}</td>
-                                    <td>{item.attribute?.name}</td>
-                                    <td>{item.value}</td>
-                                    <td>
-                                        <button
-                                            onClick={() => openEditModal(item)}
-                                            className="bg-blue-500 text-white py-1 px-2 rounded mr-2"
-                                            disabled={processing}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(item.id)}
-                                            className="bg-red-500 text-white py-1 px-2 rounded"
-                                            disabled={processing}
-                                        >
-                                            {processing
-                                                ? "Deleting..."
-                                                : "Delete"}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-
-                            {values.length === 0 && (
+                <div className="table-div">
+                    {list.length === 0 ? (
+                        <NoDataFound />
+                    ) : (
+                        <table className="custom-table">
+                            <thead className="custom-thead">
                                 <tr>
-                                    <td
-                                        colSpan={4}
-                                        className="text-center text-gray-500 py-4"
-                                    >
-                                        No attribute values found.
-                                    </td>
+                                    <th className="custom-th rounded-l-md">SI</th>
+                                    <th className="custom-th">Attribute</th>
+                                    <th className="custom-th">Value</th>
+                                    <th className="custom-th rounded-r-md">
+                                        Actions
+                                    </th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {list.map((item, index) => (
+                                    <tr
+                                        key={item.id}
+                                        className="custom-body-tr"
+                                    >
+                                        <td className="custom-body-td">
+                                            {(values.current_page - 1) * values.per_page + index + 1}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.attribute?.name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.name}
+                                        </td>
+                                        <td className="custom-body-td text-center flex justify-center items-center gap-2">
+                                            <button
+                                                onClick={() => openEditModal(item)}
+                                                className="edit-button"
+                                                disabled={processing}
+                                            >
+                                                <EditIcon className="w-4 h-4 inline" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="delete-button"
+                                                disabled={processing}
+                                            >
+                                                <Trash2Icon className="w-4 h-4 inline" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
+                <Pagination links={values?.links} />
             </section>
         </AuthenticatedLayout>
     );

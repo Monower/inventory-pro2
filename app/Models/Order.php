@@ -19,6 +19,9 @@ class Order extends Model
         'paid_amount',
         'due_amount',
         'payment_status',
+        'payment_method',
+        'bank_id',
+        'mfs',
     ];
 
     /**
@@ -63,5 +66,10 @@ class Order extends Model
         return $this->belongsToMany(Product::class, 'order_items')
             ->withPivot('quantity', 'price')
             ->withTimestamps();
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
     }
 }

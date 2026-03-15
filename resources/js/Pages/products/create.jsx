@@ -25,9 +25,6 @@ const Create = ({ categories, attributes }) => {
     const [currentDropdownValue, setCurrentDropdownValue] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
 
-    console.log("current dropdown value: ", currentDropdownValue);
-    console.log("selected values: ", selectedValues);
-
     useEffect(() => {
         if (selectedAttribute) {
             const attr = attributes.find((a) => a.id == selectedAttribute);
@@ -39,11 +36,11 @@ const Create = ({ categories, attributes }) => {
         setCurrentDropdownValue("");
         setData("attribute_id", selectedAttribute);
         setData("attribute_value_ids", []);
-    }, [selectedAttribute]);
+    }, [attributes, selectedAttribute, setData]);
 
     useEffect(() => {
         setData("attribute_value_ids", selectedValues);
-    }, [selectedValues]);
+    }, [selectedValues, setData]);
 
     // Handle image selection and create preview URL
     const handleImageChange = (e) => {
@@ -97,12 +94,12 @@ const Create = ({ categories, attributes }) => {
     };
 
     return (
-        <AuthenticatedLayout title="Add Product">
+        <AuthenticatedLayout title="Create Product">
             {/* <Head title={`Add Product - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"products.index"} />
-                    <h3 className="heading">Add new product</h3>
+                    <h3 className="heading">Create Product</h3>
                 </div>
 
                 <div>

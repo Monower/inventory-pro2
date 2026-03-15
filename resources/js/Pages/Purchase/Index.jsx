@@ -27,7 +27,7 @@ export default function Index() {
                         href={route("purchases.create")}
                         className="create-button"
                     >
-                        Create
+                        Create Purchase
                     </Link>
                 </div>
                 <IndexFilters

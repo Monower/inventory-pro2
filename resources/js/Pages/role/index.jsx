@@ -42,7 +42,7 @@ const Index = ({ roles }) => {
                         href="/roles/create"
                         className="create-button"
                     >
-                        Create
+                        Create Role
                     </Link>
                 </div>
                 <IndexFilters

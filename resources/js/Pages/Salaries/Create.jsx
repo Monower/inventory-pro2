@@ -18,11 +18,11 @@ export default function SalaryCreate({ staff }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Generate Salary - ${company_name}`} />
+            <Head title={`Create Salary - ${company_name}`} />
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"salaries.index"} />
-                    <h3 className="heading">Generate Salary</h3>
+                    <h3 className="heading">Create Salary</h3>
                 </div>
 
                 <div>

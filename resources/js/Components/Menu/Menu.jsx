@@ -60,7 +60,7 @@ const Menu = ({ url }) => {
 
             {permissions.includes("view order") && (
                 <SidebarDropdown
-                    title="Order"
+                    title="Orders"
                     icon={<AiOutlineBorderlessTable />}
                     active={orderActive}
                     defaultOpen={orderActive}
@@ -70,19 +70,19 @@ const Menu = ({ url }) => {
                             href="/orders/create"
                             className={subLinkClass(isPath("/orders/create"))}
                         >
-                            Create order
+                            Create Order
                         </Link>
                         <Link
                             href="/orders"
                             className={subLinkClass(isPath("/orders"))}
                         >
-                            Order list
+                            Orders
                         </Link>
                         <Link
                             href="/banks"
                             className={subLinkClass(isPathPrefix("/banks"))}
                         >
-                            Bank list
+                            Banks
                         </Link>
                     </div>
                 </SidebarDropdown>
@@ -95,7 +95,7 @@ const Menu = ({ url }) => {
                 permissions.includes("view attribute") ||
                 permissions.includes("view attribute value")) && (
                 <SidebarDropdown
-                    title="Product"
+                    title="Products"
                     icon={<BsBoxes />}
                     active={productActive}
                     defaultOpen={productActive}
@@ -106,7 +106,7 @@ const Menu = ({ url }) => {
                                 href="/products"
                                 className={subLinkClass(isPath("/products"))}
                             >
-                                Product list
+                                Products
                             </Link>
                         )}
                         {permissions.includes("create product") && (
@@ -116,7 +116,7 @@ const Menu = ({ url }) => {
                                     isPath("/products/create")
                                 )}
                             >
-                                Create product
+                                Create Product
                             </Link>
                         )}
                         {permissions.includes("view category") && (
@@ -124,7 +124,7 @@ const Menu = ({ url }) => {
                                 href="/categories"
                                 className={subLinkClass(isPathPrefix("/categories"))}
                             >
-                                Category list
+                                Categories
                             </Link>
                         )}
                         {permissions.includes("view subcategory") && (
@@ -134,7 +134,7 @@ const Menu = ({ url }) => {
                                     isPathPrefix("/sub-categories")
                                 )}
                             >
-                                Sub-category list
+                                Subcategories
                             </Link>
                         )}
                         {permissions.includes("view attribute") && (
@@ -142,14 +142,19 @@ const Menu = ({ url }) => {
                                 href="/attributes"
                                 className={subLinkClass(isPathPrefix("/attributes"))}
                             >
-                                Attribute list
+                                Attributes
                             </Link>
                         )}
-                        {/* {permissions.includes("view attribute value") && (
-                            <Link href="/attribute-values">
-                                Attribute value list
+                        {permissions.includes("view attribute value") && (
+                            <Link
+                                href="/attribute-values"
+                                className={subLinkClass(
+                                    isPathPrefix("/attribute-values")
+                                )}
+                            >
+                                Attribute Values
                             </Link>
-                        )} */}
+                        )}
                         {permissions.includes("view purchase") && (
                             <Link
                                 href="/purchases"
@@ -165,14 +170,15 @@ const Menu = ({ url }) => {
             {permissions.includes("view customer") && (
                 <Link href="/customers" className={linkClass(customerActive)}>
                     <FaUsers />
-                    <span>Customer</span>
+                    <span>Customers</span>
                 </Link>
             )}
 
             {(permissions.includes("view staff") ||
-                permissions.includes("view staff")) && (
+                permissions.includes("view salary") ||
+                permissions.includes("view advance salary")) && (
                 <SidebarDropdown
-                    title="Employee management"
+                    title="Employee Management"
                     icon={<FaUserTie />}
                     active={employeeActive}
                     defaultOpen={employeeActive}
@@ -186,7 +192,7 @@ const Menu = ({ url }) => {
                                 Employees
                             </Link>
                         )}
-                        {permissions.includes("view staff") && (
+                        {permissions.includes("view salary") && (
                             <Link
                                 href="/salaries"
                                 className={subLinkClass(isPathPrefix("/salaries"))}
@@ -194,14 +200,14 @@ const Menu = ({ url }) => {
                                 Salaries
                             </Link>
                         )}
-                        {permissions.includes("view staff") && (
+                        {permissions.includes("view advance salary") && (
                             <Link
                                 href="/advance-salaries"
                                 className={subLinkClass(
                                     isPathPrefix("/advance-salaries")
                                 )}
                             >
-                                Advance salaries
+                                Advance Salaries
                             </Link>
                         )}
                     </div>
@@ -227,7 +233,7 @@ const Menu = ({ url }) => {
             {(permissions.includes("view role") ||
                 permissions.includes("view user")) && (
                 <SidebarDropdown
-                    title="User management"
+                    title="User Management"
                     icon={<BsPersonBoundingBox />}
                     active={userManagementActive}
                     defaultOpen={userManagementActive}
@@ -238,7 +244,7 @@ const Menu = ({ url }) => {
                                 href="/roles"
                                 className={subLinkClass(isPathPrefix("/roles"))}
                             >
-                                User role
+                                Roles
                             </Link>
                         )}
                         {permissions.includes("view user") && (
@@ -246,7 +252,7 @@ const Menu = ({ url }) => {
                                 href="/users"
                                 className={subLinkClass(isPathPrefix("/users"))}
                             >
-                                User list
+                                Users
                             </Link>
                         )}
                     </div>

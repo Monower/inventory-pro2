@@ -61,7 +61,7 @@ const Create = ({ permissions }) => {
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"roles.index"} />
-                    <h3 className="text-xl font-semibold">Create new role</h3>
+                    <h3 className="text-xl font-semibold">Create Role</h3>
                 </div>
 
                 <form onSubmit={handleSubmit}>

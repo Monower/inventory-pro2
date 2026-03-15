@@ -17,7 +17,6 @@ export default function SalaryIndex() {
                 {},
                 {
                     preserveScroll: true,
-                    onSuccess: () => console.log("Salary marked as paid!"),
                 }
             );
         }
@@ -33,7 +32,7 @@ export default function SalaryIndex() {
                         href={route("salaries.create")}
                         className="create-button"
                     >
-                        Generate salary
+                        Create Salary
                     </Link>
                 </div>
                 <IndexFilters

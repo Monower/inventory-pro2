@@ -19,7 +19,7 @@ export default function AdvanceIndex() {
                         href={route("advance-salaries.create")}
                         className="create-button"
                     >
-                        Add Advance
+                        Create Advance Salary
                     </Link>
                 </div>
                 <IndexFilters

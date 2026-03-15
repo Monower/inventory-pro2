@@ -16,11 +16,11 @@ class RolePermissionSeeder extends Seeder
 
         // Create permissions
         $viewDashboard = Permission::firstOrCreate(['name' => 'view dashboard']);
-        $editUsers = Permission::firstOrCreate(['name' => 'edit users']);
+        $editUser = Permission::firstOrCreate(['name' => 'edit user']);
         $canLogin = Permission::firstOrCreate(['name' => 'can login']); // ✅ new permission
 
         // Assign permissions to roles
-        $admin->givePermissionTo([$viewDashboard, $editUsers]);
+        $admin->givePermissionTo([$viewDashboard, $editUser]);
         $user->givePermissionTo([$viewDashboard, $canLogin]); // ✅ user can login
     }
 }

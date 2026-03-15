@@ -1,5 +1,13 @@
 import { Link } from "@inertiajs/react";
 
+const decodeLabel = (label) =>
+    String(label)
+        .replace(/&laquo;/g, "\u00ab")
+        .replace(/&raquo;/g, "\u00bb")
+        .replace(/&amp;/g, "&")
+        .replace(/<[^>]*>/g, "")
+        .trim();
+
 const Pagination = ({ links = [] }) => {
     if (!Array.isArray(links) || links.length <= 3) {
         return null;
@@ -15,17 +23,19 @@ const Pagination = ({ links = [] }) => {
                         preserveScroll
                         className={`rounded border px-3 py-1 text-sm ${
                             link.active
-                                ? "bg-slate-800 text-white"
-                                : "bg-white text-slate-700"
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border bg-background text-foreground hover:bg-muted"
                         }`}
-                        dangerouslySetInnerHTML={{ __html: link.label }}
-                    />
+                    >
+                        {decodeLabel(link.label)}
+                    </Link>
                 ) : (
                     <span
                         key={`${link.label}-${index}`}
-                        className="rounded border border-slate-200 px-3 py-1 text-sm text-slate-400"
-                        dangerouslySetInnerHTML={{ __html: link.label }}
-                    />
+                        className="rounded border border-border px-3 py-1 text-sm text-muted-foreground"
+                    >
+                        {decodeLabel(link.label)}
+                    </span>
                 )
             )}
         </div>

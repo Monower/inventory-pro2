@@ -21,10 +21,6 @@ Route::middleware(['auth'])->group(function () {
                 ->name('store')
                 ->middleware('permission:create purchase');
 
-            Route::get('/{purchase}', [PurchaseController::class, 'show'])
-                ->name('show')
-                ->middleware('permission:view purchase');
-
             Route::get('/{purchase}/edit', [PurchaseController::class, 'edit'])
                 ->name('edit')
                 ->middleware('permission:edit purchase');

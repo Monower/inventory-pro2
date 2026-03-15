@@ -78,13 +78,13 @@ const Create = ({ customers, products, banks }) => {
     };
 
     return (
-        <AuthenticatedLayout title="Create order">
+        <AuthenticatedLayout title="Create Order">
             {/* <Head title={`Create order - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"orders.index"} />
                     <div>
-                        <h3 className="heading">Create new order</h3>
+                        <h3 className="heading">Create Order</h3>
                         <p className="text-gray-500">
                             Manage products, customers and checkout below.
                         </p>
@@ -454,7 +454,7 @@ const Create = ({ customers, products, banks }) => {
                                 >
                                     {processing
                                         ? "Creating..."
-                                        : "Create order"}
+                                        : "Create Order"}
                                 </button>
                             </div>
                         </div>

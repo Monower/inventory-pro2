@@ -111,7 +111,7 @@ const Index = ({ banks }) => {
                         className="create-button"
                         disabled={processing}
                     >
-                        Add new
+                        Create Bank
                     </button>
                 </div>
                 <IndexFilters
@@ -125,7 +125,7 @@ const Index = ({ banks }) => {
                 <Modal
                     open={open}
                     onOpenChange={setOpen}
-                    title={editing ? "Edit bank" : "Add new bank"}
+                    title={editing ? "Edit Bank" : "Create Bank"}
                     footer={
                         <>
                             <button

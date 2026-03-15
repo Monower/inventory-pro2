@@ -28,12 +28,12 @@ const Create = () => {
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Add customer - ${company_name}`} />
+            <Head title={`Create Customer - ${company_name}`} />
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"customers.index"} />
-                    <h3 className="heading">Add new customer</h3>
+                    <h3 className="heading">Create Customer</h3>
                 </div>
                 {clientError && <Alert flash={{ error: clientError }} autoHideMs={3000} />}
 

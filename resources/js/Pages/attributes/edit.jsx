@@ -50,7 +50,7 @@ const Edit = ({ attribute }) => {
       <section>
         <div className="mb-4 flex items-center gap-4">
           <BackButton url={"attributes.index"} />
-          <h3 className="heading">Update attribute</h3>
+          <h3 className="heading">Edit Attribute</h3>
         </div>
 
         <form onSubmit={handleSubmit}>

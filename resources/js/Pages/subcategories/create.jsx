@@ -8,8 +8,6 @@ const Create = ({ categories }) => {
         category_id: "",
     });
 
-    console.log(categories);
-
     const submit = (e) => {
         e.preventDefault();
         post(route("subcategories.store"));

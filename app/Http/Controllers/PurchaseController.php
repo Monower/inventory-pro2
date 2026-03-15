@@ -42,7 +42,7 @@ class PurchaseController extends Controller
 
     public function create()
     {
-        $products = Product::select('id', 'name', 'buying_price', 'stock')->get();
+        $products = Product::query()->select('id', 'name', 'buying_price', 'stock')->orderBy('name')->get();
         return Inertia::render('Purchase/Create', [
             'products' => $products
         ]);
@@ -50,12 +50,10 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
-
         $validated = $request->validate([
             'supplier_name' => 'nullable|string|max:255',
             'purchase_date' => 'required|date',
-            'payment_status' => 'required|string',
+            'payment_status' => 'required|in:paid,partial,unpaid',
             'paid_amount' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
@@ -63,53 +61,61 @@ class PurchaseController extends Controller
             'items.*.buying_price' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $invoice = 'INV-' . time();
+        try {
+            DB::transaction(function () use ($validated) {
+                $invoice = 'INV-' . time();
 
-            $purchase = Purchase::create([
-                'invoice_no' => $invoice,
-                'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
-                'purchase_date' => $validated['purchase_date'],
-                'payment_status' => $validated['payment_status'],
-                'total_amount' => 0,
-                'paid_amount' => $validated['paid_amount'] ?? 0, // fallback to 0
-            ]);
+                $totalAmount = 0;
+                foreach ($validated['items'] as $item) {
+                    $totalAmount += $item['quantity'] * $item['buying_price'];
+                }
 
-            $totalAmount = 0;
+                $paidAmount = (float) $validated['paid_amount'];
+                if ($paidAmount > $totalAmount) {
+                    throw new \InvalidArgumentException('Paid amount cannot exceed total amount.');
+                }
 
-            foreach ($validated['items'] as $item) {
-                $lineTotal = $item['quantity'] * $item['buying_price'];
-                $totalAmount += $lineTotal;
+                $paymentStatus = $paidAmount <= 0
+                    ? 'unpaid'
+                    : ($paidAmount < $totalAmount ? 'partial' : 'paid');
 
-                $purchase->items()->create([
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'buying_price' => $item['buying_price'],
-                    'total' => $lineTotal,
+                $purchase = Purchase::create([
+                    'invoice_no' => $invoice,
+                    'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
+                    'purchase_date' => $validated['purchase_date'],
+                    'payment_status' => $paymentStatus,
+                    'total_amount' => $totalAmount,
+                    'paid_amount' => $paidAmount,
                 ]);
 
-                $product = Product::find($item['product_id']);
-                $product->increment('stock', $item['quantity']);
-                $product->update(['buying_price' => $item['buying_price']]);
-            }
+                foreach ($validated['items'] as $item) {
+                    $lineTotal = $item['quantity'] * $item['buying_price'];
 
-            // Update purchase totals AFTER calculating items
-            $purchase->update([
-                'total_amount' => $totalAmount,
-                'paid_amount' => $validated['paid_amount'] ?? 0,
-            ]);
+                    $purchase->items()->create([
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'buying_price' => $item['buying_price'],
+                        'total' => $lineTotal,
+                    ]);
 
-            // dd($validated['paid_amount']);
+                    $product = Product::find($item['product_id']);
+                    $product->increment('stock', $item['quantity']);
+                    $product->update(['buying_price' => $item['buying_price']]);
+                }
 
-            // Now paid_amount is guaranteed to exist
-            Transaction::create([
-                'name' => 'Product Purchase - ' . $purchase->invoice_no,
-                'payment_method' => 'cash',
-                'transaction_type' => 'expense',
-                'source' => $purchase->supplier_name,
-                'amount' => $purchase->paid_amount, // safe now
-            ]);
-        });
+                if ($paidAmount > 0) {
+                    Transaction::create([
+                        'name' => 'Product Purchase - ' . $purchase->invoice_no,
+                        'payment_method' => 'cash',
+                        'transaction_type' => 'expense',
+                        'source' => $purchase->supplier_name,
+                        'amount' => $paidAmount,
+                    ]);
+                }
+            });
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
 
         return redirect()->route('purchases.index')->with('success', 'Purchase recorded successfully.');
@@ -118,7 +124,7 @@ class PurchaseController extends Controller
     public function edit(Purchase $purchase)
     {
         $purchase->load('items.product');
-        $products = Product::select('id', 'name', 'buying_price')->get();
+        $products = Product::query()->select('id', 'name', 'buying_price', 'stock')->orderBy('name')->get();
         return Inertia::render('Purchase/Edit', [
             'purchase' => $purchase,
             'products' => $products
@@ -130,69 +136,73 @@ class PurchaseController extends Controller
         $validated = $request->validate([
             'supplier_name' => 'nullable|string|max:255',
             'purchase_date' => 'required|date',
-            'payment_status' => 'required|string',
-            'paid_amount' => 'required|numeric|min:0', // this is the new payment entered
+            'payment_status' => 'required|in:paid,partial,unpaid',
+            'paid_amount' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.buying_price' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function () use ($validated, $purchase) {
-            $totalAmount = 0;
+        try {
+            DB::transaction(function () use ($validated, $purchase) {
+                $totalAmount = 0;
 
-            // Revert previous stock
-            foreach ($purchase->items as $oldItem) {
-                $product = Product::find($oldItem->product_id);
-                $product->decrement('stock', $oldItem->quantity);
-            }
+                // Revert previous stock
+                foreach ($purchase->items as $oldItem) {
+                    $product = Product::find($oldItem->product_id);
+                    $product->decrement('stock', $oldItem->quantity);
+                }
 
-            $purchase->items()->delete();
+                $purchase->items()->delete();
 
-            // Add updated items
-            foreach ($validated['items'] as $item) {
-                $lineTotal = $item['quantity'] * $item['buying_price'];
-                $totalAmount += $lineTotal;
+                foreach ($validated['items'] as $item) {
+                    $lineTotal = $item['quantity'] * $item['buying_price'];
+                    $totalAmount += $lineTotal;
 
-                $purchase->items()->create([
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'buying_price' => $item['buying_price'],
-                    'total' => $lineTotal,
+                    $purchase->items()->create([
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'buying_price' => $item['buying_price'],
+                        'total' => $lineTotal,
+                    ]);
+
+                    $product = Product::find($item['product_id']);
+                    $product->increment('stock', $item['quantity']);
+                    $product->update(['buying_price' => $item['buying_price']]);
+                }
+
+                $newPaid = (float) $validated['paid_amount'];
+                $cumulativePaid = $purchase->paid_amount + $newPaid;
+                if ($cumulativePaid > $totalAmount) {
+                    throw new \InvalidArgumentException('Paid amount cannot exceed total amount.');
+                }
+
+                $paymentStatus = $cumulativePaid <= 0
+                    ? 'unpaid'
+                    : ($cumulativePaid < $totalAmount ? 'partial' : 'paid');
+
+                $purchase->update([
+                    'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
+                    'purchase_date' => $validated['purchase_date'],
+                    'payment_status' => $paymentStatus,
+                    'total_amount' => $totalAmount,
+                    'paid_amount' => $cumulativePaid,
                 ]);
 
-                $product = Product::find($item['product_id']);
-                $product->increment('stock', $item['quantity']);
-                $product->update(['buying_price' => $item['buying_price']]);
-            }
-
-            // Calculate new cumulative paid amount
-            $newPaid = $validated['paid_amount']; // new payment this edit
-            $cumulativePaid = $purchase->paid_amount + $newPaid;
-
-            $paymentStatus = $cumulativePaid >= $totalAmount ? 'paid' : 'partial';
-
-            // Update purchase
-            $purchase->update([
-                'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
-                'purchase_date' => $validated['purchase_date'],
-                'payment_status' => $paymentStatus,
-                // 'payment_status' => $validated['payment_status'],
-                'total_amount' => $totalAmount,
-                'paid_amount' => $cumulativePaid, // cumulative paid amount
-            ]);
-
-            // Only create a transaction if new payment > 0
-            if ($newPaid > 0) {
-                Transaction::create([
-                    'name' => 'Product Purchase - ' . $purchase->invoice_no,
-                    'payment_method' => 'cash',
-                    'transaction_type' => 'expense',
-                    'source' => $purchase->supplier_name,
-                    'amount' => $newPaid,
-                ]);
-            }
-        });
+                if ($newPaid > 0) {
+                    Transaction::create([
+                        'name' => 'Product Purchase - ' . $purchase->invoice_no,
+                        'payment_method' => 'cash',
+                        'transaction_type' => 'expense',
+                        'source' => $purchase->supplier_name,
+                        'amount' => $newPaid,
+                    ]);
+                }
+            });
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('purchases.index')
             ->with('success', 'Purchase updated successfully.');

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attribute;
 use App\Models\AttributeValue;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AttributeValueController extends Controller
 {
@@ -12,15 +14,26 @@ class AttributeValueController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $q = trim((string) request()->query('q', ''));
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return Inertia::render('attributeValue/index', [
+            'values' => AttributeValue::with('attribute')
+                ->when($q !== '', function ($query) use ($q) {
+                    $query->where(function ($subQuery) use ($q) {
+                        $subQuery->where('name', 'like', "%{$q}%")
+                            ->orWhereHas('attribute', function ($attributeQuery) use ($q) {
+                                $attributeQuery->where('name', 'like', "%{$q}%");
+                            });
+                    });
+                })
+                ->latest()
+                ->paginate(10)
+                ->withQueryString(),
+            'attributes' => Attribute::query()->select('id', 'name')->orderBy('name')->get(),
+            'filters' => [
+                'q' => $q,
+            ],
+        ]);
     }
 
     /**
@@ -28,23 +41,17 @@ class AttributeValueController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+            'attribute_id' => 'required|exists:attributes,id',
+            'value' => 'required|string|max:255',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(AttributeValue $attributeValue)
-    {
-        //
-    }
+        AttributeValue::create([
+            'attribute_id' => $validated['attribute_id'],
+            'name' => $validated['value'],
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(AttributeValue $attributeValue)
-    {
-        //
+        return redirect()->route('attributeValues.index')->with('success', 'Attribute value created successfully.');
     }
 
     /**
@@ -52,14 +59,23 @@ class AttributeValueController extends Controller
      */
     public function update(Request $request, AttributeValue $attributeValue)
     {
-        //
+        $validated = $request->validate([
+            'attribute_id' => 'required|exists:attributes,id',
+            'value' => 'required|string|max:255',
+        ]);
+
+        $attributeValue->update([
+            'attribute_id' => $validated['attribute_id'],
+            'name' => $validated['value'],
+        ]);
+
+        return redirect()->route('attributeValues.index')->with('success', 'Attribute value updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(AttributeValue $attributeValue)
     {
-        //
+        $attributeValue->delete();
+
+        return redirect()->route('attributeValues.index')->with('success', 'Attribute value deleted successfully.');
     }
 }

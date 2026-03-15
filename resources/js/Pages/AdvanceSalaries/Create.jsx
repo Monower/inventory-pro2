@@ -18,12 +18,12 @@ export default function AdvanceCreate({ staff }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Add Advance Salary" />
+            <Head title="Create Advance Salary" />
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"advance-salaries.index"} />
-                    <h3 className="heading">Add Advance Salary</h3>
+                    <h3 className="heading">Create Advance Salary</h3>
                 </div>
 
                 <div>

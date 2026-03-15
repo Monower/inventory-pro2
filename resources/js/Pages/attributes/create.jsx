@@ -37,7 +37,7 @@ const Create = () => {
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"attributes.index"} />
-                    <h3 className="heading">Add new attribute</h3>
+                    <h3 className="heading">Create Attribute</h3>
                 </div>
 
                 <form onSubmit={handleSubmit}>

@@ -25,7 +25,7 @@ const Edit = ({ transaction }) => {
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"transactions.index"} />
-                    <h3 className="text-xl font-semibold">Update transaction</h3>
+                    <h3 className="text-xl font-semibold">Edit Transaction</h3>
                 </div>
 
                 <div>
