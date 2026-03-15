@@ -2,75 +2,119 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\Product;
-use App\Models\Customer;
-use App\Models\Staff;
-use App\Models\Transaction;
-use Illuminate\Support\Facades\DB;
 use App\Models\Order;
+use App\Models\Purchase;
+use App\Models\Transaction;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $total_product_count = Product::count();
-        $total_product_price = Product::select(DB::raw('SUM(selling_price * stock) as total'))->value('total');
-        $total_customer_count = Customer::count();
-        $total_staff_count = Staff::count();
-        $total_added_money = Transaction::where(['transaction_type' => 'add_money'])->sum('amount');
-        $total_expenses = Transaction::where(['transaction_type' => 'expense'])->sum('amount');
-        $total_order_count = Order::count();
-        $total_sold_value = Order::where(['payment_status' => 'paid'])->sum('paid_amount');
+        $totalRevenue = (float) Order::sum('total_amount');
+        $totalIncome = (float) Order::sum('paid_amount');
+        $totalExpense = (float) Transaction::where('transaction_type', 'expense')->sum('amount');
+        $accountPayable = (float) Purchase::sum(DB::raw('total_amount - paid_amount'));
+        $accountReceivable = (float) Order::sum('due_amount');
 
-        $data = [
+        $businessStatistics = [
             [
-                "title" => "Total Product Count",
-                "heading" => $total_product_count,
-                "icon" => "FiBox"
+                'title' => 'Total revenue',
+                'value' => $totalRevenue,
+                'icon' => 'revenue',
             ],
             [
-                "title" => "Total Product price",
-                "heading" => (int)$total_product_price . " TK",
-                "icon" => "FaProductHunt"
+                'title' => 'Total income',
+                'value' => $totalIncome,
+                'icon' => 'income',
             ],
             [
-                "title" => "Total sold value",
-                "heading" => (int)$total_sold_value . " TK",
-                "icon" => "CiDollar"
+                'title' => 'Total expense',
+                'value' => $totalExpense,
+                'icon' => 'expense',
             ],
             [
-                "title" => "Total order Count",
-                "heading" => $total_order_count,
-                "icon" => "LuTruck"
+                'title' => 'Account payable',
+                'value' => $accountPayable,
+                'icon' => 'payable',
             ],
             [
-                "title" => "Total customer Count",
-                "heading" => $total_customer_count,
-                "icon" => "FaRegUserCircle"
-            ],
-            [
-                "title" => "Total staff Count",
-                "heading" => $total_staff_count,
-                "icon" => "FaUserFriends"
-            ],
-            [
-                "title" => "Total added money",
-                "heading" => $total_added_money . " TK",
-                "icon" => "FaSackDollar"
-            ],
-            [
-                "title" => "Total expenses",
-                "heading" => $total_expenses . " TK",
-                "icon" => "MdOutlineMoneyOff"
+                'title' => 'Account receivable',
+                'value' => $accountReceivable,
+                'icon' => 'receivable',
             ],
         ];
 
-
+        $earningStatistics = [
+            'monthly' => $this->getMonthlyStatistics(),
+            'yearly' => $this->getYearlyStatistics(),
+        ];
 
         return Inertia::render('Dashboard', [
-            'data' => $data
+            'businessStatistics' => $businessStatistics,
+            'earningStatistics' => $earningStatistics,
         ]);
+    }
+
+    private function getMonthlyStatistics(): array
+    {
+        $year = now()->year;
+        $labels = collect(range(1, 12))->map(
+            fn ($month) => Carbon::create($year, $month, 1)->format('M')
+        );
+
+        $income = Order::selectRaw('MONTH(created_at) as month, SUM(paid_amount) as total')
+            ->whereYear('created_at', $year)
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $expense = Transaction::selectRaw('MONTH(created_at) as month, SUM(amount) as total')
+            ->where('transaction_type', 'expense')
+            ->whereYear('created_at', $year)
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        return [
+            'period' => (string) $year,
+            'labels' => $labels->values()->all(),
+            'income' => collect(range(1, 12))->map(
+                fn ($month) => (float) ($income[$month] ?? 0)
+            )->values()->all(),
+            'expense' => collect(range(1, 12))->map(
+                fn ($month) => (float) ($expense[$month] ?? 0)
+            )->values()->all(),
+        ];
+    }
+
+    private function getYearlyStatistics(): array
+    {
+        $currentYear = now()->year;
+        $years = collect(range($currentYear - 5, $currentYear));
+
+        $income = Order::selectRaw('YEAR(created_at) as year, SUM(paid_amount) as total')
+            ->whereBetween('created_at', [
+                now()->copy()->subYears(5)->startOfYear(),
+                now()->copy()->endOfYear(),
+            ])
+            ->groupBy('year')
+            ->pluck('total', 'year');
+
+        $expense = Transaction::selectRaw('YEAR(created_at) as year, SUM(amount) as total')
+            ->where('transaction_type', 'expense')
+            ->whereBetween('created_at', [
+                now()->copy()->subYears(5)->startOfYear(),
+                now()->copy()->endOfYear(),
+            ])
+            ->groupBy('year')
+            ->pluck('total', 'year');
+
+        return [
+            'period' => $years->first() . ' - ' . $years->last(),
+            'labels' => $years->map(fn ($year) => (string) $year)->values()->all(),
+            'income' => $years->map(fn ($year) => (float) ($income[$year] ?? 0))->values()->all(),
+            'expense' => $years->map(fn ($year) => (float) ($expense[$year] ?? 0))->values()->all(),
+        ];
     }
 }
