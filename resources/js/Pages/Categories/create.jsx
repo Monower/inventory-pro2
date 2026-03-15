@@ -1,8 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 
 const Create = () => {
-    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
         name: "",
     });
@@ -12,8 +11,7 @@ const Create = () => {
         post(route("categories.store"));
     };
     return (
-        <AuthenticatedLayout>
-            <Head title={`Create Category - ${company_name}`} />
+        <AuthenticatedLayout title="Create Category">
             <div className="w-full h-[50vh] flex justify-center items-center">
                 <div className="bg-card text-card-foreground p-4 rounded border border-border">
                     <h1 className="text-md font-bold">Create Category</h1>

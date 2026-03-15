@@ -1,15 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
 export default function Edit({ mustVerifyEmail, status }) {
-    const { company_name } = usePage().props;
     return (
         <AuthenticatedLayout title="Profile">
-            <Head title={`Profile - ${company_name}`} />
-
             <div className="mx-auto max-w-7xl py-3">
                 <div className="mb-6 rounded-xl border border-border bg-card p-6 shadow-sm">
                     <h1 className="text-2xl font-semibold text-foreground">My Profile</h1>

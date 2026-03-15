@@ -1,17 +1,16 @@
 import React from "react";
-import { Link, usePage, Head } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 export default function AdvanceIndex() {
-    const { advances, company_name, filters } = usePage().props;
+    const { advances, filters } = usePage().props;
     const list = advances?.data ?? [];
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Advance / Loan Records - ${company_name}`} />
+        <AuthenticatedLayout title="Advance">
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="heading">Advance / Loan Records</h1>

@@ -1,15 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
-import { Head, Link, usePage } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
 const Show = ({ product }) => {
-    const { company_name } = usePage().props;
-
     return (
         <AuthenticatedLayout title="View product">
-            {/* <Head title={`View product - ${company_name}`} /> */}
-
             <section>
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-import { Link, usePage, useForm, Head } from "@inertiajs/react";
+import { Link, usePage, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
@@ -6,7 +6,7 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = () => {
-    const { attributes, company_name, filters } = usePage().props;
+    const { attributes, filters } = usePage().props;
     const { delete: destroy, processing } = useForm();
     const list = attributes?.data ?? [];
 
@@ -18,8 +18,7 @@ const Index = () => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Attributes - ${company_name}`} />
+        <AuthenticatedLayout title="Attributes">
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Attributes</h3>

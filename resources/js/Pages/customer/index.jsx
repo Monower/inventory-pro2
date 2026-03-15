@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm, Head } from "@inertiajs/react";
+import { Link, useForm } from "@inertiajs/react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { useState } from "react";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"; // optional icons
@@ -9,7 +9,7 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = ({ customers }) => {
-    const { company_name, filters } = usePage().props;
+    const { filters } = usePage().props;
     const list = customers?.data ?? [];
     const { setData, delete: destroy } = useForm({ id: null });
     const [sortField, setSortField] = useState(null);
@@ -51,8 +51,7 @@ const Index = ({ customers }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Customers - ${company_name}`} />
+        <AuthenticatedLayout title="Customers">
             <section>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">

@@ -1,8 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 
 const Create = ({ categories }) => {
-    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
         name: "",
         category_id: "",
@@ -14,8 +13,7 @@ const Create = ({ categories }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Create Subcategory - ${company_name}`} />
+        <AuthenticatedLayout title="Create Subcategory">
             <div className="w-full h-[50vh] flex justify-center items-center">
                 <div className="bg-card text-card-foreground p-4 rounded border border-border">
                     <h1 className="text-md font-bold">Create Subcategory</h1>

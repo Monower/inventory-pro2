@@ -2,11 +2,9 @@ import Checkbox from "@/Components/Checkbox";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import GuestLayout from "@/Layouts/GuestLayout";
-import { Head, useForm } from "@inertiajs/react";
-import { usePage } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 
 export default function Login({ status, canResetPassword }) {
-    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors, reset } = useForm({
         phone: "",
         email: "",
@@ -24,8 +22,6 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title={`Log in - ${company_name}`} />
-
             {status && (
                 <div className="mb-4 text-sm font-medium text-green-600">
                     {status}

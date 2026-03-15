@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, Head, usePage } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
@@ -12,7 +12,7 @@ const Index = ({ banks }) => {
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [clientErrors, setClientErrors] = useState({});
-    const { company_name, filters } = usePage().props;
+    const { filters } = usePage().props;
     const list = banks?.data ?? [];
 
     const {
@@ -101,7 +101,6 @@ const Index = ({ banks }) => {
 
     return (
         <AuthenticatedLayout title="Banks">
-            {/* <Head title={`Banks - ${company_name}`} /> */}
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Banks</h3>

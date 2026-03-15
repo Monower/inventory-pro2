@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, usePage, router, Head } from "@inertiajs/react";
+import { Link, usePage, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
@@ -7,7 +7,7 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 export default function SalaryIndex() {
-    const { salaries, company_name, filters } = usePage().props;
+    const { salaries, filters } = usePage().props;
     const list = salaries?.data ?? [];
 
     const markAsPaid = (id) => {
@@ -23,8 +23,7 @@ export default function SalaryIndex() {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Salary sheet - ${company_name}`} />
+        <AuthenticatedLayout title="Salary Sheet">
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="heading">Salary sheet</h1>

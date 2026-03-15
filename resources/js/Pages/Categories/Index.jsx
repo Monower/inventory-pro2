@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import { useState } from "react";
 import { dateFormater } from "@/util/DateFormater";
@@ -9,7 +9,7 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = ({ categories }) => {
-    const { company_name, filters } = usePage().props;
+    const { filters } = usePage().props;
     const list = categories?.data ?? [];
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null); // null = create, object = edit
@@ -83,8 +83,7 @@ const Index = ({ categories }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Categories - ${company_name}`} />
+        <AuthenticatedLayout title="Categories">
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Categories</h3>

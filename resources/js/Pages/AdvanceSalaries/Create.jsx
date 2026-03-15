@@ -1,5 +1,5 @@
 import React from "react";
-import { useForm, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
@@ -17,8 +17,7 @@ export default function AdvanceCreate({ staff }) {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title="Create Advance Salary" />
+        <AuthenticatedLayout title="Create Advance Salary">
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">

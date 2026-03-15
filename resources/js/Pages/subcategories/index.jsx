@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import DataTable from "@/Components/DataTable/DataTable";
 import { useState } from "react";
@@ -9,7 +9,7 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = ({ subcategories, categories }) => {
-    const { company_name, filters } = usePage().props;
+    const { filters } = usePage().props;
     const list = subcategories?.data ?? [];
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
@@ -104,8 +104,7 @@ const Index = ({ subcategories, categories }) => {
     }));
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Subcategories - ${company_name}`} />
+        <AuthenticatedLayout title="Subcategories">
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Subcategories</h3>

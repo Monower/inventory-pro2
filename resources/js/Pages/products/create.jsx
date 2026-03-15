@@ -1,10 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Create = ({ categories, attributes }) => {
-    const {  company_name } = usePage().props;
     const { data, setData, post, errors } = useForm({
         name: "",
         description: "",
@@ -95,7 +94,6 @@ const Create = ({ categories, attributes }) => {
 
     return (
         <AuthenticatedLayout title="Create Product">
-            {/* <Head title={`Add Product - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"products.index"} />

@@ -1,10 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, Head, Link } from "@inertiajs/react";
+import { useForm, Link } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
-import { usePage } from "@inertiajs/react";
 
 const Edit = ({ customer }) => {
-    const { company_name } = usePage().props;
     const {
         data,
         setData,
@@ -25,8 +23,7 @@ const Edit = ({ customer }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Edit Customer - ${company_name}`} />
+        <AuthenticatedLayout title="Edit Customer">
             <section>
                 {/* Header */}
                 <div className="mb-4 flex items-center gap-4">

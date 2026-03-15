@@ -1,11 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head, Link } from "@inertiajs/react";
+import { useForm, Link } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
 import { useState } from "react";
 import Alert from "@/Components/Alert/Alert";
 
 const Edit = ({ staff }) => {
-    const { company_name } = usePage().props;
     const { data, setData, post, errors, put, processing } = useForm({
         name: staff.name,
         email: staff.email,
@@ -30,8 +29,7 @@ const Edit = ({ staff }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Edit Employee - ${company_name}`} />
+        <AuthenticatedLayout title="Edit Employee">
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"staffs.index"} />

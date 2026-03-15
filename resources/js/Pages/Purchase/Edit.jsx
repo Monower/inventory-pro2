@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { router, usePage, Head } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
 export default function Edit() {
-    const { purchase, products, company_name } = usePage().props;
+    const { purchase, products } = usePage().props;
     const [clientError, setClientError] = useState("");
 
     const previousPaid = Number(purchase.paid_amount || 0); // total paid before this edit
@@ -70,8 +70,7 @@ export default function Edit() {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Edit Purchase - ${company_name}`} />
+        <AuthenticatedLayout title="Edit Purchase">
             <div>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"purchases.index"} />

@@ -1,18 +1,16 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
-import { Head, usePage, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
 const Show = ({ order }) => {
-    const { company_name } = usePage().props;
     const totalPrice = order?.items.reduce(
         (sum, item) => sum + item?.price * item?.quantity,
         0
     );
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`View order - ${company_name}`} />
+        <AuthenticatedLayout title="View Order">
             <section>
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-2">

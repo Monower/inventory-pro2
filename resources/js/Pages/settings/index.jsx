@@ -1,13 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import InputLabel from "@/Components/InputLabel";
 import InputError from "@/Components/InputError";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import { useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
 
 const Index = ({ settings }) => {
-    const { company_name } = usePage().props;
-
     const { data, setData, post, processing, errors } = useForm({
         company_name: settings?.company_name || "",
         logo: null,
@@ -50,8 +48,6 @@ const Index = ({ settings }) => {
 
     return (
         <AuthenticatedLayout title="Settings">
-            <Head title={`Settings - ${company_name}`} />
-
             <section className="mx-auto w-full max-w-4xl space-y-6">
                 <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
                     <h1 className="text-2xl font-semibold text-foreground">General Settings</h1>

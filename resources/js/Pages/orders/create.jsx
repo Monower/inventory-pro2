@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import { useState, useEffect } from "react";
-import { useForm, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 
 const Create = ({ customers, products, banks }) => {
@@ -79,7 +79,6 @@ const Create = ({ customers, products, banks }) => {
 
     return (
         <AuthenticatedLayout title="Create Order">
-            {/* <Head title={`Create order - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"orders.index"} />

@@ -1,12 +1,12 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm, Head, usePage } from "@inertiajs/react";
+import { Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { EditIcon, Trash2Icon } from "lucide-react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = ({ transactions }) => {
-    const { company_name, filters } = usePage().props;
+    const { filters } = usePage().props;
     const list = transactions?.data ?? [];
     const { setData, delete: destroy } = useForm({ id: null });
 
@@ -34,8 +34,7 @@ const Index = ({ transactions }) => {
     }));
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Transactions - ${company_name}`} />
+        <AuthenticatedLayout title="Transactions">
             <section>
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h3 className="heading">Transactions</h3>

@@ -1,4 +1,4 @@
-import { Link, usePage, Head, useForm } from "@inertiajs/react";
+import { Link, usePage, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, EyeIcon, Trash2Icon } from "lucide-react";
@@ -7,7 +7,7 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = () => {
-    const { products, company_name, filters } = usePage().props;
+    const { products, filters } = usePage().props;
     const list = products?.data ?? [];
     const { setData, delete: destroy } = useForm({ id: null });
 
@@ -20,7 +20,6 @@ const Index = () => {
 
     return (
         <AuthenticatedLayout title="Products">
-            {/* <Head title={`Products - ${company_name}`} /> */}
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Products</h3>

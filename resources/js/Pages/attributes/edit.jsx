@@ -1,10 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head, Link } from "@inertiajs/react";
+import { useForm, Link } from "@inertiajs/react";
 import { useEffect } from "react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ attribute }) => {
-  const { company_name } = usePage().props;
   const { data, setData, put, errors, processing } = useForm({
     name: attribute.name || "",
     values: attribute.values.length
@@ -45,8 +44,7 @@ const Edit = ({ attribute }) => {
   };
 
   return (
-    <AuthenticatedLayout>
-      <Head title={`Edit Attribute - ${company_name}`} />
+    <AuthenticatedLayout title="Edit Attribute">
       <section>
         <div className="mb-4 flex items-center gap-4">
           <BackButton url={"attributes.index"} />

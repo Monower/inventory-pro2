@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import Modal from "@/Components/Modal/Modal";
 import { useState } from "react";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
@@ -8,7 +8,7 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = ({ values, attributes }) => {
-    const { company_name, filters } = usePage().props;
+    const { filters } = usePage().props;
     const list = values?.data ?? [];
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
@@ -85,8 +85,7 @@ const Index = ({ values, attributes }) => {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Attribute values - ${company_name}`} />
+        <AuthenticatedLayout title="Attribute Values">
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="heading">Attribute Values</h3>

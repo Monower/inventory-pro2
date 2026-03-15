@@ -1,10 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ product, categories, attributes }) => {
-    const {  company_name } = usePage().props;
     const existingImagePath = product.product_image
         ? `/storage/app/public/${product.product_image}`
         : null;
@@ -139,7 +138,6 @@ const Edit = ({ product, categories, attributes }) => {
 
     return (
         <AuthenticatedLayout title="Edit Product">
-            {/* <Head title={`Edit Product - ${company_name}`} /> */}
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"products.index"} />

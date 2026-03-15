@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useForm, usePage, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
 export default function Create({ products }) {
-    const { company_name } = usePage().props;
-
     const [rows, setRows] = useState([
         { product_id: "", quantity: 1, buying_price: 0 },
     ]);
@@ -77,8 +75,7 @@ export default function Create({ products }) {
     };
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Create Purchase - ${company_name}`} />
+        <AuthenticatedLayout title="Create Purchase">
 
             <div>
                 <div className="mb-4 flex items-center gap-4">

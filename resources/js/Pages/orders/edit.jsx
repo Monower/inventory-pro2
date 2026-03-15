@@ -2,10 +2,9 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import Alert from "@/Components/Alert/Alert";
 import { useState, useEffect } from "react";
-import { useForm, Head, usePage, Link } from "@inertiajs/react";
+import { useForm, Link } from "@inertiajs/react";
 
 const Edit = ({ order, customers, products, banks }) => {
-    const { company_name } = usePage().props;
     const [clientError, setClientError] = useState("");
 
     /* -----------------------------
@@ -129,8 +128,6 @@ const Edit = ({ order, customers, products, banks }) => {
 
     return (
         <AuthenticatedLayout title="Edit Order">
-            {/* <Head title={`Edit order - ${company_name}`} /> */}
-
             <section>
                 <div className="mb-4 flex items-center gap-4">
                     <BackButton url={"orders.index"} />

@@ -1,11 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm, usePage, Head } from "@inertiajs/react";
+import { Link, useForm, usePage } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = ({ users }) => {
-    const { company_name, filters } = usePage().props;
+    const { filters } = usePage().props;
     const list = users?.data ?? [];
     const { setData, delete: destroy, processing } = useForm({ id: null });
 
@@ -51,8 +51,7 @@ const Index = ({ users }) => {
     }));
 
     return (
-        <AuthenticatedLayout>
-            <Head title={`Users - ${company_name}`} />
+        <AuthenticatedLayout title="Users">
             <section>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-semibold">Users</h3>
