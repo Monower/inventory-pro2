@@ -12,7 +12,7 @@ import { applyTheme, resolveTheme } from "@/lib/theme";
 
 export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
-    const { settings, company_name, flash } = usePage().props;
+    const { settings, flash } = usePage().props;
     const { url } = usePage();
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
@@ -32,7 +32,7 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
 
     return (
         <div className="min-h-screen bg-background">
-            <Head title={title + " - " + company_name} />
+            <Head title={title} />
             <nav className="bg-background">
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
@@ -48,10 +48,6 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                                             "/images/demo_image.jpg"
                                         }
                                     />
-                                    {/* {
-                                        settings.company_name &&
-                                        <span className="text-lg font-semibold leading-6 text-gray-900">{settings.company_name}</span>
-                                    } */}
                                 </Link>
                             </div>
 
