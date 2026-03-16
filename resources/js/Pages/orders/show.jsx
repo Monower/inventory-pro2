@@ -3,7 +3,7 @@ import BackButton from "@/Components/BackButton/BackButton";
 import { Link, useForm, usePage } from "@inertiajs/react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
-const Show = ({ order }) => {
+const Show = ({ order, stockLedger = [] }) => {
     const { auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
     const { data, setData, patch, processing, errors } = useForm({
@@ -70,7 +70,7 @@ const Show = ({ order }) => {
                                 href={route("orders.refunds.create", order.id)}
                                 className="create-button"
                             >
-                                Refund order
+                                Process return
                             </Link>
                         )}
                         {canEdit && (
@@ -298,17 +298,31 @@ const Show = ({ order }) => {
                                 >
                                     <div className="mb-3 grid gap-2 md:grid-cols-4">
                                         <p>
-                                            <strong>Refund no:</strong> {refund.refund_number}
+                                            <strong>Case no:</strong> {refund.refund_number}
                                         </p>
                                         <p>
                                             <strong>Date:</strong>{" "}
                                             {dateTimeFormater(refund.refunded_at)}
                                         </p>
                                         <p>
-                                            <strong>Method:</strong> {refund.refund_method}
+                                            <strong>Type:</strong> {refund.resolution_type}
                                         </p>
                                         <p>
-                                            <strong>Total:</strong> {refund.total_amount}
+                                            <strong>Refund total:</strong> {refund.total_amount}
+                                        </p>
+                                    </div>
+                                    <div className="mb-3 grid gap-2 md:grid-cols-3">
+                                        <p>
+                                            <strong>Workflow:</strong>{" "}
+                                            {refund.workflow_status}
+                                        </p>
+                                        <p>
+                                            <strong>Refund method:</strong>{" "}
+                                            {refund.refund_method}
+                                        </p>
+                                        <p>
+                                            <strong>Replacement total:</strong>{" "}
+                                            {refund.replacement_total}
                                         </p>
                                     </div>
                                     {refund.reason && (
@@ -355,6 +369,45 @@ const Show = ({ order }) => {
                                             </tbody>
                                         </table>
                                     </div>
+                                    {refund.exchange_items?.length ? (
+                                        <div className="mt-4 overflow-x-auto">
+                                            <table className="w-full min-w-[640px] text-sm border border-gray-200 rounded-lg">
+                                                <thead className="custom-thead">
+                                                    <tr>
+                                                        <th className="custom-th rounded-l-md">
+                                                            Replacement product
+                                                        </th>
+                                                        <th className="custom-th">Qty</th>
+                                                        <th className="custom-th">Unit price</th>
+                                                        <th className="custom-th rounded-r-md">
+                                                            Total
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {refund.exchange_items.map((item) => (
+                                                        <tr
+                                                            key={item.id}
+                                                            className="custom-body-tr"
+                                                        >
+                                                            <td className="custom-body-td">
+                                                                {item.product?.name || "N/A"}
+                                                            </td>
+                                                            <td className="custom-body-td">
+                                                                {item.quantity}
+                                                            </td>
+                                                            <td className="custom-body-td">
+                                                                {item.unit_price}
+                                                            </td>
+                                                            <td className="custom-body-td">
+                                                                {item.total_amount}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ) : null}
                                 </div>
                             ))}
                         </div>
@@ -442,6 +495,54 @@ const Show = ({ order }) => {
                     ) : (
                         <p className="text-sm text-muted-foreground">
                             No activity entries are available for this order yet.
+                        </p>
+                    )}
+                </div>
+
+                <div className="bg-background border border-ring shadow-md rounded-lg p-4 mt-6">
+                    <h4 className="text-lg font-semibold mb-4">Stock ledger</h4>
+                    {stockLedger.length ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[760px] text-sm border border-gray-200 rounded-lg">
+                                <thead className="custom-thead">
+                                    <tr>
+                                        <th className="custom-th rounded-l-md">Date</th>
+                                        <th className="custom-th">Product</th>
+                                        <th className="custom-th">Movement</th>
+                                        <th className="custom-th">Qty change</th>
+                                        <th className="custom-th">Balance after</th>
+                                        <th className="custom-th rounded-r-md">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stockLedger.map((entry) => (
+                                        <tr key={entry.id} className="custom-body-tr">
+                                            <td className="custom-body-td">
+                                                {dateTimeFormater(entry.created_at)}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {entry.product?.name || "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {entry.movement_type}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {entry.quantity_change}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {entry.balance_after}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {entry.notes || "N/A"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            No stock ledger entries are available for this order yet.
                         </p>
                     )}
                 </div>

@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm } from "@inertiajs/react";
 
-const Refund = ({ order, items, banks }) => {
+const Refund = ({ order, items, banks, products }) => {
     const defaultRefundedAt = (() => {
         const now = new Date();
         const timezoneOffset = now.getTimezoneOffset() * 60000;
@@ -13,6 +13,7 @@ const Refund = ({ order, items, banks }) => {
 
     const { data, setData, post, processing, errors } = useForm({
         refunded_at: defaultRefundedAt,
+        resolution_type: "refund",
         refund_method: order.payment_method || "cash",
         bank_id: "",
         mfs: "",
@@ -23,6 +24,12 @@ const Refund = ({ order, items, banks }) => {
             quantity: 0,
             restock_to_inventory: true,
         })),
+        exchange_items: [
+            {
+                product_id: "",
+                quantity: 1,
+            },
+        ],
     });
 
     const totalsByItem = items.map((item, index) => {
@@ -32,6 +39,18 @@ const Refund = ({ order, items, banks }) => {
     });
 
     const selectedTotal = totalsByItem.reduce((sum, amount) => sum + amount, 0);
+    const exchangeTotals = data.exchange_items.map((exchangeItem) => {
+        const product = products.find(
+            (item) => String(item.id) === String(exchangeItem.product_id)
+        );
+
+        if (!product) {
+            return 0;
+        }
+
+        return Number(product.selling_price || 0) * Number(exchangeItem.quantity || 0);
+    });
+    const replacementTotal = exchangeTotals.reduce((sum, amount) => sum + amount, 0);
 
     const updateItem = (index, key, value) => {
         setData(
@@ -39,6 +58,35 @@ const Refund = ({ order, items, banks }) => {
             data.items.map((item, itemIndex) =>
                 itemIndex === index ? { ...item, [key]: value } : item
             )
+        );
+    };
+
+    const updateExchangeItem = (index, key, value) => {
+        setData(
+            "exchange_items",
+            data.exchange_items.map((item, itemIndex) =>
+                itemIndex === index ? { ...item, [key]: value } : item
+            )
+        );
+    };
+
+    const addExchangeItem = () => {
+        setData("exchange_items", [
+            ...data.exchange_items,
+            { product_id: "", quantity: 1 },
+        ]);
+    };
+
+    const removeExchangeItem = (index) => {
+        if (data.exchange_items.length === 1) {
+            updateExchangeItem(0, "product_id", "");
+            updateExchangeItem(0, "quantity", 1);
+            return;
+        }
+
+        setData(
+            "exchange_items",
+            data.exchange_items.filter((_, itemIndex) => itemIndex !== index)
         );
     };
 
@@ -58,10 +106,10 @@ const Refund = ({ order, items, banks }) => {
                         >
                             Back to order
                         </Link>
-                        <h3 className="heading">Refund {order.order_number}</h3>
+                        <h3 className="heading">Return case for {order.order_number}</h3>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                        Refundable amount: {Number(order.refundable_amount).toFixed(2)}
+                        Returnable paid amount: {Number(order.refundable_amount).toFixed(2)}
                     </div>
                 </div>
 
@@ -107,12 +155,37 @@ const Refund = ({ order, items, banks }) => {
                         <div>
                             <fieldset className="custom-fieldset">
                                 <legend className="mx-2 text-sm">
-                                    <label className="required-label">Refund method</label>
+                                    <label className="required-label">Case type</label>
+                                </legend>
+                                <select
+                                    value={data.resolution_type}
+                                    onChange={(event) =>
+                                        setData("resolution_type", event.target.value)
+                                    }
+                                    className="custom-input"
+                                >
+                                    <option value="refund">Refund</option>
+                                    <option value="return_only">Return only</option>
+                                    <option value="exchange">Exchange</option>
+                                </select>
+                            </fieldset>
+                            <small className="text-destructive">{errors.resolution_type}</small>
+                        </div>
+
+                        <div>
+                            <fieldset className="custom-fieldset">
+                                <legend className="mx-2 text-sm">
+                                    <label className="required-label">
+                                        {data.resolution_type === "refund"
+                                            ? "Refund method"
+                                            : "Settlement method"}
+                                    </label>
                                 </legend>
                                 <select
                                     value={data.refund_method}
                                     onChange={(event) => setData("refund_method", event.target.value)}
                                     className="custom-input"
+                                    disabled={data.resolution_type !== "refund"}
                                 >
                                     <option value="original">Original method</option>
                                     <option value="cash">Cash</option>
@@ -123,7 +196,8 @@ const Refund = ({ order, items, banks }) => {
                             <small className="text-destructive">{errors.refund_method}</small>
                         </div>
 
-                        {data.refund_method === "bank" && (
+                        {data.resolution_type === "refund" &&
+                            data.refund_method === "bank" && (
                             <div>
                                 <fieldset className="custom-fieldset">
                                     <legend className="mx-2 text-sm">
@@ -146,7 +220,8 @@ const Refund = ({ order, items, banks }) => {
                             </div>
                         )}
 
-                        {data.refund_method === "mobile" && (
+                        {data.resolution_type === "refund" &&
+                            data.refund_method === "mobile" && (
                             <div>
                                 <fieldset className="custom-fieldset">
                                     <legend className="mx-2 text-sm">
@@ -204,7 +279,7 @@ const Refund = ({ order, items, banks }) => {
                         <div className="mb-4 flex items-center justify-between">
                             <h4 className="text-lg font-semibold">Refund items</h4>
                             <span className="text-sm text-muted-foreground">
-                                Selected total: {selectedTotal.toFixed(2)}
+                                Returned value: {selectedTotal.toFixed(2)}
                             </span>
                         </div>
 
@@ -278,6 +353,86 @@ const Refund = ({ order, items, banks }) => {
                         <small className="mt-2 block text-destructive">{errors.items}</small>
                     </div>
 
+                    {data.resolution_type === "exchange" && (
+                        <div className="rounded-lg border border-ring bg-background p-4 shadow-md">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h4 className="text-lg font-semibold">
+                                    Replacement products
+                                </h4>
+                                <span className="text-sm text-muted-foreground">
+                                    Replacement value: {replacementTotal.toFixed(2)}
+                                </span>
+                            </div>
+
+                            <div className="space-y-3">
+                                {data.exchange_items.map((exchangeItem, index) => (
+                                    <div
+                                        key={index}
+                                        className="grid gap-3 rounded-lg border border-ring p-3 md:grid-cols-[2fr_1fr_auto]"
+                                    >
+                                        <select
+                                            value={exchangeItem.product_id}
+                                            onChange={(event) =>
+                                                updateExchangeItem(
+                                                    index,
+                                                    "product_id",
+                                                    event.target.value
+                                                )
+                                            }
+                                            className="custom-input"
+                                        >
+                                            <option value="">Select replacement product</option>
+                                            {products.map((product) => (
+                                                <option key={product.id} value={product.id}>
+                                                    {product.name} (Stock: {product.stock})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={exchangeItem.quantity}
+                                            onChange={(event) =>
+                                                updateExchangeItem(
+                                                    index,
+                                                    "quantity",
+                                                    Math.max(
+                                                        1,
+                                                        Number(event.target.value || 1)
+                                                    )
+                                                )
+                                            }
+                                            className="custom-input"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeExchangeItem(index)}
+                                            className="delete-button"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-3 flex items-center justify-between">
+                                <button
+                                    type="button"
+                                    onClick={addExchangeItem}
+                                    className="edit-button"
+                                >
+                                    Add replacement item
+                                </button>
+                                <span className="text-sm text-muted-foreground">
+                                    Returned value must cover replacement value.
+                                </span>
+                            </div>
+                            <small className="mt-2 block text-destructive">
+                                {errors.exchange_items}
+                            </small>
+                        </div>
+                    )}
+
                     <div className="flex justify-end gap-3">
                         <Link
                             href={route("orders.show", order.id)}
@@ -290,7 +445,7 @@ const Refund = ({ order, items, banks }) => {
                             disabled={processing}
                             className="create-button"
                         >
-                            {processing ? "Processing..." : "Record refund"}
+                            {processing ? "Processing..." : "Process return case"}
                         </button>
                     </div>
                 </form>

@@ -32,4 +32,9 @@ class Product extends Model
     {
         return $this->belongsTo(AttributeValue::class);
     }
+
+    public function stockLedgers()
+    {
+        return $this->hasMany(StockLedger::class);
+    }
 }

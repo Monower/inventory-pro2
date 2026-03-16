@@ -7,7 +7,9 @@ use App\Models\OrderActivityLog;
 use App\Models\OrderItem;
 use App\Models\OrderPayment;
 use App\Models\OrderRefund;
+use App\Models\OrderRefundExchangeItem;
 use App\Models\OrderRefundItem;
+use App\Models\StockLedger;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Bank;
@@ -146,6 +148,15 @@ class OrderController extends Controller
                     ]);
 
                     $product->decrement('stock', $item['quantity']);
+                    $product->refresh();
+                    $this->recordStockMovement(
+                        $product,
+                        'sale',
+                        -1 * (int) $item['quantity'],
+                        Order::class,
+                        $order->id,
+                        "Stock issued for order {$order->order_number}."
+                    );
                 }
 
                 if ($paidAmount > 0) {
@@ -302,6 +313,15 @@ class OrderController extends Controller
                     ]);
 
                     $product->decrement('stock', $item['quantity']);
+                    $product->refresh();
+                    $this->recordStockMovement(
+                        $product,
+                        'sale_adjustment',
+                        -1 * (int) $item['quantity'],
+                        Order::class,
+                        $order->id,
+                        "Stock re-issued after updating order {$order->order_number}."
+                    );
                 }
 
                 $this->logActivity(
@@ -345,6 +365,7 @@ class OrderController extends Controller
                     'payments.bank',
                     'payments.receivedBy',
                     'refunds.items.product',
+                    'refunds.exchangeItems.product',
                     'refunds.bank',
                     'refunds.processedBy',
                     'activityLogs.causer',
@@ -367,8 +388,26 @@ class OrderController extends Controller
                 $order->can_collect_payment =
                     $order->due_amount > 0 && $order->order_status !== 'cancelled';
                 $order->status_options = Order::STATUSES;
+                $refundIds = $order->refunds->pluck('id');
+                $stockLedger = StockLedger::query()
+                    ->with('product')
+                    ->where(function ($query) use ($order, $refundIds) {
+                        $query->where(function ($orderQuery) use ($order) {
+                            $orderQuery->where('source_type', Order::class)
+                                ->where('source_id', $order->id);
+                        });
 
-                return Inertia::render('orders/show', compact('order'));
+                        if ($refundIds->isNotEmpty()) {
+                            $query->orWhere(function ($refundQuery) use ($refundIds) {
+                                $refundQuery->where('source_type', OrderRefund::class)
+                                    ->whereIn('source_id', $refundIds);
+                            });
+                        }
+                    })
+                    ->latest()
+                    ->get();
+
+                return Inertia::render('orders/show', compact('order', 'stockLedger'));
             } else {
                 return redirect()->route('orders.index')->with('error', 'Order not found.');
             }
@@ -383,6 +422,10 @@ class OrderController extends Controller
 
         $refundItems = $this->buildRefundableItems($order);
         $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
+        $products = Product::query()
+            ->select('id', 'name', 'selling_price', 'stock')
+            ->orderBy('name')
+            ->get();
 
         if (collect($refundItems)->every(fn ($item) => $item['max_quantity'] === 0)) {
             return redirect()
@@ -403,6 +446,7 @@ class OrderController extends Controller
                 'payment_method' => $order->payment_method,
                 'payment_status' => $order->payment_status,
                 'refund_status' => $order->refund_status,
+                'order_status' => $order->order_status,
                 'total_amount' => $order->total_amount,
                 'paid_amount' => $order->paid_amount,
                 'refunded_amount' => $order->refunded_amount,
@@ -414,6 +458,7 @@ class OrderController extends Controller
             ],
             'items' => $refundItems,
             'banks' => $banks,
+            'products' => $products,
         ]);
     }
 
@@ -421,7 +466,8 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'refunded_at' => 'required|date',
-            'refund_method' => 'required|in:original,cash,bank,mobile',
+            'resolution_type' => 'required|in:refund,return_only,exchange',
+            'refund_method' => 'nullable|required_if:resolution_type,refund|in:original,cash,bank,mobile',
             'bank_id' => 'nullable|required_if:refund_method,bank|exists:banks,id',
             'mfs' => 'nullable|required_if:refund_method,mobile|in:bkash,nagad,rocket',
             'reason' => 'nullable|string|max:1000',
@@ -430,6 +476,9 @@ class OrderController extends Controller
             'items.*.order_item_id' => 'required|exists:order_items,id',
             'items.*.quantity' => 'nullable|integer|min:0',
             'items.*.restock_to_inventory' => 'nullable|boolean',
+            'exchange_items' => 'nullable|array',
+            'exchange_items.*.product_id' => 'nullable|exists:products,id',
+            'exchange_items.*.quantity' => 'nullable|integer|min:0',
         ]);
 
         $order->load('items.product');
@@ -443,6 +492,15 @@ class OrderController extends Controller
             })
             ->filter(fn ($item) => $item['quantity'] > 0)
             ->values();
+        $exchangeItems = collect($validated['exchange_items'] ?? [])
+            ->map(function ($item) {
+                $item['product_id'] = $item['product_id'] ?? null;
+                $item['quantity'] = (int) ($item['quantity'] ?? 0);
+
+                return $item;
+            })
+            ->filter(fn ($item) => $item['product_id'] && $item['quantity'] > 0)
+            ->values();
 
         if ($selectedItems->isEmpty()) {
             return back()->withErrors([
@@ -450,7 +508,7 @@ class OrderController extends Controller
             ]);
         }
 
-        $refundTotal = 0;
+        $returnValue = 0;
 
         foreach ($selectedItems as $item) {
             $refundableItem = $refundableItems->get($item['order_item_id']);
@@ -467,35 +525,86 @@ class OrderController extends Controller
                 ]);
             }
 
-            $refundTotal += $item['quantity'] * (float) $refundableItem['unit_price'];
+            $returnValue += $item['quantity'] * (float) $refundableItem['unit_price'];
         }
 
-        if ($refundTotal <= 0) {
+        if ($returnValue <= 0) {
             return back()->withErrors([
-                'items' => 'Refund total must be greater than zero.',
+                'items' => 'Return total must be greater than zero.',
             ]);
         }
 
-        if ($refundTotal > (float) $order->refundable_amount) {
+        $replacementCatalog = Product::query()
+            ->whereIn('id', $exchangeItems->pluck('product_id'))
+            ->get()
+            ->keyBy('id');
+        $replacementTotal = 0;
+
+        foreach ($exchangeItems as $exchangeItem) {
+            $product = $replacementCatalog->get($exchangeItem['product_id']);
+
+            if (!$product) {
+                return back()->withErrors([
+                    'exchange_items' => 'One or more exchange products are invalid.',
+                ]);
+            }
+
+            if ($product->stock < $exchangeItem['quantity']) {
+                return back()->withErrors([
+                    'exchange_items' => "Not enough stock available for exchange item {$product->name}.",
+                ]);
+            }
+
+            $replacementTotal += $exchangeItem['quantity'] * (float) $product->selling_price;
+        }
+
+        if ($validated['resolution_type'] === 'refund' && $returnValue > (float) $order->refundable_amount) {
             return back()->withErrors([
                 'items' => 'Refund total cannot exceed the paid amount still available for refund.',
             ]);
         }
 
+        if ($validated['resolution_type'] === 'return_only' && $exchangeItems->isNotEmpty()) {
+            return back()->withErrors([
+                'exchange_items' => 'Return-only cases cannot contain replacement products.',
+            ]);
+        }
+
+        if ($validated['resolution_type'] === 'exchange') {
+            if ($exchangeItems->isEmpty()) {
+                return back()->withErrors([
+                    'exchange_items' => 'Select at least one replacement product for an exchange.',
+                ]);
+            }
+
+            if ($replacementTotal > $returnValue) {
+                return back()->withErrors([
+                    'exchange_items' => 'Replacement product value cannot exceed the value of returned items in this exchange flow.',
+                ]);
+            }
+        }
+
+        $refundTotal = $validated['resolution_type'] === 'refund' ? $returnValue : 0;
+
         try {
-            DB::transaction(function () use ($validated, $order, $selectedItems, $refundableItems, $refundTotal) {
+            DB::transaction(function () use ($validated, $order, $selectedItems, $refundableItems, $refundTotal, $exchangeItems, $replacementCatalog, $replacementTotal) {
                 $refund = OrderRefund::create([
                     'order_id' => $order->id,
                     'refund_number' => 'RFD-' . Str::upper(Str::random(8)),
                     'refunded_at' => $validated['refunded_at'],
-                    'refund_method' => $validated['refund_method'],
-                    'bank_id' => $validated['refund_method'] === 'bank'
+                    'refund_method' => $validated['resolution_type'] === 'refund'
+                        ? $validated['refund_method']
+                        : 'n/a',
+                    'resolution_type' => $validated['resolution_type'],
+                    'bank_id' => ($validated['refund_method'] ?? null) === 'bank'
                         ? $validated['bank_id']
                         : null,
-                    'mfs' => $validated['refund_method'] === 'mobile'
+                    'mfs' => ($validated['refund_method'] ?? null) === 'mobile'
                         ? $validated['mfs']
                         : null,
                     'total_amount' => $refundTotal,
+                    'replacement_total' => $replacementTotal,
+                    'workflow_status' => 'processed',
                     'reason' => $validated['reason'] ?? null,
                     'notes' => $validated['notes'] ?? null,
                     'processed_by' => auth()->id(),
@@ -517,19 +626,54 @@ class OrderController extends Controller
 
                     if ($item['restock_to_inventory']) {
                         $orderItem->product->increment('stock', $item['quantity']);
+                        $orderItem->product->refresh();
+                        $this->recordStockMovement(
+                            $orderItem->product,
+                            'customer_return',
+                            (int) $item['quantity'],
+                            OrderRefund::class,
+                            $refund->id,
+                            "Customer return restocked for order {$order->order_number}."
+                        );
                     }
+                }
+
+                foreach ($exchangeItems as $exchangeItem) {
+                    $product = $replacementCatalog->get($exchangeItem['product_id']);
+                    $lineTotal = $exchangeItem['quantity'] * (float) $product->selling_price;
+
+                    OrderRefundExchangeItem::create([
+                        'order_refund_id' => $refund->id,
+                        'product_id' => $product->id,
+                        'quantity' => $exchangeItem['quantity'],
+                        'unit_price' => $product->selling_price,
+                        'total_amount' => $lineTotal,
+                    ]);
+
+                    $product->decrement('stock', $exchangeItem['quantity']);
+                    $product->refresh();
+                    $this->recordStockMovement(
+                        $product,
+                        'exchange_issue',
+                        -1 * (int) $exchangeItem['quantity'],
+                        OrderRefund::class,
+                        $refund->id,
+                        "Replacement stock issued for exchange on order {$order->order_number}."
+                    );
                 }
 
                 $this->syncRefundSummary($order->fresh()->load('items.refundItems'));
 
                 $this->logActivity(
                     $order->fresh(),
-                    'refund_recorded',
-                    'Refund recorded',
-                    "Refund {$refund->refund_number} was recorded for order {$order->order_number}.",
+                    'return_processed',
+                    'Return processed',
+                    "Return case {$refund->refund_number} was processed for order {$order->order_number}.",
                     [
                         'refund_number' => $refund->refund_number,
+                        'resolution_type' => $refund->resolution_type,
                         'total_amount' => $refund->total_amount,
+                        'replacement_total' => $refund->replacement_total,
                         'refund_method' => $refund->refund_method,
                     ]
                 );
@@ -537,7 +681,7 @@ class OrderController extends Controller
 
             return redirect()
                 ->route('orders.show', $order->id)
-                ->with('success', 'Order refund recorded successfully.');
+                ->with('success', 'Order return case processed successfully.');
         } catch (\Throwable $e) {
             return back()
                 ->withInput()
@@ -827,6 +971,26 @@ class OrderController extends Controller
             'title' => $title,
             'description' => $description,
             'meta' => $meta,
+            'causer_id' => auth()->id(),
+        ]);
+    }
+
+    private function recordStockMovement(
+        Product $product,
+        string $movementType,
+        int $quantityChange,
+        ?string $sourceType = null,
+        ?int $sourceId = null,
+        ?string $notes = null
+    ): void {
+        StockLedger::create([
+            'product_id' => $product->id,
+            'movement_type' => $movementType,
+            'quantity_change' => $quantityChange,
+            'balance_after' => (int) $product->stock,
+            'source_type' => $sourceType,
+            'source_id' => $sourceId,
+            'notes' => $notes,
             'causer_id' => auth()->id(),
         ]);
     }

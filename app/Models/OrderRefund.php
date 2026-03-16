@@ -11,9 +11,12 @@ class OrderRefund extends Model
         'refund_number',
         'refunded_at',
         'refund_method',
+        'resolution_type',
         'bank_id',
         'mfs',
         'total_amount',
+        'replacement_total',
+        'workflow_status',
         'reason',
         'notes',
         'processed_by',
@@ -22,6 +25,7 @@ class OrderRefund extends Model
     protected $casts = [
         'refunded_at' => 'datetime',
         'total_amount' => 'decimal:2',
+        'replacement_total' => 'decimal:2',
     ];
 
     public function order()
@@ -32,6 +36,11 @@ class OrderRefund extends Model
     public function items()
     {
         return $this->hasMany(OrderRefundItem::class);
+    }
+
+    public function exchangeItems()
+    {
+        return $this->hasMany(OrderRefundExchangeItem::class);
     }
 
     public function bank()
