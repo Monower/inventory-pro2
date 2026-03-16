@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email')->nullable()->unique();
             $table->string('phone')->unique();
-            $table->string('address');
-            $table->decimal('salary', 10, 2)->default(0.00);
+            $table->string('address')->nullable();
+            $table->decimal('salary', 10, 2)->nullable();
             $table->timestamps();
         });
     }

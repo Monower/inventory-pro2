@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class StaffController extends Controller
@@ -52,8 +53,8 @@ class StaffController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|size:11',
-            'email' => 'nullable|email|max:255',
+            'phone' => ['required', 'string', 'size:11', Rule::unique('staff', 'phone')],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('staff', 'email')],
             'salary' => 'nullable|numeric|min:0',
             'address' => 'nullable|string|max:1000',
         ]);
@@ -61,9 +62,9 @@ class StaffController extends Controller
         Staff::create([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
-            'email' => $validated['email'] ?? '',
-            'salary' => $validated['salary'] ?? 0,
-            'address' => $validated['address'] ?? '',
+            'email' => $this->normalizeNullableString($validated['email'] ?? null),
+            'salary' => $validated['salary'] ?? null,
+            'address' => $this->normalizeNullableString($validated['address'] ?? null),
         ]);
 
         return to_route('staffs.index')->with('success', 'Employee created successfully.');
@@ -92,26 +93,26 @@ class StaffController extends Controller
      */
     public function update(Request $request, $staff_id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|size:11',
-            'email' => 'nullable|email|max:255',
-            'salary' => 'nullable|numeric|min:0',
-            'address' => 'nullable|string|max:1000',
-        ]);
-
         $staff = Staff::find($staff_id);
 
         if (!$staff) {
             return to_route('staffs.index')->with('error', 'Employee not found.');
         }
 
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => ['required', 'string', 'size:11', Rule::unique('staff', 'phone')->ignore($staff->id)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('staff', 'email')->ignore($staff->id)],
+            'salary' => 'nullable|numeric|min:0',
+            'address' => 'nullable|string|max:1000',
+        ]);
+
         $staff->update([
             'name' => $validated['name'],
             'phone' => $validated['phone'],
-            'email' => $validated['email'] ?? '',
-            'salary' => $validated['salary'] ?? 0,
-            'address' => $validated['address'] ?? '',
+            'email' => $this->normalizeNullableString($validated['email'] ?? null),
+            'salary' => $validated['salary'] ?? null,
+            'address' => $this->normalizeNullableString($validated['address'] ?? null),
         ]);
 
         return to_route('staffs.index')->with('success', 'Employee updated successfully.');
@@ -128,5 +129,12 @@ class StaffController extends Controller
         }
         $staff->delete();
         return to_route('staffs.index')->with('success', 'Employee deleted successfully.');
+    }
+
+    private function normalizeNullableString(?string $value): ?string
+    {
+        $value = $value !== null ? trim($value) : null;
+
+        return $value === '' ? null : $value;
     }
 }
