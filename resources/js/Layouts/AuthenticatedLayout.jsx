@@ -1,7 +1,7 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link, usePage, Head } from "@inertiajs/react";
+import { Link, useForm, usePage, Head } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 import Sidebar from "./Sidebar";
 import Menu from "@/Components/Menu/Menu";
@@ -12,8 +12,11 @@ import { applyTheme, resolveTheme } from "@/lib/theme";
 
 export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
-    const { settings, flash } = usePage().props;
+    const { settings, flash, activeBranch, accessibleBranches = [] } = usePage().props;
     const { url } = usePage();
+    const { data, setData, patch, processing } = useForm({
+        branch_id: activeBranch?.id || "",
+    });
     const faviconUrl = settings?.favicon_url ?? "/favicon.ico";
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
@@ -30,6 +33,18 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
     useEffect(() => {
         applyTheme(theme);
     }, [theme]);
+
+    useEffect(() => {
+        setData("branch_id", activeBranch?.id || "");
+    }, [activeBranch?.id]);
+
+    const handleBranchSwitch = (branchId) => {
+        setData("branch_id", branchId);
+        patch(route("branches.switch"), {
+            preserveScroll: true,
+            onSuccess: () => setShowingNavigationDropdown(false),
+        });
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -70,6 +85,26 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         </div>
 
                         <div className="hidden lg:ms-6 lg:flex lg:items-center">
+                            <div className="mr-3">
+                                {accessibleBranches.length > 1 ? (
+                                    <select
+                                        value={data.branch_id}
+                                        onChange={(e) => handleBranchSwitch(e.target.value)}
+                                        className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+                                        disabled={processing}
+                                    >
+                                        {accessibleBranches.map((branch) => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <div className="rounded-md border border-border bg-secondary px-3 py-2 text-sm text-primary">
+                                        {activeBranch?.name || user.branch?.name || "No branch"}
+                                    </div>
+                                )}
+                            </div>
                             {/* 🌙 Theme Toggle Button */}
                             <button
                                 type="button"
@@ -216,6 +251,26 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
+                            <div className="px-4 py-2">
+                                {accessibleBranches.length > 1 ? (
+                                    <select
+                                        value={data.branch_id}
+                                        onChange={(e) => handleBranchSwitch(e.target.value)}
+                                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                                        disabled={processing}
+                                    >
+                                        {accessibleBranches.map((branch) => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <div className="rounded-md border border-border bg-secondary px-3 py-2 text-sm text-primary">
+                                        {activeBranch?.name || user.branch?.name || "No branch"}
+                                    </div>
+                                )}
+                            </div>
                             <ResponsiveNavLink href={route("profile.edit")}>
                                 Profile
                             </ResponsiveNavLink>

@@ -25,7 +25,27 @@ const calculateCouponDiscount = (coupon, subtotalAfterManualDiscount) => {
     return Math.min(discount, subtotalAfterManualDiscount);
 };
 
-const Create = ({ customers, products, banks, staffs, coupons = [] }) => {
+const branchStockForProduct = (product, branchId) => {
+    if (!branchId) {
+        return Number(product.stock || 0);
+    }
+
+    const inventory = product.branch_inventories?.find(
+        (item) => String(item.branch_id) === String(branchId)
+    );
+
+    return Number(inventory?.stock || 0);
+};
+
+const Create = ({
+    customers,
+    products,
+    banks,
+    staffs,
+    coupons = [],
+    branches = [],
+    activeBranchId = "",
+}) => {
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
     const [couponSearch, setCouponSearch] = useState("");
@@ -34,6 +54,7 @@ const Create = ({ customers, products, banks, staffs, coupons = [] }) => {
     const { data, setData, post, errors, processing } = useForm({
         customer_id: "",
         salesperson_staff_id: "",
+        branch_id: activeBranchId || branches[0]?.id || "",
         branch_name: "",
         shipping_address: "",
         coupon_code: "",
@@ -175,6 +196,9 @@ const Create = ({ customers, products, banks, staffs, coupons = [] }) => {
                         {/* Products */}
                         <div className="bg-background border border-ring shadow-md rounded-lg p-4">
                             <h3 className="heading">Products list</h3>
+                            <p className="mb-3 text-sm text-muted-foreground">
+                                Available stock is shown for the selected branch.
+                            </p>
                             <div className="overflow-x-auto">
                                 <table className="custom-table">
                                     <thead className="custom-thead">
@@ -219,7 +243,7 @@ const Create = ({ customers, products, banks, staffs, coupons = [] }) => {
                                                         {product.selling_price}
                                                     </td>
                                                     <td className="custom-body-td">
-                                                        {product.stock}
+                                                        {branchStockForProduct(product, data.branch_id)}
                                                     </td>
                                                     <td className="custom-body-td">
                                                         <button
@@ -230,6 +254,13 @@ const Create = ({ customers, products, banks, staffs, coupons = [] }) => {
                                                                 )
                                                             }
                                                             className="create-button"
+                                                            disabled={
+                                                                !data.branch_id ||
+                                                                branchStockForProduct(
+                                                                    product,
+                                                                    data.branch_id
+                                                                ) <= 0
+                                                            }
                                                         >
                                                             Add to cart
                                                         </button>
@@ -420,15 +451,25 @@ const Create = ({ customers, products, banks, staffs, coupons = [] }) => {
                                 </div>
                                 <div>
                                     <label className="mb-1 block">Branch</label>
-                                    <input
-                                        type="text"
-                                        value={data.branch_name}
+                                    <select
+                                        value={data.branch_id}
                                         onChange={(e) =>
-                                            setData("branch_name", e.target.value)
+                                            setData("branch_id", e.target.value)
                                         }
                                         className="custom-input"
-                                        placeholder="Enter branch name"
-                                    />
+                                    >
+                                        <option value="">-- Select branch --</option>
+                                        {branches?.map((branch) => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.branch_id && (
+                                        <p className="text-red-500 text-sm">
+                                            {errors.branch_id}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

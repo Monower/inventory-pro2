@@ -8,6 +8,7 @@ class StockLedger extends Model
 {
     protected $fillable = [
         'product_id',
+        'branch_id',
         'movement_type',
         'quantity_change',
         'balance_after',
@@ -20,6 +21,11 @@ class StockLedger extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function causer()

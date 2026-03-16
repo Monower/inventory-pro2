@@ -33,6 +33,7 @@ class Order extends Model
         'customer_id',
         'subtotal_amount',
         'salesperson_staff_id',
+        'branch_id',
         'branch_name',
         'shipping_address',
         'coupon_code',
@@ -71,6 +72,11 @@ class Order extends Model
     public function salesperson()
     {
         return $this->belongsTo(Staff::class, 'salesperson_staff_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function coupon()

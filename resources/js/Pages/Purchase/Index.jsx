@@ -47,6 +47,7 @@ export default function Index() {
                                     <th className="custom-th">Invoice</th>
                                     <th className="custom-th">Product</th>
                                     <th className="custom-th">Supplier</th>
+                                    <th className="custom-th">Branch</th>
                                     <th className="custom-th">Quantity</th>
                                     <th className="custom-th">Unit Price</th>
                                     <th className="custom-th">Total</th>
@@ -72,6 +73,9 @@ export default function Index() {
                                         </td>
                                         <td className="custom-body-td">
                                             {item.purchase?.supplier_name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.purchase?.branch?.name || "N/A"}
                                         </td>
                                         <td className="custom-body-td">
                                             {item.quantity}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\Branch;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -44,6 +45,12 @@ class AuthenticatedSessionController extends Controller
         }
 
         $request->session()->regenerate();
+        $user = auth()->user()->loadMissing('branch');
+        $activeBranch = $user->branch ?: Branch::query()->where('is_active', true)->orderBy('id')->first();
+
+        if ($activeBranch) {
+            $request->session()->put('active_branch_id', $activeBranch->id);
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

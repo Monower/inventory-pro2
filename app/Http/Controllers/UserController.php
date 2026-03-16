@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Branch;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Storage;
@@ -48,7 +49,8 @@ class UserController extends Controller
     public function create()
     {
         $roles = $this->assignableRolesQuery(request()->user())->get();
-        return Inertia::render('users/create', ['roles' => $roles]);
+        $branches = Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
+        return Inertia::render('users/create', ['roles' => $roles, 'branches' => $branches]);
     }
 
     /**
@@ -61,6 +63,7 @@ class UserController extends Controller
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'phone'    => 'nullable|string|max:20',
+            'branch_id' => 'nullable|exists:branches,id',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'role'     => [
                 'required',
@@ -87,6 +90,7 @@ class UserController extends Controller
             'email'    => $validated['email'],
             'password' => bcrypt($validated['password']),
             'phone'    => $validated['phone'] ?? null,
+            'branch_id' => $validated['branch_id'] ?? null,
             'avatar'   => $imagePath, // stored with timestamp name
         ]);
 
@@ -114,7 +118,8 @@ class UserController extends Controller
         $user = User::with('roles')->findOrFail($user_id);
         $this->ensureCanManageUser(request()->user(), $user);
         $roles = $this->assignableRolesQuery(request()->user())->get();
-        return Inertia::render('users/edit', ['user' => $user, 'roles' => $roles]);
+        $branches = Branch::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
+        return Inertia::render('users/edit', ['user' => $user, 'roles' => $roles, 'branches' => $branches]);
     }
 
     /**
@@ -130,6 +135,7 @@ class UserController extends Controller
             'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
             'phone'    => 'nullable|string|max:20',
+            'branch_id' => 'nullable|exists:branches,id',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'role'     => [
                 'required',
@@ -160,6 +166,7 @@ class UserController extends Controller
         $user->name = $validated['name'] ?? $user->name;
         $user->email = $validated['email'] ?? $user->email;
         $user->phone = $validated['phone'] ?? $user->phone;
+        $user->branch_id = $validated['branch_id'] ?? null;
 
         if (!empty($validated['password'])) {
             $user->password = bcrypt($validated['password']);

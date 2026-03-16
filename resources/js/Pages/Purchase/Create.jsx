@@ -3,13 +3,26 @@ import { useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
-export default function Create({ products }) {
+const branchStockForProduct = (product, branchId) => {
+    if (!branchId) {
+        return Number(product.stock || 0);
+    }
+
+    const inventory = product.branch_inventories?.find(
+        (item) => String(item.branch_id) === String(branchId)
+    );
+
+    return Number(inventory?.stock || 0);
+};
+
+export default function Create({ products, branches = [], activeBranchId = "" }) {
     const [rows, setRows] = useState([
         { product_id: "", quantity: 1, buying_price: 0 },
     ]);
 
     const { data, setData, post, processing } = useForm({
         supplier_name: "",
+        branch_id: activeBranchId || branches[0]?.id || "",
         purchase_date: "",
         payment_status: "paid",
         paid_amount: 0,
@@ -99,6 +112,23 @@ export default function Create({ products }) {
                         </div>
 
                         <div>
+                            <label>Branch</label>
+                            <select
+                                className="w-full"
+                                value={data.branch_id}
+                                onChange={(e) => setData("branch_id", e.target.value)}
+                                required
+                            >
+                                <option value="">Select branch</option>
+                                {branches.map((branch) => (
+                                    <option key={branch.id} value={branch.id}>
+                                        {branch.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
                             <label>Purchase Date</label>
                             <input
                                 type="date"
@@ -136,6 +166,7 @@ export default function Create({ products }) {
                             <thead className="bg-gray-100">
                                 <tr>
                                     <th className="border p-2">Product</th>
+                                    <th className="border p-2">Current Branch Stock</th>
                                     <th className="border p-2">Quantity</th>
                                     <th className="border p-2">Buying Price</th>
                                     <th className="border p-2">Total</th>
@@ -166,6 +197,18 @@ export default function Create({ products }) {
                                                     </option>
                                                 ))}
                                             </select>
+                                        </td>
+
+                                        <td className="border p-2">
+                                            {row.product_id
+                                                ? branchStockForProduct(
+                                                      products.find(
+                                                          (product) =>
+                                                              String(product.id) === String(row.product_id)
+                                                      ) || {},
+                                                      data.branch_id
+                                                  )
+                                                : 0}
                                         </td>
 
                                         <td className="border p-2">

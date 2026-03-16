@@ -65,6 +65,7 @@ const Menu = ({ url }) => {
         isPathPrefix("/staffs") ||
         isPathPrefix("/salaries") ||
         isPathPrefix("/advance-salaries");
+    const branchActive = isPathPrefix("/branches") || isPathPrefix("/branch");
     const customerActive =
         isPathPrefix("/customers") || isPathPrefix("/customer");
     const posActive = isPath("/orders/create");
@@ -93,6 +94,7 @@ const Menu = ({ url }) => {
         permissions.includes("view salary") ||
         permissions.includes("view advance salary");
     const canViewAdministration =
+        permissions.includes("view branch") ||
         permissions.includes("view role") ||
         permissions.includes("view user") ||
         permissions.includes("view settings") ||
@@ -376,6 +378,15 @@ const Menu = ({ url }) => {
 
             {canViewAdministration && (
                 <MenuSection title="Administration">
+                    {permissions.includes("view branch") && (
+                        <Link
+                            href="/branches"
+                            className={linkClass(branchActive)}
+                        >
+                            <BriefcaseBusiness size={18} />
+                            <span>Branches</span>
+                        </Link>
+                    )}
                     {(permissions.includes("view role") ||
                         permissions.includes("view user")) && (
                         <SidebarDropdown

@@ -3,14 +3,27 @@ import { router, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
+const branchStockForProduct = (product, branchId) => {
+    if (!branchId) {
+        return Number(product.stock || 0);
+    }
+
+    const inventory = product.branch_inventories?.find(
+        (item) => String(item.branch_id) === String(branchId)
+    );
+
+    return Number(inventory?.stock || 0);
+};
+
 export default function Edit() {
-    const { purchase, products } = usePage().props;
+    const { purchase, products, branches = [] } = usePage().props;
     const [clientError, setClientError] = useState("");
 
     const previousPaid = Number(purchase.paid_amount || 0); // total paid before this edit
 
     const [form, setForm] = useState({
         supplier_name: purchase.supplier_name,
+        branch_id: purchase.branch_id || "",
         purchase_date: purchase.purchase_date,
         payment_status: purchase.payment_status,
         new_paid: 0, // new payment entered by user
@@ -98,6 +111,24 @@ export default function Edit() {
 
                     {/* Purchase Date */}
                     <div className="mb-3">
+                        <label className="required-label">Branch:</label>
+                        <select
+                            className="w-full"
+                            value={form.branch_id}
+                            onChange={(e) =>
+                                setForm({ ...form, branch_id: e.target.value })
+                            }
+                        >
+                            <option value="">Select Branch</option>
+                            {branches.map((branch) => (
+                                <option key={branch.id} value={branch.id}>
+                                    {branch.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="mb-3">
                         <label className="required-label">Purchase Date:</label>
                         <input
                             type="date"
@@ -129,7 +160,7 @@ export default function Edit() {
                     <div>
                         <h2 className="font-semibold mb-2">Items</h2>
                         {form.items.map((item, i) => (
-                            <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2">
+                            <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
                                 <select
                                     className="w-full"
                                     value={item.product_id}
@@ -155,6 +186,17 @@ export default function Edit() {
                                         updateItem(i, "quantity", e.target.value)
                                     }
                                 />
+
+                                <div className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                                    Branch stock:{" "}
+                                    {branchStockForProduct(
+                                        products.find(
+                                            (product) =>
+                                                String(product.id) === String(item.product_id)
+                                        ) || {},
+                                        form.branch_id
+                                    )}
+                                </div>
 
                                 <input
                                     type="number"

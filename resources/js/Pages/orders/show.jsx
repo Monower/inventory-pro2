@@ -146,6 +146,10 @@ const Show = ({ order, stockLedger = [] }) => {
                         {order?.order_number || "N/A"}
                     </p>
                     <p>
+                        <strong>Branch:</strong>{" "}
+                        {order?.branch?.name || order?.branch_name || "N/A"}
+                    </p>
+                    <p>
                         <strong>Created at:</strong>{" "}
                         {dateTimeFormater(order?.created_at) || "N/A"}
                     </p>

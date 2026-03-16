@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Branch;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -33,19 +34,48 @@ class HandleInertiaRequests extends Middleware
     {
         $settings = Setting::whereIn('name', ['company_name', 'logo', 'favicon'])->get()->keyBy('name');
         $companyName = $settings['company_name']->value ?? 'Default Company Name';
+        $user = $request->user()?->loadMissing('branch');
+        $accessibleBranches = collect();
+        $activeBranch = null;
+
+        if ($user) {
+            $accessibleBranches = $user->branch_id
+                ? Branch::query()->whereKey($user->branch_id)->get()
+                : Branch::query()->where('is_active', true)->orderBy('name')->get();
+
+            $activeBranch = $accessibleBranches->firstWhere('id', $request->session()->get('active_branch_id'))
+                ?? $user->branch
+                ?? $accessibleBranches->first();
+        }
 
         return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'phone' => $request->user()->phone,
-                    'avatar' => $request->user()->avatar,
-                    'email' => $request->user()->email,
-                    'roles' => $request->user()->getRoleNames(), // returns ["admin"]
-                    'permissions' => $request->user()->getAllPermissions()->pluck('name'), // returns collection of names
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'phone' => $user->phone,
+                    'avatar' => $user->avatar,
+                    'email' => $user->email,
+                    'branch_id' => $user->branch_id,
+                    'branch' => $user->branch ? [
+                        'id' => $user->branch->id,
+                        'name' => $user->branch->name,
+                        'code' => $user->branch->code,
+                    ] : null,
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
                 ] : null,
             ],
+            'activeBranch' => $activeBranch ? [
+                'id' => $activeBranch->id,
+                'name' => $activeBranch->name,
+                'code' => $activeBranch->code,
+            ] : null,
+            'accessibleBranches' => $accessibleBranches->map(fn ($branch) => [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'code' => $branch->code,
+            ])->values(),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

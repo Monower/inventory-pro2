@@ -13,6 +13,7 @@ class Purchase extends Model
         'invoice_no',
         'purchase_date',
         'supplier_name',
+        'branch_id',
         'total_amount',
         'payment_status',
         'paid_amount',
@@ -21,5 +22,10 @@ class Purchase extends Model
     public function items()
     {
         return $this->hasMany(PurchaseItem::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

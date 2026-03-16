@@ -9,6 +9,8 @@ use App\Models\OrderPayment;
 use App\Models\OrderRefund;
 use App\Models\OrderRefundExchangeItem;
 use App\Models\OrderRefundItem;
+use App\Models\Branch;
+use App\Models\BranchProductInventory;
 use App\Models\Coupon;
 use App\Models\StockLedger;
 use App\Models\Staff;
@@ -24,6 +26,7 @@ class OrderController extends Controller
 {
     public function index()
     {
+        $activeBranchId = $this->activeBranchId();
         $q = trim((string) request()->query('q', ''));
         $view = request()->query('view', 'all');
         $paymentStatus = trim((string) request()->query('payment_status', ''));
@@ -40,7 +43,8 @@ class OrderController extends Controller
             $view = 'all';
         }
 
-        $orders = Order::with('customer', 'items.product', 'salesperson')
+        $orders = Order::with('customer', 'items.product', 'salesperson', 'branch')
+            ->when($activeBranchId, fn ($query) => $query->where('branch_id', $activeBranchId))
             ->when($view === 'completed', function ($query) {
                 $query->where('order_status', 'completed');
             })
@@ -102,12 +106,15 @@ class OrderController extends Controller
 
     public function create()
     {
+        $activeBranchId = $this->activeBranchId();
         $customers = Customer::query()->select('id', 'phone')->orderBy('phone')->get();
         $staffs = Staff::query()->select('id', 'name', 'phone')->orderBy('name')->get();
         $products = Product::query()
+            ->with(['branchInventories' => fn ($query) => $query->select('id', 'branch_id', 'product_id', 'stock')])
             ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
             ->orderBy('name')
             ->get();
+        $branches = $this->accessibleBranchesQuery()->get(['id', 'name', 'code']);
         $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
         $coupons = Coupon::query()
             ->where('is_active', true)
@@ -123,7 +130,7 @@ class OrderController extends Controller
                 'starts_at',
                 'expires_at',
             ]);
-        return Inertia::render('orders/create', compact('customers', 'products', 'banks', 'staffs', 'coupons'));
+        return Inertia::render('orders/create', compact('customers', 'products', 'banks', 'staffs', 'coupons', 'branches', 'activeBranchId'));
     }
 
     public function store(Request $request)
@@ -134,6 +141,7 @@ class OrderController extends Controller
             'cart.*.id' => 'required|exists:products,id',
             'cart.*.quantity' => 'required|integer|min:1',
             'salesperson_staff_id' => 'nullable|exists:staff,id',
+            'branch_id' => 'required|exists:branches,id',
             'branch_name' => 'nullable|string|max:255',
             'shipping_address' => 'nullable|string|max:2000',
             'coupon_code' => 'nullable|string|max:100',
@@ -158,6 +166,8 @@ class OrderController extends Controller
             'payment_amount.min' => 'Payment amount must be at least 0',
         ]);
 
+        $this->ensureBranchAccessible((int) $validated['branch_id']);
+
         try {
             DB::transaction(function () use ($validated) {
                 $orderNumber = 'ORD-' . Str::upper(Str::random(6));
@@ -167,8 +177,9 @@ class OrderController extends Controller
 
                 foreach ($validated['cart'] as $item) {
                     $product = Product::findOrFail($item['id']);
+                    $branchInventory = $this->getBranchInventory($validated['branch_id'], $product->id);
 
-                    if ($product->stock < $item['quantity']) {
+                    if ($branchInventory->stock < $item['quantity']) {
                         throw new \Exception("Not enough stock for {$product->name}");
                     }
 
@@ -186,13 +197,16 @@ class OrderController extends Controller
                     ? 'pending'
                     : ($dueAmount > 0 ? 'partial' : 'paid');
 
+                $branch = Branch::findOrFail($validated['branch_id']);
+
                 $order = Order::create([
                     'order_number' => $orderNumber,
                     'invoice_number' => $invoiceNumber,
                     'customer_id' => $validated['customer_id'],
                     'subtotal_amount' => $subTotalAmount,
                     'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
-                    'branch_name' => $validated['branch_name'] ?? null,
+                    'branch_id' => $branch->id,
+                    'branch_name' => $branch->name,
                     'shipping_address' => $validated['shipping_address'] ?? null,
                     'coupon_id' => $pricing['coupon']?->id,
                     'coupon_code' => $pricing['coupon_code'],
@@ -238,15 +252,20 @@ class OrderController extends Controller
                         'price' => $product->selling_price,
                     ]);
 
-                    $product->decrement('stock', $item['quantity']);
-                    $product->refresh();
+                    $branchInventory = $this->adjustBranchInventory(
+                        $branch->id,
+                        $product,
+                        -1 * (int) $item['quantity']
+                    );
                     $this->recordStockMovement(
                         $product,
+                        $branch,
                         'sale',
                         -1 * (int) $item['quantity'],
                         Order::class,
                         $order->id,
-                        "Stock issued for order {$order->order_number}."
+                        "Stock issued from {$branch->name} for order {$order->order_number}.",
+                        $branchInventory->stock
                     );
                 }
 
@@ -296,6 +315,8 @@ class OrderController extends Controller
 
     public function edit(Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
+
         if ($order->refunds()->exists() || $order->payments()->exists()) {
             return redirect()
                 ->route('orders.show', $order->id)
@@ -306,9 +327,11 @@ class OrderController extends Controller
         $customers = Customer::query()->select('id', 'phone')->orderBy('phone')->get();
         $staffs = Staff::query()->select('id', 'name', 'phone')->orderBy('name')->get();
         $products = Product::query()
+            ->with(['branchInventories' => fn ($query) => $query->select('id', 'branch_id', 'product_id', 'stock')])
             ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
             ->orderBy('name')
             ->get();
+        $branches = $this->accessibleBranchesQuery()->get(['id', 'name', 'code']);
         $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
         $coupons = Coupon::query()
             ->where('is_active', true)
@@ -326,11 +349,13 @@ class OrderController extends Controller
                 'expires_at',
             ]);
 
-        return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks', 'staffs', 'coupons'));
+        return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks', 'staffs', 'coupons', 'branches'));
     }
 
     public function update(Request $request, Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
+
         if ($order->refunds()->exists() || $order->payments()->exists()) {
             return redirect()
                 ->route('orders.show', $order->id)
@@ -343,6 +368,7 @@ class OrderController extends Controller
             'cart.*.product_id' => 'required|exists:products,id',
             'cart.*.quantity' => 'required|integer|min:1',
             'salesperson_staff_id' => 'nullable|exists:staff,id',
+            'branch_id' => 'required|exists:branches,id',
             'branch_name' => 'nullable|string|max:255',
             'shipping_address' => 'nullable|string|max:2000',
             'coupon_code' => 'nullable|string|max:100',
@@ -359,6 +385,8 @@ class OrderController extends Controller
             'payment_amount' => 'required|numeric|min:0',
         ]);
 
+        $this->ensureBranchAccessible((int) $validated['branch_id']);
+
         try {
             DB::transaction(function () use ($validated, $order) {
 
@@ -366,7 +394,11 @@ class OrderController extends Controller
                Restore previous stock
             ----------------------------- */
                 foreach ($order->items as $oldItem) {
-                    $oldItem->product->increment('stock', $oldItem->quantity);
+                    $this->adjustBranchInventory(
+                        $order->branch_id,
+                        $oldItem->product,
+                        (int) $oldItem->quantity
+                    );
                 }
                 $order->items()->delete();
 
@@ -382,7 +414,9 @@ class OrderController extends Controller
                 foreach ($validated['cart'] as $item) {
                     $product = $products[$item['product_id']];
 
-                    if ($product->stock < $item['quantity']) {
+                    $branchInventory = $this->getBranchInventory($validated['branch_id'], $product->id);
+
+                    if ($branchInventory->stock < $item['quantity']) {
                         throw new \Exception("Not enough stock for {$product->name}");
                     }
 
@@ -410,11 +444,14 @@ class OrderController extends Controller
             ----------------------------- */
                 $previousCouponId = $order->coupon_id;
 
+                $branch = Branch::findOrFail($validated['branch_id']);
+
                 $order->update([
                     'customer_id' => $validated['customer_id'],
                     'subtotal_amount' => $subTotalAmount,
                     'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
-                    'branch_name' => $validated['branch_name'] ?? null,
+                    'branch_id' => $branch->id,
+                    'branch_name' => $branch->name,
                     'shipping_address' => $validated['shipping_address'] ?? null,
                     'coupon_id' => $pricing['coupon']?->id,
                     'coupon_code' => $pricing['coupon_code'],
@@ -462,15 +499,20 @@ class OrderController extends Controller
                         'price' => $product->selling_price,
                     ]);
 
-                    $product->decrement('stock', $item['quantity']);
-                    $product->refresh();
+                    $branchInventory = $this->adjustBranchInventory(
+                        $branch->id,
+                        $product,
+                        -1 * (int) $item['quantity']
+                    );
                     $this->recordStockMovement(
                         $product,
+                        $branch,
                         'sale_adjustment',
                         -1 * (int) $item['quantity'],
                         Order::class,
                         $order->id,
-                        "Stock re-issued after updating order {$order->order_number}."
+                        "Stock re-issued from {$branch->name} after updating order {$order->order_number}.",
+                        $branchInventory->stock
                     );
                 }
 
@@ -512,11 +554,13 @@ class OrderController extends Controller
     {
         if ($id) {
             $order = Order::findOrFail($id);
+            $this->ensureOrderInActiveBranch($order);
 
             if ($order) {
                 $order->load([
                     'customer',
                     'salesperson',
+                    'branch',
                     'items.product',
                     'coupon',
                     'payments.bank',
@@ -581,6 +625,7 @@ class OrderController extends Controller
 
     public function createRefund(Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
         $order->load('customer', 'items.product');
 
         $refundItems = $this->buildRefundableItems($order);
@@ -627,6 +672,7 @@ class OrderController extends Controller
 
     public function storeRefund(Request $request, Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
         $validated = $request->validate([
             'refunded_at' => 'required|date',
             'resolution_type' => 'required|in:refund,return_only,exchange',
@@ -712,7 +758,9 @@ class OrderController extends Controller
                 ]);
             }
 
-            if ($product->stock < $exchangeItem['quantity']) {
+            $branchInventory = $this->getBranchInventory($order->branch_id, $product->id);
+
+            if ($branchInventory->stock < $exchangeItem['quantity']) {
                 return back()->withErrors([
                     'exchange_items' => "Not enough stock available for exchange item {$product->name}.",
                 ]);
@@ -830,6 +878,7 @@ class OrderController extends Controller
 
     public function createPayment(Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
         if ((float) $order->due_amount <= 0) {
             return redirect()
                 ->route('orders.show', $order->id)
@@ -865,6 +914,7 @@ class OrderController extends Controller
 
     public function storePayment(Request $request, Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
         $validated = $request->validate([
             'paid_at' => 'required|date',
             'amount' => 'required|numeric|min:0.01',
@@ -922,6 +972,7 @@ class OrderController extends Controller
 
     public function approveRefund(Request $request, Order $order, OrderRefund $refund)
     {
+        $this->ensureOrderInActiveBranch($order);
         if ($refund->order_id !== $order->id) {
             abort(404);
         }
@@ -946,36 +997,48 @@ class OrderController extends Controller
                 }
 
                 foreach ($refund->exchangeItems as $exchangeItem) {
-                    if ((int) $exchangeItem->product->stock < (int) $exchangeItem->quantity) {
+                    $branchInventory = $this->getBranchInventory($order->branch_id, $exchangeItem->product->id);
+
+                    if ((int) $branchInventory->stock < (int) $exchangeItem->quantity) {
                         throw new \Exception("Not enough stock available for exchange item {$exchangeItem->product->name}.");
                     }
                 }
 
                 foreach ($refund->items as $refundItem) {
                     if ($refundItem->restock_to_inventory) {
-                        $refundItem->product->increment('stock', $refundItem->quantity);
-                        $refundItem->product->refresh();
+                        $branchInventory = $this->adjustBranchInventory(
+                            $order->branch_id,
+                            $refundItem->product,
+                            (int) $refundItem->quantity
+                        );
                         $this->recordStockMovement(
                             $refundItem->product,
+                            $order->branch,
                             'customer_return',
                             (int) $refundItem->quantity,
                             OrderRefund::class,
                             $refund->id,
-                            "Customer return restocked for order {$order->order_number}."
+                            "Customer return restocked into {$order->branch_name} for order {$order->order_number}.",
+                            $branchInventory->stock
                         );
                     }
                 }
 
                 foreach ($refund->exchangeItems as $exchangeItem) {
-                    $exchangeItem->product->decrement('stock', $exchangeItem->quantity);
-                    $exchangeItem->product->refresh();
+                    $branchInventory = $this->adjustBranchInventory(
+                        $order->branch_id,
+                        $exchangeItem->product,
+                        -1 * (int) $exchangeItem->quantity
+                    );
                     $this->recordStockMovement(
                         $exchangeItem->product,
+                        $order->branch,
                         'exchange_issue',
                         -1 * (int) $exchangeItem->quantity,
                         OrderRefund::class,
                         $refund->id,
-                        "Replacement stock issued for exchange on order {$order->order_number}."
+                        "Replacement stock issued from {$order->branch_name} for exchange on order {$order->order_number}.",
+                        $branchInventory->stock
                     );
                 }
 
@@ -1012,6 +1075,7 @@ class OrderController extends Controller
 
     public function rejectRefund(Request $request, Order $order, OrderRefund $refund)
     {
+        $this->ensureOrderInActiveBranch($order);
         if ($refund->order_id !== $order->id) {
             abort(404);
         }
@@ -1049,6 +1113,7 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
         $validated = $request->validate([
             'order_status' => 'required|in:' . implode(',', Order::STATUSES),
         ]);
@@ -1090,6 +1155,7 @@ class OrderController extends Controller
 
     public function updateFulfillment(Request $request, Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
         $validated = $request->validate([
             'fulfillment_status' => 'required|in:' . implode(',', Order::FULFILLMENT_STATUSES),
             'courier_name' => 'nullable|string|max:255',
@@ -1136,9 +1202,11 @@ class OrderController extends Controller
 
     public function invoice(Order $order)
     {
+        $this->ensureOrderInActiveBranch($order);
         $order->load([
             'customer',
             'salesperson',
+            'branch',
             'items.product',
             'payments.bank',
             'refunds.items.product',
@@ -1154,6 +1222,7 @@ class OrderController extends Controller
     {
         if ($id) {
             $order = Order::findOrFail($id);
+            $this->ensureOrderInActiveBranch($order);
 
             if ($order) {
                 if ($order->refunds()->exists() || $order->payments()->exists()) {
@@ -1163,7 +1232,11 @@ class OrderController extends Controller
                 }
 
                 foreach ($order->items as $item) {
-                    $item->product->increment('stock', $item->quantity);
+                    $this->adjustBranchInventory(
+                        $order->branch_id,
+                        $item->product,
+                        (int) $item->quantity
+                    );
                 }
                 $order->items()->delete();
                 $this->syncCouponUsage($order->coupon_id, null);
@@ -1292,6 +1365,74 @@ class OrderController extends Controller
         return null;
     }
 
+    private function accessibleBranchesQuery()
+    {
+        $user = request()->user()?->loadMissing('branch');
+
+        return Branch::query()
+            ->where('is_active', true)
+            ->when($user?->branch_id, fn ($query) => $query->where('id', $user->branch_id))
+            ->orderBy('name');
+    }
+
+    private function activeBranchId(): ?int
+    {
+        $user = request()->user()?->loadMissing('branch');
+
+        return $user?->branch_id ?: request()->session()->get('active_branch_id');
+    }
+
+    private function ensureBranchAccessible(int $branchId): void
+    {
+        $allowed = $this->accessibleBranchesQuery()->whereKey($branchId)->exists();
+
+        if (! $allowed) {
+            abort(403, 'You are not allowed to work with this branch.');
+        }
+    }
+
+    private function ensureOrderInActiveBranch(Order $order): void
+    {
+        $activeBranchId = $this->activeBranchId();
+
+        if ($activeBranchId && (int) $order->branch_id !== (int) $activeBranchId) {
+            abort(403, 'You are not allowed to access orders from another branch.');
+        }
+    }
+
+    private function getBranchInventory(int $branchId, int $productId): BranchProductInventory
+    {
+        return BranchProductInventory::query()->firstOrCreate(
+            [
+                'branch_id' => $branchId,
+                'product_id' => $productId,
+            ],
+            [
+                'stock' => 0,
+            ]
+        );
+    }
+
+    private function adjustBranchInventory(int $branchId, Product $product, int $quantityChange): BranchProductInventory
+    {
+        $inventory = $this->getBranchInventory($branchId, $product->id);
+        $newStock = (int) $inventory->stock + $quantityChange;
+
+        if ($newStock < 0) {
+            throw new \Exception("Not enough stock for {$product->name} in the selected branch.");
+        }
+
+        $inventory->update([
+            'stock' => $newStock,
+        ]);
+
+        $product->update([
+            'stock' => (int) $product->branchInventories()->sum('stock'),
+        ]);
+
+        return $inventory->fresh();
+    }
+
     private function calculateOrderPricing(array $validated, float $subTotalAmount, ?Order $existingOrder = null): array
     {
         $manualDiscountAmount = min((float) ($validated['discount_amount'] ?? 0), $subTotalAmount);
@@ -1385,17 +1526,20 @@ class OrderController extends Controller
 
     private function recordStockMovement(
         Product $product,
+        ?Branch $branch,
         string $movementType,
         int $quantityChange,
         ?string $sourceType = null,
         ?int $sourceId = null,
-        ?string $notes = null
+        ?string $notes = null,
+        ?int $balanceAfter = null
     ): void {
         StockLedger::create([
             'product_id' => $product->id,
+            'branch_id' => $branch?->id,
             'movement_type' => $movementType,
             'quantity_change' => $quantityChange,
-            'balance_after' => (int) $product->stock,
+            'balance_after' => $balanceAfter ?? (int) $product->stock,
             'source_type' => $sourceType,
             'source_id' => $sourceId,
             'notes' => $notes,

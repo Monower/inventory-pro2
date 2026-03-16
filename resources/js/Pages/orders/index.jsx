@@ -92,6 +92,7 @@ const Index = ({ orders, customers = [], staffs = [] }) => {
     const columns = [
         { key: "si", label: "SI" },
         { key: "order_number", label: "Order number" },
+        { key: "branch_name", label: "Branch" },
         { key: "total_amount", label: "Total amount" },
         { key: "order_status", label: "Order status" },
         { key: "fulfillment_status", label: "Fulfillment" },
@@ -105,6 +106,7 @@ const Index = ({ orders, customers = [], staffs = [] }) => {
         si: (orders.current_page - 1) * orders.per_page + i + 1,
         id: o.id,
         order_number: o.order_number,
+        branch_name: o.branch?.name || o.branch_name || "N/A",
         total_amount: o.total_amount,
         order_status: o.order_status,
         fulfillment_status: o.fulfillment_status,

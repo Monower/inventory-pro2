@@ -33,7 +33,8 @@ const CouponEdit = ({ coupon }) => {
             usage_limit: formData.usage_limit || null,
             starts_at: formData.starts_at || null,
             expires_at: formData.expires_at || null,
-        })).put(route("coupons.update", coupon.id));
+        }));
+        put(route("coupons.update", coupon.id));
     };
 
     return (

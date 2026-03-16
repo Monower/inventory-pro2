@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { router } from "@inertiajs/react";
 
-const StockLedgerIndex = ({ ledgers, products, movementTypes, filters }) => {
+const StockLedgerIndex = ({ ledgers, products, branches = [], movementTypes, filters }) => {
     const updateFilters = (key, value) => {
         router.get(
             route("stock-ledgers.index"),
@@ -30,6 +30,18 @@ const StockLedgerIndex = ({ ledgers, products, movementTypes, filters }) => {
                         {products.map((product) => (
                             <option key={product.id} value={product.id}>
                                 {product.name}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        className="custom-input"
+                        value={filters.branch_id || ""}
+                        onChange={(e) => updateFilters("branch_id", e.target.value)}
+                    >
+                        <option value="">All branches</option>
+                        {branches.map((branch) => (
+                            <option key={branch.id} value={branch.id}>
+                                {branch.name}
                             </option>
                         ))}
                     </select>
@@ -65,6 +77,7 @@ const StockLedgerIndex = ({ ledgers, products, movementTypes, filters }) => {
                             <tr>
                                 <th className="custom-th rounded-l-md">Date</th>
                                 <th className="custom-th">Product</th>
+                                <th className="custom-th">Branch</th>
                                 <th className="custom-th">Movement</th>
                                 <th className="custom-th">Quantity change</th>
                                 <th className="custom-th">Balance after</th>
@@ -81,6 +94,7 @@ const StockLedgerIndex = ({ ledgers, products, movementTypes, filters }) => {
                                             {new Date(entry.created_at).toLocaleString()}
                                         </td>
                                         <td className="custom-body-td">{entry.product?.name || "N/A"}</td>
+                                        <td className="custom-body-td">{entry.branch?.name || "N/A"}</td>
                                         <td className="custom-body-td">{entry.movement_type}</td>
                                         <td className="custom-body-td">{entry.quantity_change}</td>
                                         <td className="custom-body-td">{entry.balance_after}</td>
@@ -95,7 +109,7 @@ const StockLedgerIndex = ({ ledgers, products, movementTypes, filters }) => {
                                 ))
                             ) : (
                                 <tr className="custom-body-tr">
-                                    <td className="custom-body-td text-center" colSpan={8}>
+                                    <td className="custom-body-td text-center" colSpan={9}>
                                         No stock ledger entries found.
                                     </td>
                                 </tr>

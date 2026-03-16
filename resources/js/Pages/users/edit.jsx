@@ -3,7 +3,7 @@ import { useForm } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
 import BackButton from "@/Components/BackButton/BackButton";
 
-const Edit = ({ user, roles }) => {
+const Edit = ({ user, roles, branches = [] }) => {
     const initialRole = user.roles[0] ? user.roles[0].name : "";
 
     const { data, setData, put, errors, post } = useForm({
@@ -11,6 +11,7 @@ const Edit = ({ user, roles }) => {
         email: user.email || "",
         password: "",
         phone: user.phone || "",
+        branch_id: user.branch_id || "",
         image: null,
         role: initialRole,
         remove_image: false,
@@ -160,6 +161,29 @@ const Edit = ({ user, roles }) => {
                         </fieldset>
 
                         {/* Image */}
+                        <fieldset className="custom-fieldset p-2">
+                            <legend className="text-sm mx-2">Branch</legend>
+                            <select
+                                value={data.branch_id}
+                                onChange={(e) =>
+                                    setData("branch_id", e.target.value)
+                                }
+                                className="custom-input"
+                            >
+                                <option value="">All branches / Head office</option>
+                                {branches.map((branch) => (
+                                    <option key={branch.id} value={branch.id}>
+                                        {branch.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.branch_id && (
+                                <p className="text-red-500 text-xs mt-1">
+                                    {errors.branch_id}
+                                </p>
+                            )}
+                        </fieldset>
+
                         <fieldset className="custom-fieldset p-2">
                             <legend className="text-sm mx-2">Image</legend>
                             <input

@@ -3,12 +3,13 @@ import { useForm } from "@inertiajs/react";
 import { useState, useEffect, useRef } from "react";
 import BackButton from "@/Components/BackButton/BackButton";
 
-const Create = ({ roles }) => {
+const Create = ({ roles, branches = [] }) => {
     const { data, setData, post, errors } = useForm({
         name: "",
         email: "",
         password: "",
         phone: "",
+        branch_id: "",
         image: "",
         role: "",
     });
@@ -175,6 +176,31 @@ const Create = ({ roles }) => {
                             </fieldset>
 
                             {/* Image */}
+                            <fieldset className="custom-fieldset p-2">
+                                <legend className="text-sm mx-2">
+                                    <label>Branch</label>
+                                </legend>
+                                <select
+                                    value={data.branch_id}
+                                    onChange={(e) =>
+                                        setData("branch_id", e.target.value)
+                                    }
+                                    className="custom-input"
+                                >
+                                    <option value="">All branches / Head office</option>
+                                    {branches.map((branch) => (
+                                        <option key={branch.id} value={branch.id}>
+                                            {branch.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.branch_id && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {errors.branch_id}
+                                    </p>
+                                )}
+                            </fieldset>
+
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
                                     <label>Image</label>

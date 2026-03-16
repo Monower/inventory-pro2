@@ -25,7 +25,8 @@ const CouponCreate = () => {
             usage_limit: formData.usage_limit || null,
             starts_at: formData.starts_at || null,
             expires_at: formData.expires_at || null,
-        })).post(route("coupons.store"));
+        }));
+        post(route("coupons.store"));
     };
 
     return (

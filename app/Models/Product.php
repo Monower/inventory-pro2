@@ -37,4 +37,9 @@ class Product extends Model
     {
         return $this->hasMany(StockLedger::class);
     }
+
+    public function branchInventories()
+    {
+        return $this->hasMany(BranchProductInventory::class);
+    }
 }
