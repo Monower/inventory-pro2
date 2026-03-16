@@ -72,7 +72,7 @@ export default function Index() {
                                             {item.product?.name}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.purchase?.supplier_name}
+                                            {item.purchase?.supplier?.name || item.purchase?.supplier_name}
                                         </td>
                                         <td className="custom-body-td">
                                             {item.purchase?.branch?.name || "N/A"}

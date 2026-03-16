@@ -11,6 +11,7 @@ import {
     Settings2,
     ShieldCheck,
     ShoppingCart,
+    Truck,
     TicketPercent,
     Users,
 } from "lucide-react";
@@ -57,6 +58,7 @@ const Menu = ({ url }) => {
         isPathPrefix("/attribute-values") ||
         isPathPrefix("/stock-ledgers");
     const inventoryActive = isPathPrefix("/purchases");
+    const supplierActive = isPathPrefix("/suppliers");
     const financeActive =
         isPathPrefix("/banks") ||
         isPathPrefix("/transactions") ||
@@ -83,7 +85,8 @@ const Menu = ({ url }) => {
         permissions.includes("view subcategory") ||
         permissions.includes("view attribute") ||
         permissions.includes("view attribute value") ||
-        permissions.includes("view stock ledger");
+        permissions.includes("view stock ledger") ||
+        permissions.includes("view supplier");
     const canViewInventory = permissions.includes("view purchase");
     const canViewFinance =
         permissions.includes("view transaction") ||
@@ -279,6 +282,15 @@ const Menu = ({ url }) => {
                     )}
                     {canViewInventory && (
                         <div className="space-y-1">
+                            {permissions.includes("view supplier") && (
+                                <Link
+                                    href="/suppliers"
+                                    className={linkClass(supplierActive)}
+                                >
+                                    <Truck size={18} />
+                                    <span>Suppliers</span>
+                                </Link>
+                            )}
                             <Link
                                 href="/purchases"
                                 className={linkClass(inventoryActive)}

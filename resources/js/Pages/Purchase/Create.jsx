@@ -15,17 +15,26 @@ const branchStockForProduct = (product, branchId) => {
     return Number(inventory?.stock || 0);
 };
 
-export default function Create({ products, branches = [], activeBranchId = "" }) {
+export default function Create({
+    products,
+    branches = [],
+    activeBranchId = "",
+    suppliers = [],
+    banks = [],
+}) {
     const [rows, setRows] = useState([
         { product_id: "", quantity: 1, buying_price: 0 },
     ]);
 
     const { data, setData, post, processing } = useForm({
-        supplier_name: "",
+        supplier_id: "",
         branch_id: activeBranchId || branches[0]?.id || "",
         purchase_date: "",
         payment_status: "paid",
         paid_amount: 0,
+        payment_method: "cash",
+        bank_id: "",
+        mfs: "",
         items: rows,
     });
 
@@ -100,15 +109,20 @@ export default function Create({ products, branches = [], activeBranchId = "" })
                     {/* Supplier & Date */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label>Supplier Name</label>
-                            <input
-                                type="text"
+                            <label>Supplier</label>
+                            <select
                                 className="w-full"
-                                value={data.supplier_name}
-                                onChange={(e) =>
-                                    setData("supplier_name", e.target.value)
-                                }
-                            />
+                                value={data.supplier_id}
+                                onChange={(e) => setData("supplier_id", e.target.value)}
+                                required
+                            >
+                                <option value="">Select supplier</option>
+                                {suppliers.map((supplier) => (
+                                    <option key={supplier.id} value={supplier.id}>
+                                        {supplier.name} {supplier.phone ? `- ${supplier.phone}` : ""}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div>
@@ -157,6 +171,53 @@ export default function Create({ products, branches = [], activeBranchId = "" })
                             <option value="partial">Partial</option>
                         </select>
                     </div>
+
+                    <div>
+                        <label>Payment Method</label>
+                        <select
+                            className="w-full"
+                            value={data.payment_method}
+                            onChange={(e) => setData("payment_method", e.target.value)}
+                        >
+                            <option value="cash">Cash</option>
+                            <option value="bank">Bank</option>
+                            <option value="mobile">Mobile Banking</option>
+                        </select>
+                    </div>
+
+                    {data.payment_method === "bank" && (
+                        <div>
+                            <label>Bank</label>
+                            <select
+                                className="w-full"
+                                value={data.bank_id}
+                                onChange={(e) => setData("bank_id", e.target.value)}
+                            >
+                                <option value="">Select bank</option>
+                                {banks.map((bank) => (
+                                    <option key={bank.id} value={bank.id}>
+                                        {bank.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {data.payment_method === "mobile" && (
+                        <div>
+                            <label>Mobile Service</label>
+                            <select
+                                className="w-full"
+                                value={data.mfs}
+                                onChange={(e) => setData("mfs", e.target.value)}
+                            >
+                                <option value="">Select service</option>
+                                <option value="bkash">bKash</option>
+                                <option value="nagad">Nagad</option>
+                                <option value="rocket">Rocket</option>
+                            </select>
+                        </div>
+                    )}
 
                     {/* Products */}
                     <h2 className="font-semibold mt-6">Products</h2>

@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\BranchProductInventory;
+use App\Models\Bank;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\StockLedger;
+use App\Models\Supplier;
+use App\Models\SupplierPayment;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PurchaseController extends Controller
@@ -20,7 +24,7 @@ class PurchaseController extends Controller
         $activeBranchId = $this->activeBranchId();
         $q = trim((string) request()->query('q', ''));
 
-        $purchase_items = PurchaseItem::with(['purchase.branch', 'product'])
+        $purchase_items = PurchaseItem::with(['purchase.branch', 'purchase.supplier', 'product'])
             ->when($activeBranchId, fn ($query) => $query->whereHas('purchase', fn ($purchaseQuery) => $purchaseQuery->where('branch_id', $activeBranchId)))
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
@@ -29,6 +33,7 @@ class PurchaseController extends Controller
                     })->orWhereHas('purchase', function ($purchaseQuery) use ($q) {
                         $purchaseQuery->where('invoice_no', 'like', "%{$q}%")
                             ->orWhere('supplier_name', 'like', "%{$q}%")
+                            ->orWhereHas('supplier', fn ($supplierQuery) => $supplierQuery->where('name', 'like', "%{$q}%"))
                             ->orWhere('payment_status', 'like', "%{$q}%");
                     });
                 });
@@ -54,21 +59,28 @@ class PurchaseController extends Controller
             ->orderBy('name')
             ->get();
         $branches = $this->accessibleBranchesQuery()->get(['id', 'name', 'code']);
+        $suppliers = Supplier::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'phone']);
+        $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
         return Inertia::render('Purchase/Create', [
             'products' => $products,
             'branches' => $branches,
             'activeBranchId' => $activeBranchId,
+            'suppliers' => $suppliers,
+            'banks' => $banks,
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'supplier_name' => 'nullable|string|max:255',
+            'supplier_id' => 'required|exists:suppliers,id',
             'branch_id' => 'required|exists:branches,id',
             'purchase_date' => 'required|date',
             'payment_status' => 'required|in:paid,partial,unpaid',
             'paid_amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,bank,mobile',
+            'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
+            'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -80,6 +92,7 @@ class PurchaseController extends Controller
         try {
             DB::transaction(function () use ($validated) {
                 $invoice = 'INV-' . time();
+                $supplier = Supplier::findOrFail($validated['supplier_id']);
 
                 $totalAmount = 0;
                 foreach ($validated['items'] as $item) {
@@ -99,12 +112,14 @@ class PurchaseController extends Controller
 
                 $purchase = Purchase::create([
                     'invoice_no' => $invoice,
-                    'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
+                    'supplier_id' => $supplier->id,
+                    'supplier_name' => $supplier->name,
                     'branch_id' => $branch->id,
                     'purchase_date' => $validated['purchase_date'],
                     'payment_status' => $paymentStatus,
                     'total_amount' => $totalAmount,
                     'paid_amount' => $paidAmount,
+                    'due_amount' => max($totalAmount - $paidAmount, 0),
                 ]);
 
                 foreach ($validated['items'] as $item) {
@@ -133,11 +148,13 @@ class PurchaseController extends Controller
                 }
 
                 if ($paidAmount > 0) {
+                    $payment = $this->createSupplierPaymentRecord($purchase, $supplier, $validated, $paidAmount);
+
                     Transaction::create([
                         'name' => 'Product Purchase - ' . $purchase->invoice_no,
-                        'payment_method' => 'cash',
+                        'payment_method' => $payment->payment_method,
                         'transaction_type' => 'expense',
-                        'source' => $purchase->supplier_name,
+                        'source' => $supplier->name,
                         'amount' => $paidAmount,
                     ]);
                 }
@@ -153,17 +170,21 @@ class PurchaseController extends Controller
     public function edit(Purchase $purchase)
     {
         $this->ensurePurchaseInActiveBranch($purchase);
-        $purchase->load('items.product');
+        $purchase->load('items.product', 'supplier', 'payments.bank');
         $products = Product::query()
             ->with(['branchInventories' => fn ($query) => $query->select('id', 'branch_id', 'product_id', 'stock')])
             ->select('id', 'name', 'buying_price', 'stock')
             ->orderBy('name')
             ->get();
         $branches = $this->accessibleBranchesQuery()->get(['id', 'name', 'code']);
+        $suppliers = Supplier::query()->where('is_active', true)->orWhere('id', $purchase->supplier_id)->orderBy('name')->get(['id', 'name', 'phone']);
+        $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
         return Inertia::render('Purchase/Edit', [
             'purchase' => $purchase,
             'products' => $products,
             'branches' => $branches,
+            'suppliers' => $suppliers,
+            'banks' => $banks,
         ]);
     }
 
@@ -171,11 +192,14 @@ class PurchaseController extends Controller
     {
         $this->ensurePurchaseInActiveBranch($purchase);
         $validated = $request->validate([
-            'supplier_name' => 'nullable|string|max:255',
+            'supplier_id' => 'required|exists:suppliers,id',
             'branch_id' => 'required|exists:branches,id',
             'purchase_date' => 'required|date',
             'payment_status' => 'required|in:paid,partial,unpaid',
             'paid_amount' => 'required|numeric|min:0',
+            'payment_method' => 'nullable|required_with:paid_amount|in:cash,bank,mobile',
+            'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
+            'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -187,6 +211,7 @@ class PurchaseController extends Controller
         try {
             DB::transaction(function () use ($validated, $purchase) {
                 $totalAmount = 0;
+                $supplier = Supplier::findOrFail($validated['supplier_id']);
 
                 // Revert previous stock
                 foreach ($purchase->items as $oldItem) {
@@ -235,20 +260,30 @@ class PurchaseController extends Controller
                     : ($cumulativePaid < $totalAmount ? 'partial' : 'paid');
 
                 $purchase->update([
-                    'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
+                    'supplier_id' => $supplier->id,
+                    'supplier_name' => $supplier->name,
                     'branch_id' => $branch->id,
                     'purchase_date' => $validated['purchase_date'],
                     'payment_status' => $paymentStatus,
                     'total_amount' => $totalAmount,
                     'paid_amount' => $cumulativePaid,
+                    'due_amount' => max($totalAmount - $cumulativePaid, 0),
+                ]);
+
+                // Keep historical supplier payment records aligned with the edited purchase.
+                $purchase->payments()->update([
+                    'supplier_id' => $supplier->id,
+                    'branch_id' => $branch->id,
                 ]);
 
                 if ($newPaid > 0) {
+                    $payment = $this->createSupplierPaymentRecord($purchase, $supplier, $validated, $newPaid);
+
                     Transaction::create([
                         'name' => 'Product Purchase - ' . $purchase->invoice_no,
-                        'payment_method' => 'cash',
+                        'payment_method' => $payment->payment_method,
                         'transaction_type' => 'expense',
-                        'source' => $purchase->supplier_name,
+                        'source' => $supplier->name,
                         'amount' => $newPaid,
                     ]);
                 }
@@ -265,6 +300,12 @@ class PurchaseController extends Controller
     public function destroy(Purchase $purchase)
     {
         $this->ensurePurchaseInActiveBranch($purchase);
+
+        if ($purchase->payments()->exists()) {
+            return redirect()->route('purchases.index')
+                ->with('error', 'Purchases with supplier payments cannot be deleted.');
+        }
+
         DB::transaction(function () use ($purchase) {
             foreach ($purchase->items as $item) {
                 $product = Product::find($item->product_id);
@@ -364,6 +405,31 @@ class PurchaseController extends Controller
             'source_id' => $sourceId,
             'notes' => $notes,
             'causer_id' => auth()->id(),
+        ]);
+    }
+
+    private function createSupplierPaymentRecord(
+        Purchase $purchase,
+        Supplier $supplier,
+        array $paymentData,
+        float $amount
+    ): SupplierPayment {
+        return SupplierPayment::create([
+            'supplier_id' => $supplier->id,
+            'purchase_id' => $purchase->id,
+            'branch_id' => $purchase->branch_id,
+            'payment_number' => 'SPY-' . Str::upper(Str::random(8)),
+            'paid_at' => $paymentData['purchase_date'],
+            'amount' => $amount,
+            'payment_method' => $paymentData['payment_method'] ?? 'cash',
+            'bank_id' => ($paymentData['payment_method'] ?? 'cash') === 'bank'
+                ? ($paymentData['bank_id'] ?? null)
+                : null,
+            'mfs' => ($paymentData['payment_method'] ?? 'cash') === 'mobile'
+                ? ($paymentData['mfs'] ?? null)
+                : null,
+            'notes' => 'Payment recorded from purchase form.',
+            'received_by' => auth()->id(),
         ]);
     }
 }

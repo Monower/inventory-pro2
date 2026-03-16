@@ -16,17 +16,20 @@ const branchStockForProduct = (product, branchId) => {
 };
 
 export default function Edit() {
-    const { purchase, products, branches = [] } = usePage().props;
+    const { purchase, products, branches = [], suppliers = [], banks = [] } = usePage().props;
     const [clientError, setClientError] = useState("");
 
     const previousPaid = Number(purchase.paid_amount || 0); // total paid before this edit
 
     const [form, setForm] = useState({
-        supplier_name: purchase.supplier_name,
+        supplier_id: purchase.supplier_id || "",
         branch_id: purchase.branch_id || "",
         purchase_date: purchase.purchase_date,
         payment_status: purchase.payment_status,
         new_paid: 0, // new payment entered by user
+        payment_method: "cash",
+        bank_id: "",
+        mfs: "",
         items: purchase.items.map((i) => ({
             product_id: i.product_id,
             quantity: i.quantity,
@@ -98,15 +101,21 @@ export default function Edit() {
                 <form onSubmit={handleSubmit}>
                     {/* Supplier */}
                     <div className="mb-3">
-                        <label className="required-label">Supplier Name:</label>
-                        <input
-                            type="text"
+                        <label className="required-label">Supplier:</label>
+                        <select
                             className="w-full"
-                            value={form.supplier_name}
+                            value={form.supplier_id}
                             onChange={(e) =>
-                                setForm({ ...form, supplier_name: e.target.value })
+                                setForm({ ...form, supplier_id: e.target.value })
                             }
-                        />
+                        >
+                            <option value="">Select supplier</option>
+                            {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.id}>
+                                    {supplier.name} {supplier.phone ? `- ${supplier.phone}` : ""}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* Purchase Date */}
@@ -155,6 +164,59 @@ export default function Edit() {
                             <option value="unpaid">Unpaid</option>
                         </select>
                     </div>
+
+                    <div className="mb-3">
+                        <label className="required-label">Payment Method:</label>
+                        <select
+                            className="w-full"
+                            value={form.payment_method}
+                            onChange={(e) =>
+                                setForm({ ...form, payment_method: e.target.value })
+                            }
+                        >
+                            <option value="cash">Cash</option>
+                            <option value="bank">Bank</option>
+                            <option value="mobile">Mobile Banking</option>
+                        </select>
+                    </div>
+
+                    {form.payment_method === "bank" && (
+                        <div className="mb-3">
+                            <label className="required-label">Bank:</label>
+                            <select
+                                className="w-full"
+                                value={form.bank_id}
+                                onChange={(e) =>
+                                    setForm({ ...form, bank_id: e.target.value })
+                                }
+                            >
+                                <option value="">Select bank</option>
+                                {banks.map((bank) => (
+                                    <option key={bank.id} value={bank.id}>
+                                        {bank.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {form.payment_method === "mobile" && (
+                        <div className="mb-3">
+                            <label className="required-label">Mobile Service:</label>
+                            <select
+                                className="w-full"
+                                value={form.mfs}
+                                onChange={(e) =>
+                                    setForm({ ...form, mfs: e.target.value })
+                                }
+                            >
+                                <option value="">Select service</option>
+                                <option value="bkash">bKash</option>
+                                <option value="nagad">Nagad</option>
+                                <option value="rocket">Rocket</option>
+                            </select>
+                        </div>
+                    )}
 
                     {/* Items */}
                     <div>
