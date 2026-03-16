@@ -34,6 +34,7 @@ const Index = ({ orders }) => {
         { key: "order_number", label: "Order number" },
         { key: "total_amount", label: "Total amount" },
         { key: "order_status", label: "Order status" },
+        { key: "fulfillment_status", label: "Fulfillment" },
         { key: "payment_status", label: "Payment status" },
         { key: "refund_status", label: "Refund status" },
         { key: "created_at", label: "Created at" },
@@ -46,6 +47,7 @@ const Index = ({ orders }) => {
         order_number: o.order_number,
         total_amount: o.total_amount,
         order_status: o.order_status,
+        fulfillment_status: o.fulfillment_status,
         payment_status: o.payment_status,
         refund_status: o.refund_status,
         can_edit:
@@ -104,6 +106,27 @@ const Index = ({ orders }) => {
                                               .charAt(0)
                                               .toUpperCase() +
                                           row?.payment_status.slice(1)}
+                                </span>
+                            );
+                        }
+
+                        if (col.key === "fulfillment_status") {
+                            return (
+                                <span
+                                    className={`p-1 rounded-md text-white ${
+                                        row.fulfillment_status === "delivered"
+                                            ? "bg-emerald-600"
+                                            : row.fulfillment_status === "shipped"
+                                            ? "bg-sky-600"
+                                            : row.fulfillment_status === "packed"
+                                            ? "bg-amber-500"
+                                            : "bg-slate-500"
+                                    }`}
+                                >
+                                    {row.fulfillment_status
+                                        .charAt(0)
+                                        .toUpperCase() +
+                                        row.fulfillment_status.slice(1)}
                                 </span>
                             );
                         }

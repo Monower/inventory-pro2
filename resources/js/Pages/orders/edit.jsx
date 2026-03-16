@@ -4,7 +4,7 @@ import Alert from "@/Components/Alert/Alert";
 import { useState, useEffect } from "react";
 import { useForm, Link } from "@inertiajs/react";
 
-const Edit = ({ order, customers, products, banks }) => {
+const Edit = ({ order, customers, products, banks, staffs }) => {
     const [clientError, setClientError] = useState("");
 
     /* -----------------------------
@@ -12,6 +12,13 @@ const Edit = ({ order, customers, products, banks }) => {
     ------------------------------ */
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id,
+        salesperson_staff_id: order.salesperson_staff_id || "",
+        branch_name: order.branch_name || "",
+        shipping_address: order.shipping_address || "",
+        shipping_charge: Number(order.shipping_charge) || 0,
+        courier_name: order.courier_name || "",
+        tracking_number: order.tracking_number || "",
+        fulfillment_status: order.fulfillment_status || "pending",
         payment_amount: Number(order.paid_amount) || 0,
         payment_method: order.payment_method || "cash",
         bank_id: order.bank_id || "",
@@ -102,9 +109,11 @@ const Edit = ({ order, customers, products, banks }) => {
         (sum, i) => sum + i.selling_price * i.quantity,
         0
     );
+    const shippingCharge = Number(data.shipping_charge) || 0;
+    const grandTotal = totalPrice + shippingCharge;
 
     const paidAmount = Number(data.payment_amount) || 0;
-    const dueAmount = Math.max(totalPrice - paidAmount, 0);
+    const dueAmount = Math.max(grandTotal - paidAmount, 0);
 
     /* -----------------------------
         Submit (BLOCK OVERPAY)
@@ -117,7 +126,7 @@ const Edit = ({ order, customers, products, banks }) => {
             return;
         }
 
-        if (paidAmount > totalPrice) {
+        if (paidAmount > grandTotal) {
             setClientError("Payment amount cannot exceed total amount.");
             return;
         }
@@ -285,12 +294,20 @@ const Edit = ({ order, customers, products, banks }) => {
                 >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <p>Total</p>
+                            <p>Subtotal</p>
                             <strong>{totalPrice}</strong>
                         </div>
                         <div>
                             <p>Quantity</p>
                             <strong>{totalQuantity}</strong>
+                        </div>
+                        <div>
+                            <p>Shipping</p>
+                            <strong>{shippingCharge}</strong>
+                        </div>
+                        <div>
+                            <p>Grand total</p>
+                            <strong>{grandTotal}</strong>
                         </div>
                         <div>
                             <p>Paid</p>
@@ -321,6 +338,98 @@ const Edit = ({ order, customers, products, banks }) => {
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="mb-1 block">Salesperson</label>
+                            <select
+                                value={data.salesperson_staff_id}
+                                onChange={(e) =>
+                                    setData("salesperson_staff_id", e.target.value)
+                                }
+                                className="custom-input"
+                            >
+                                <option value="">-- Select salesperson --</option>
+                                {staffs.map((staff) => (
+                                    <option key={staff.id} value={staff.id}>
+                                        {staff.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="mb-1 block">Branch</label>
+                            <input
+                                type="text"
+                                value={data.branch_name}
+                                onChange={(e) => setData("branch_name", e.target.value)}
+                                className="custom-input"
+                                placeholder="Branch name"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="mb-1 block">Shipping charge</label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={data.shipping_charge}
+                                onChange={(e) =>
+                                    setData("shipping_charge", e.target.value)
+                                }
+                                className="custom-input"
+                            />
+                        </div>
+                        <div>
+                            <label className="mb-1 block">Fulfillment status</label>
+                            <select
+                                value={data.fulfillment_status}
+                                onChange={(e) =>
+                                    setData("fulfillment_status", e.target.value)
+                                }
+                                className="custom-input"
+                            >
+                                <option value="pending">Pending</option>
+                                <option value="packed">Packed</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input
+                            type="text"
+                            value={data.courier_name}
+                            onChange={(e) => setData("courier_name", e.target.value)}
+                            className="custom-input"
+                            placeholder="Courier name"
+                        />
+                        <input
+                            type="text"
+                            value={data.tracking_number}
+                            onChange={(e) =>
+                                setData("tracking_number", e.target.value)
+                            }
+                            className="custom-input"
+                            placeholder="Tracking number"
+                        />
+                    </div>
+
+                    <div>
+                        <textarea
+                            value={data.shipping_address}
+                            onChange={(e) =>
+                                setData("shipping_address", e.target.value)
+                            }
+                            className="custom-input mb-4 resize-none"
+                            rows={3}
+                            placeholder="Shipping address"
+                        />
                     </div>
 
                     {/* Payment */}
@@ -390,7 +499,7 @@ const Edit = ({ order, customers, products, banks }) => {
                                 const value = Number(e.target.value);
                                 setData(
                                     "payment_amount",
-                                    value > totalPrice ? totalPrice : value
+                                    value > grandTotal ? grandTotal : value
                                 );
                             }}
                             className="custom-input mb-4"

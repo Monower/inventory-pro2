@@ -6,8 +6,25 @@ import { dateTimeFormater } from "@/util/DateFormater";
 const Show = ({ order, stockLedger = [] }) => {
     const { auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
-    const { data, setData, patch, processing, errors } = useForm({
+    const {
+        data,
+        setData,
+        patch,
+        processing,
+        errors,
+    } = useForm({
         order_status: order?.order_status || "confirmed",
+    });
+    const {
+        data: fulfillmentData,
+        setData: setFulfillmentData,
+        patch: patchFulfillment,
+        processing: fulfillmentProcessing,
+        errors: fulfillmentErrors,
+    } = useForm({
+        fulfillment_status: order?.fulfillment_status || "pending",
+        courier_name: order?.courier_name || "",
+        tracking_number: order?.tracking_number || "",
     });
     const totalPrice = order?.items.reduce(
         (sum, item) => sum + item?.price * item?.quantity,
@@ -23,6 +40,8 @@ const Show = ({ order, stockLedger = [] }) => {
         permissions.includes("collect order payment") &&
         order?.can_collect_payment;
     const canChangeStatus = permissions.includes("change order status");
+    const canManageFulfillment = permissions.includes("manage order fulfillment");
+    const canPrintInvoice = permissions.includes("print order invoice");
 
     const refundBadgeClass =
         order?.refund_status === "full"
@@ -46,6 +65,11 @@ const Show = ({ order, stockLedger = [] }) => {
         patch(route("orders.status.update", order.id));
     };
 
+    const handleFulfillmentSubmit = (event) => {
+        event.preventDefault();
+        patchFulfillment(route("orders.fulfillment.update", order.id));
+    };
+
     return (
         <AuthenticatedLayout title="View Order">
             <section>
@@ -63,6 +87,14 @@ const Show = ({ order, stockLedger = [] }) => {
                                 className="create-button"
                             >
                                 Collect payment
+                            </Link>
+                        )}
+                        {canPrintInvoice && (
+                            <Link
+                                href={route("orders.invoice", order.id)}
+                                className="edit-button"
+                            >
+                                Print invoice
                             </Link>
                         )}
                         {canRefund && (
@@ -91,6 +123,10 @@ const Show = ({ order, stockLedger = [] }) => {
                         Order information
                     </h4>
                     <p>
+                        <strong>Invoice no:</strong>{" "}
+                        {order?.invoice_number || "N/A"}
+                    </p>
+                    <p>
                         <strong>Order ID:</strong>{" "}
                         {order?.order_number || "N/A"}
                     </p>
@@ -105,6 +141,10 @@ const Show = ({ order, stockLedger = [] }) => {
                     <p>
                         <strong>Total amount:</strong>{" "}
                         {order?.total_amount || "00.00"}
+                    </p>
+                    <p>
+                        <strong>Shipping charge:</strong>{" "}
+                        {order?.shipping_charge || "00.00"}
                     </p>
                     <p>
                         <strong>Paid amount:</strong>{" "}
@@ -123,6 +163,23 @@ const Show = ({ order, stockLedger = [] }) => {
                         <span className={`ml-2 px-2 py-1 rounded text-white ${orderBadgeClass}`}>
                             {order?.order_status?.charAt(0).toUpperCase() +
                                 order?.order_status?.slice(1)}
+                        </span>
+                    </p>
+                    <p>
+                        <strong>Fulfillment status:</strong>
+                        <span
+                            className={`ml-2 px-2 py-1 rounded text-white ${
+                                order?.fulfillment_status === "delivered"
+                                    ? "bg-emerald-600"
+                                    : order?.fulfillment_status === "shipped"
+                                    ? "bg-sky-600"
+                                    : order?.fulfillment_status === "packed"
+                                    ? "bg-amber-500"
+                                    : "bg-slate-500"
+                            }`}
+                        >
+                            {order?.fulfillment_status?.charAt(0).toUpperCase() +
+                                order?.fulfillment_status?.slice(1)}
                         </span>
                     </p>
                     <p>
@@ -156,6 +213,87 @@ const Show = ({ order, stockLedger = [] }) => {
                         </span>
                     </p>
                 </div>
+
+                {canManageFulfillment && (
+                    <div className="bg-background border border-ring shadow-md rounded-lg p-4 mb-6">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h4 className="text-lg font-semibold">Fulfillment</h4>
+                            <span className="text-sm text-muted-foreground">
+                                Manage courier and delivery progress.
+                            </span>
+                        </div>
+                        <form
+                            onSubmit={handleFulfillmentSubmit}
+                            className="grid grid-cols-1 md:grid-cols-4 gap-4"
+                        >
+                            <div>
+                                <select
+                                    value={fulfillmentData.fulfillment_status}
+                                    onChange={(event) =>
+                                        setFulfillmentData(
+                                            "fulfillment_status",
+                                            event.target.value
+                                        )
+                                    }
+                                    className="custom-input"
+                                >
+                                    {order?.fulfillment_status_options?.map((status) => (
+                                        <option key={status} value={status}>
+                                            {status.charAt(0).toUpperCase() +
+                                                status.slice(1)}
+                                        </option>
+                                    ))}
+                                </select>
+                                <small className="text-destructive">
+                                    {fulfillmentErrors.fulfillment_status}
+                                </small>
+                            </div>
+                            <div>
+                                <input
+                                    type="text"
+                                    value={fulfillmentData.courier_name}
+                                    onChange={(event) =>
+                                        setFulfillmentData(
+                                            "courier_name",
+                                            event.target.value
+                                        )
+                                    }
+                                    className="custom-input"
+                                    placeholder="Courier name"
+                                />
+                                <small className="text-destructive">
+                                    {fulfillmentErrors.courier_name}
+                                </small>
+                            </div>
+                            <div>
+                                <input
+                                    type="text"
+                                    value={fulfillmentData.tracking_number}
+                                    onChange={(event) =>
+                                        setFulfillmentData(
+                                            "tracking_number",
+                                            event.target.value
+                                        )
+                                    }
+                                    className="custom-input"
+                                    placeholder="Tracking number"
+                                />
+                                <small className="text-destructive">
+                                    {fulfillmentErrors.tracking_number}
+                                </small>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={fulfillmentProcessing}
+                                className="edit-button"
+                            >
+                                {fulfillmentProcessing
+                                    ? "Saving..."
+                                    : "Update fulfillment"}
+                            </button>
+                        </form>
+                    </div>
+                )}
 
                 {canChangeStatus && (
                     <div className="bg-background border border-ring shadow-md rounded-lg p-4 mb-6">
@@ -215,6 +353,13 @@ const Show = ({ order, stockLedger = [] }) => {
                         Customer information
                     </h4>
                     <p>
+                        <strong>Salesperson:</strong>{" "}
+                        {order?.salesperson?.name || "N/A"}
+                    </p>
+                    <p>
+                        <strong>Branch:</strong> {order?.branch_name || "N/A"}
+                    </p>
+                    <p>
                         <strong>Name:</strong> {order?.customer?.name || "N/A"}
                     </p>
                     <p>
@@ -224,6 +369,18 @@ const Show = ({ order, stockLedger = [] }) => {
                     <p>
                         <strong>Email:</strong>{" "}
                         {order?.customer?.email || "N/A"}
+                    </p>
+                    <p>
+                        <strong>Shipping address:</strong>{" "}
+                        {order?.shipping_address || "N/A"}
+                    </p>
+                    <p>
+                        <strong>Courier:</strong>{" "}
+                        {order?.courier_name || "N/A"}
+                    </p>
+                    <p>
+                        <strong>Tracking no:</strong>{" "}
+                        {order?.tracking_number || "N/A"}
                     </p>
                 </div>
 

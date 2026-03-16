@@ -68,6 +68,8 @@ class PermissionSeeder extends Seeder
             'refund order',
             'collect order payment',
             'change order status',
+            'manage order fulfillment',
+            'print order invoice',
             'view transaction',
             'create transaction',
             'edit transaction',

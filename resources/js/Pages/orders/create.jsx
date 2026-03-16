@@ -4,13 +4,20 @@ import { useState, useEffect } from "react";
 import { useForm } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 
-const Create = ({ customers, products, banks }) => {
+const Create = ({ customers, products, banks, staffs }) => {
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
 
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
         customer_id: "",
+        salesperson_staff_id: "",
+        branch_name: "",
+        shipping_address: "",
+        shipping_charge: 0,
+        courier_name: "",
+        tracking_number: "",
+        fulfillment_status: "pending",
         payment_method: "cash",
         bank_id: "",
         mfs: "",
@@ -57,6 +64,8 @@ const Create = ({ customers, products, banks }) => {
         (sum, item) => sum + item.selling_price * item.quantity,
         0
     );
+    const shippingCharge = Number(data.shipping_charge) || 0;
+    const grandTotal = totalPrice + shippingCharge;
 
     // Sync cart with form data whenever it changes
     useEffect(() => {
@@ -270,7 +279,7 @@ const Create = ({ customers, products, banks }) => {
                             {/* Summary */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-background* border border-ring shadow-md py-50 p-4 rounded-lg">
                                 <div>
-                                    <p className="text-primary">Total price</p>
+                                    <p className="text-primary">Subtotal</p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {totalPrice}
                                     </h3>
@@ -281,6 +290,18 @@ const Create = ({ customers, products, banks }) => {
                                     </p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {totalQuantity}
+                                    </h3>
+                                </div>
+                                <div>
+                                    <p className="text-primary">Shipping</p>
+                                    <h3 className="text-xl font-bold text-primary">
+                                        {shippingCharge}
+                                    </h3>
+                                </div>
+                                <div>
+                                    <p className="text-primary">Grand total</p>
+                                    <h3 className="text-xl font-bold text-primary">
+                                        {grandTotal}
                                     </h3>
                                 </div>
                             </div>
@@ -312,6 +333,110 @@ const Create = ({ customers, products, banks }) => {
                                         {errors.customer_id}
                                     </p>
                                 )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="mb-1 block">Salesperson</label>
+                                    <select
+                                        value={data.salesperson_staff_id}
+                                        onChange={(e) =>
+                                            setData("salesperson_staff_id", e.target.value)
+                                        }
+                                        className="custom-input"
+                                    >
+                                        <option value="">-- Select salesperson --</option>
+                                        {staffs?.map((staff) => (
+                                            <option key={staff.id} value={staff.id}>
+                                                {staff.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="mb-1 block">Branch</label>
+                                    <input
+                                        type="text"
+                                        value={data.branch_name}
+                                        onChange={(e) =>
+                                            setData("branch_name", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Enter branch name"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="mb-1 block">Shipping charge</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.shipping_charge}
+                                        onChange={(e) =>
+                                            setData("shipping_charge", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block">Fulfillment status</label>
+                                    <select
+                                        value={data.fulfillment_status}
+                                        onChange={(e) =>
+                                            setData("fulfillment_status", e.target.value)
+                                        }
+                                        className="custom-input"
+                                    >
+                                        <option value="pending">Pending</option>
+                                        <option value="packed">Packed</option>
+                                        <option value="shipped">Shipped</option>
+                                        <option value="delivered">Delivered</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="mb-1 block">Courier</label>
+                                    <input
+                                        type="text"
+                                        value={data.courier_name}
+                                        onChange={(e) =>
+                                            setData("courier_name", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Courier service"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block">Tracking no.</label>
+                                    <input
+                                        type="text"
+                                        value={data.tracking_number}
+                                        onChange={(e) =>
+                                            setData("tracking_number", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Tracking number"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block">Shipping address</label>
+                                <textarea
+                                    value={data.shipping_address}
+                                    onChange={(e) =>
+                                        setData("shipping_address", e.target.value)
+                                    }
+                                    className="custom-input resize-none"
+                                    rows={3}
+                                    placeholder="Delivery or shipping address"
+                                />
                             </div>
 
                             {/* Payment Method */}

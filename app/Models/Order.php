@@ -17,19 +17,36 @@ class Order extends Model
         'cancelled',
     ];
 
+    public const FULFILLMENT_STATUSES = [
+        'pending',
+        'packed',
+        'shipped',
+        'delivered',
+    ];
+
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
         'order_number',
+        'invoice_number',
         'customer_id',
+        'salesperson_staff_id',
+        'branch_name',
+        'shipping_address',
         'total_amount',
+        'shipping_charge',
         'paid_amount',
         'due_amount',
         'refunded_amount',
         'payment_status',
         'refund_status',
         'order_status',
+        'fulfillment_status',
+        'courier_name',
+        'tracking_number',
+        'shipped_at',
+        'delivered_at',
         'payment_method',
         'bank_id',
         'mfs',
@@ -41,6 +58,11 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function salesperson()
+    {
+        return $this->belongsTo(Staff::class, 'salesperson_staff_id');
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Models\OrderRefund;
 use App\Models\OrderRefundExchangeItem;
 use App\Models\OrderRefundItem;
 use App\Models\StockLedger;
+use App\Models\Staff;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Bank;
@@ -65,12 +66,13 @@ class OrderController extends Controller
     public function create()
     {
         $customers = Customer::query()->select('id', 'phone')->orderBy('phone')->get();
+        $staffs = Staff::query()->select('id', 'name', 'phone')->orderBy('name')->get();
         $products = Product::query()
             ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
             ->orderBy('name')
             ->get();
         $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
-        return Inertia::render('orders/create', compact('customers', 'products', 'banks'));
+        return Inertia::render('orders/create', compact('customers', 'products', 'banks', 'staffs'));
     }
 
     public function store(Request $request)
@@ -80,6 +82,13 @@ class OrderController extends Controller
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|exists:products,id',
             'cart.*.quantity' => 'required|integer|min:1',
+            'salesperson_staff_id' => 'nullable|exists:staff,id',
+            'branch_name' => 'nullable|string|max:255',
+            'shipping_address' => 'nullable|string|max:2000',
+            'shipping_charge' => 'nullable|numeric|min:0',
+            'courier_name' => 'nullable|string|max:255',
+            'tracking_number' => 'nullable|string|max:255',
+            'fulfillment_status' => 'nullable|in:' . implode(',', Order::FULFILLMENT_STATUSES),
             'payment_method' => 'required|in:cash,bank,mobile',
             'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
             'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
@@ -98,8 +107,9 @@ class OrderController extends Controller
         try {
             DB::transaction(function () use ($validated) {
                 $orderNumber = 'ORD-' . Str::upper(Str::random(6));
+                $invoiceNumber = 'INV-' . now()->format('Ymd') . '-' . Str::upper(Str::random(5));
 
-                $totalAmount = 0;
+                $subTotalAmount = 0;
 
                 foreach ($validated['cart'] as $item) {
                     $product = Product::findOrFail($item['id']);
@@ -108,8 +118,11 @@ class OrderController extends Controller
                         throw new \Exception("Not enough stock for {$product->name}");
                     }
 
-                    $totalAmount += $product->selling_price * $item['quantity'];
+                    $subTotalAmount += $product->selling_price * $item['quantity'];
                 }
+
+                $shippingCharge = (float) ($validated['shipping_charge'] ?? 0);
+                $totalAmount = $subTotalAmount + $shippingCharge;
 
                 $paidAmount = $validated['payment_amount'];
                 if ($paidAmount > $totalAmount) {
@@ -122,12 +135,27 @@ class OrderController extends Controller
 
                 $order = Order::create([
                     'order_number' => $orderNumber,
+                    'invoice_number' => $invoiceNumber,
                     'customer_id' => $validated['customer_id'],
+                    'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
+                    'branch_name' => $validated['branch_name'] ?? null,
+                    'shipping_address' => $validated['shipping_address'] ?? null,
                     'total_amount' => $totalAmount,
+                    'shipping_charge' => $shippingCharge,
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
                     'order_status' => 'confirmed',
+                    'fulfillment_status' => $validated['fulfillment_status'] ?? 'pending',
+                    'shipped_at' => ($validated['fulfillment_status'] ?? 'pending') === 'shipped' ||
+                        ($validated['fulfillment_status'] ?? 'pending') === 'delivered'
+                        ? now()
+                        : null,
+                    'delivered_at' => ($validated['fulfillment_status'] ?? 'pending') === 'delivered'
+                        ? now()
+                        : null,
+                    'courier_name' => $validated['courier_name'] ?? null,
+                    'tracking_number' => $validated['tracking_number'] ?? null,
                     'payment_method' => $validated['payment_method'],
                     'bank_id' => $validated['payment_method'] === 'bank'
                         ? $validated['bank_id']
@@ -181,9 +209,11 @@ class OrderController extends Controller
                     "Order {$order->order_number} was created.",
                     [
                         'total_amount' => $order->total_amount,
+                        'invoice_number' => $order->invoice_number,
                         'paid_amount' => $order->paid_amount,
                         'payment_status' => $order->payment_status,
                         'order_status' => $order->order_status,
+                        'fulfillment_status' => $order->fulfillment_status,
                     ]
                 );
             });
@@ -208,13 +238,14 @@ class OrderController extends Controller
 
         $order->load('items.product');
         $customers = Customer::query()->select('id', 'phone')->orderBy('phone')->get();
+        $staffs = Staff::query()->select('id', 'name', 'phone')->orderBy('name')->get();
         $products = Product::query()
             ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
             ->orderBy('name')
             ->get();
         $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
 
-        return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks'));
+        return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks', 'staffs'));
     }
 
     public function update(Request $request, Order $order)
@@ -230,6 +261,13 @@ class OrderController extends Controller
             'cart' => 'required|array|min:1',
             'cart.*.product_id' => 'required|exists:products,id',
             'cart.*.quantity' => 'required|integer|min:1',
+            'salesperson_staff_id' => 'nullable|exists:staff,id',
+            'branch_name' => 'nullable|string|max:255',
+            'shipping_address' => 'nullable|string|max:2000',
+            'shipping_charge' => 'nullable|numeric|min:0',
+            'courier_name' => 'nullable|string|max:255',
+            'tracking_number' => 'nullable|string|max:255',
+            'fulfillment_status' => 'nullable|in:' . implode(',', Order::FULFILLMENT_STATUSES),
 
             'payment_method' => 'required|in:cash,bank,mobile',
             'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
@@ -251,7 +289,7 @@ class OrderController extends Controller
                 /* ----------------------------
                Calculate total
             ----------------------------- */
-                $totalAmount = 0;
+                $subTotalAmount = 0;
                 $products = Product::whereIn(
                     'id',
                     collect($validated['cart'])->pluck('product_id')
@@ -264,8 +302,11 @@ class OrderController extends Controller
                         throw new \Exception("Not enough stock for {$product->name}");
                     }
 
-                    $totalAmount += $product->selling_price * $item['quantity'];
+                    $subTotalAmount += $product->selling_price * $item['quantity'];
                 }
+
+                $shippingCharge = (float) ($validated['shipping_charge'] ?? 0);
+                $totalAmount = $subTotalAmount + $shippingCharge;
 
                 /* ----------------------------
                Prevent overpayment
@@ -286,10 +327,24 @@ class OrderController extends Controller
             ----------------------------- */
                 $order->update([
                     'customer_id' => $validated['customer_id'],
+                    'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
+                    'branch_name' => $validated['branch_name'] ?? null,
+                    'shipping_address' => $validated['shipping_address'] ?? null,
                     'total_amount' => $totalAmount,
+                    'shipping_charge' => $shippingCharge,
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
+                    'fulfillment_status' => $validated['fulfillment_status'] ?? $order->fulfillment_status,
+                    'shipped_at' => ($validated['fulfillment_status'] ?? $order->fulfillment_status) === 'shipped' ||
+                        ($validated['fulfillment_status'] ?? $order->fulfillment_status) === 'delivered'
+                        ? ($order->shipped_at ?? now())
+                        : null,
+                    'delivered_at' => ($validated['fulfillment_status'] ?? $order->fulfillment_status) === 'delivered'
+                        ? now()
+                        : null,
+                    'courier_name' => $validated['courier_name'] ?? null,
+                    'tracking_number' => $validated['tracking_number'] ?? null,
                     'payment_method' => $validated['payment_method'],
                     'bank_id' => $validated['payment_method'] === 'bank'
                         ? $validated['bank_id']
@@ -334,6 +389,8 @@ class OrderController extends Controller
                         'paid_amount' => $order->paid_amount,
                         'payment_status' => $order->payment_status,
                         'payment_method' => $order->payment_method,
+                        'branch_name' => $order->branch_name,
+                        'fulfillment_status' => $order->fulfillment_status,
                     ]
                 );
             });
@@ -361,6 +418,7 @@ class OrderController extends Controller
             if ($order) {
                 $order->load([
                     'customer',
+                    'salesperson',
                     'items.product',
                     'payments.bank',
                     'payments.receivedBy',
@@ -388,6 +446,7 @@ class OrderController extends Controller
                 $order->can_collect_payment =
                     $order->due_amount > 0 && $order->order_status !== 'cancelled';
                 $order->status_options = Order::STATUSES;
+                $order->fulfillment_status_options = Order::FULFILLMENT_STATUSES;
                 $refundIds = $order->refunds->pluck('id');
                 $stockLedger = StockLedger::query()
                     ->with('product')
@@ -820,6 +879,67 @@ class OrderController extends Controller
         return redirect()
             ->route('orders.show', $order->id)
             ->with('success', 'Order status updated successfully.');
+    }
+
+    public function updateFulfillment(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'fulfillment_status' => 'required|in:' . implode(',', Order::FULFILLMENT_STATUSES),
+            'courier_name' => 'nullable|string|max:255',
+            'tracking_number' => 'nullable|string|max:255',
+        ]);
+
+        $newStatus = $validated['fulfillment_status'];
+        $oldStatus = $order->fulfillment_status;
+
+        $payload = [
+            'fulfillment_status' => $newStatus,
+            'courier_name' => $validated['courier_name'] ?? null,
+            'tracking_number' => $validated['tracking_number'] ?? null,
+        ];
+
+        if ($newStatus === 'shipped' && !$order->shipped_at) {
+            $payload['shipped_at'] = now();
+        }
+
+        if ($newStatus === 'delivered') {
+            $payload['shipped_at'] = $order->shipped_at ?? now();
+            $payload['delivered_at'] = now();
+        }
+
+        $order->update($payload);
+
+        $this->logActivity(
+            $order,
+            'fulfillment_updated',
+            'Fulfillment updated',
+            "Order {$order->order_number} fulfillment changed from {$oldStatus} to {$newStatus}.",
+            [
+                'from' => $oldStatus,
+                'to' => $newStatus,
+                'courier_name' => $order->courier_name,
+                'tracking_number' => $order->tracking_number,
+            ]
+        );
+
+        return redirect()
+            ->route('orders.show', $order->id)
+            ->with('success', 'Fulfillment updated successfully.');
+    }
+
+    public function invoice(Order $order)
+    {
+        $order->load([
+            'customer',
+            'salesperson',
+            'items.product',
+            'payments.bank',
+            'refunds.items.product',
+        ]);
+
+        return Inertia::render('orders/invoice', [
+            'order' => $order,
+        ]);
     }
 
 
