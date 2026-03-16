@@ -5,6 +5,7 @@ import { useForm, Head } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 
 const Create = ({ customers, products, banks }) => {
+    console.log("props: ", customers, products, banks);
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
 
@@ -304,7 +305,7 @@ const Create = ({ customers, products, banks }) => {
                                             key={customer.id}
                                             value={customer.id}
                                         >
-                                            {customer.name}
+                                            {customer.phone}
                                         </option>
                                     ))}
                                 </select>
