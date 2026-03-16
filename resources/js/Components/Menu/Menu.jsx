@@ -1,6 +1,7 @@
 import { Link, usePage } from "@inertiajs/react";
 import SidebarDropdown from "@/Components/SidebarDropdown";
 import {
+    ArrowRightLeft,
     BriefcaseBusiness,
     CircleDollarSign,
     ClipboardList,
@@ -57,7 +58,8 @@ const Menu = ({ url }) => {
         isPathPrefix("/attributes") ||
         isPathPrefix("/attribute-values") ||
         isPathPrefix("/stock-ledgers");
-    const inventoryActive = isPathPrefix("/purchases");
+    const inventoryActive =
+        isPathPrefix("/purchases") || isPathPrefix("/stock-transfers");
     const supplierActive = isPathPrefix("/suppliers");
     const financeActive =
         isPathPrefix("/banks") ||
@@ -86,8 +88,12 @@ const Menu = ({ url }) => {
         permissions.includes("view attribute") ||
         permissions.includes("view attribute value") ||
         permissions.includes("view stock ledger") ||
+        permissions.includes("view stock transfer") ||
         permissions.includes("view supplier");
-    const canViewInventory = permissions.includes("view purchase");
+    const canViewInventory =
+        permissions.includes("view purchase") ||
+        permissions.includes("view stock transfer") ||
+        permissions.includes("create stock transfer");
     const canViewFinance =
         permissions.includes("view transaction") ||
         permissions.includes("view bank") ||
@@ -305,6 +311,15 @@ const Menu = ({ url }) => {
                                 >
                                     <ClipboardList size={18} />
                                     <span>Stock Ledger</span>
+                                </Link>
+                            )}
+                            {permissions.includes("view stock transfer") && (
+                                <Link
+                                    href="/stock-transfers"
+                                    className={linkClass(isPathPrefix("/stock-transfers"))}
+                                >
+                                    <ArrowRightLeft size={18} />
+                                    <span>Stock Transfers</span>
                                 </Link>
                             )}
                         </div>

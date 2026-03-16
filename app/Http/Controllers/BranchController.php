@@ -76,7 +76,12 @@ class BranchController extends Controller
     {
         $branch = Branch::findOrFail($branchId);
 
-        if ($branch->orders()->exists() || $branch->purchases()->exists()) {
+        if (
+            $branch->orders()->exists() ||
+            $branch->purchases()->exists() ||
+            $branch->outgoingTransfers()->exists() ||
+            $branch->incomingTransfers()->exists()
+        ) {
             return to_route('branches.index')->with('error', 'Branches with transactions cannot be deleted.');
         }
 

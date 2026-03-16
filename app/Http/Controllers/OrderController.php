@@ -1426,9 +1426,7 @@ class OrderController extends Controller
             'stock' => $newStock,
         ]);
 
-        $product->update([
-            'stock' => (int) $product->branchInventories()->sum('stock'),
-        ]);
+        $product->refreshStockTotals();
 
         return $inventory->fresh();
     }

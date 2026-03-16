@@ -36,6 +36,7 @@ require __DIR__ . '/modules/AttributeRoutes.php';
 require __DIR__ . '/modules/OrderRoutes.php';
 require __DIR__ . '/modules/CouponRoutes.php';
 require __DIR__ . '/modules/StockLedgerRoutes.php';
+require __DIR__ . '/modules/StockTransferRoutes.php';
 require __DIR__ . '/modules/SettingRoutes.php';
 require __DIR__ . '/modules/PurchaseRoutes.php';
 require __DIR__ . '/modules/SalaryRoutes.php';

@@ -36,4 +36,14 @@ class Branch extends Model
     {
         return $this->hasMany(Purchase::class);
     }
+
+    public function outgoingTransfers()
+    {
+        return $this->hasMany(StockTransfer::class, 'source_branch_id');
+    }
+
+    public function incomingTransfers()
+    {
+        return $this->hasMany(StockTransfer::class, 'destination_branch_id');
+    }
 }
