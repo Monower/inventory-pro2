@@ -8,7 +8,8 @@ import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 const Index = ({ orders }) => {
-    const { filters } = usePage().props;
+    const { filters, auth } = usePage().props;
+    const permissions = auth.user?.permissions || [];
     const list = orders?.data ?? [];
     const { delete: destroy, processing } = useForm();
     const currentView = filters?.view || "all";
@@ -31,12 +32,9 @@ const Index = ({ orders }) => {
     const columns = [
         { key: "si", label: "SI" },
         { key: "order_number", label: "Order number" },
-        // { key: "customer_name", label: "Customer name" },
         { key: "total_amount", label: "Total amount" },
-        // { key: "paid_amount", label: "Paid amount" },
-        // { key: "due_amount", label: "Due amount" },
-        
         { key: "payment_status", label: "Payment status" },
+        { key: "refund_status", label: "Refund status" },
         { key: "created_at", label: "Created at" },
     ];
 
@@ -45,12 +43,12 @@ const Index = ({ orders }) => {
         si: (orders.current_page - 1) * orders.per_page + i + 1,
         id: o.id,
         order_number: o.order_number,
-        // customer_name: o.customer?.name || "-",
         total_amount: o.total_amount,
-        // paid_amount: o.paid_amount,
-        // due_amount: o.due_amount,
-        
         payment_status: o.payment_status,
+        refund_status: o.refund_status,
+        can_edit: o.refund_status === "none" && permissions.includes("edit order"),
+        can_delete:
+            o.refund_status === "none" && permissions.includes("delete order"),
         created_at: dateTimeFormater(o.created_at),
     }));
 
@@ -103,6 +101,27 @@ const Index = ({ orders }) => {
                             );
                         }
 
+                        if (col.key === "refund_status") {
+                            return (
+                                <span
+                                    className={`p-1 rounded-md text-white ${
+                                        row.refund_status === "full"
+                                            ? "bg-red-600"
+                                            : row.refund_status === "partial"
+                                            ? "bg-amber-500"
+                                            : "bg-slate-500"
+                                    }`}
+                                >
+                                    {row.refund_status === "none"
+                                        ? "None"
+                                        : row.refund_status
+                                              .charAt(0)
+                                              .toUpperCase() +
+                                          row.refund_status.slice(1)}
+                                </span>
+                            );
+                        }
+
                         return row[col.key];
                     }}
                     actions={(row) => (
@@ -115,22 +134,26 @@ const Index = ({ orders }) => {
                                 <EyeIcon className="w-4 h-4 inline" />
                             </Link>
 
-                            <Link
-                                href={route("orders.edit", row.id)}
-                                className="edit-button"
-                                title="Edit"
-                            >
-                                <EditIcon className="w-4 h-4 inline" />
-                            </Link>
+                            {row.can_edit && (
+                                <Link
+                                    href={route("orders.edit", row.id)}
+                                    className="edit-button"
+                                    title="Edit"
+                                >
+                                    <EditIcon className="w-4 h-4 inline" />
+                                </Link>
+                            )}
 
-                            <button
-                                onClick={() => handleDelete(row.id)}
-                                disabled={processing}
-                                className="delete-button"
-                                title="Delete"
-                            >
-                                <Trash2Icon className="w-4 h-4 inline" />
-                            </button>
+                            {row.can_delete && (
+                                <button
+                                    onClick={() => handleDelete(row.id)}
+                                    disabled={processing}
+                                    className="delete-button"
+                                    title="Delete"
+                                >
+                                    <Trash2Icon className="w-4 h-4 inline" />
+                                </button>
+                            )}
                         </div>
                     )}
                 />

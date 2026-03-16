@@ -18,7 +18,9 @@ class Order extends Model
         'total_amount',
         'paid_amount',
         'due_amount',
+        'refunded_amount',
         'payment_status',
+        'refund_status',
         'payment_method',
         'bank_id',
         'mfs',
@@ -61,6 +63,11 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function refunds()
+    {
+        return $this->hasMany(OrderRefund::class)->latest('refunded_at');
+    }
+
     public function products()
     {
         return $this->belongsToMany(Product::class, 'order_items')
@@ -71,5 +78,10 @@ class Order extends Model
     public function bank()
     {
         return $this->belongsTo(Bank::class);
+    }
+
+    public function getRefundableAmountAttribute(): float
+    {
+        return max((float) $this->paid_amount - (float) $this->refunded_amount, 0);
     }
 }

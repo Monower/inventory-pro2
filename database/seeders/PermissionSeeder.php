@@ -65,6 +65,7 @@ class PermissionSeeder extends Seeder
             'create order',
             'edit order',
             'delete order',
+            'refund order',
             'view transaction',
             'create transaction',
             'edit transaction',
