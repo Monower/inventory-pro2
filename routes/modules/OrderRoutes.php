@@ -17,6 +17,8 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/{order}/fulfillment', [OrderController::class, 'updateFulfillment'])->name('fulfillment.update')->middleware('permission:manage order fulfillment');
         Route::get('/{order}/refunds/create', [OrderController::class, 'createRefund'])->name('refunds.create')->middleware('permission:refund order');
         Route::post('/{order}/refunds', [OrderController::class, 'storeRefund'])->name('refunds.store')->middleware('permission:refund order');
+        Route::patch('/{order}/refunds/{refund}/approve', [OrderController::class, 'approveRefund'])->name('refunds.approve')->middleware('permission:approve refund case');
+        Route::patch('/{order}/refunds/{refund}/reject', [OrderController::class, 'rejectRefund'])->name('refunds.reject')->middleware('permission:reject refund case');
         Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit')->middleware('permission:edit order');
         Route::put('/{order}', [OrderController::class, 'update'])->name('update')->middleware('permission:edit order');
         Route::delete('/delete/{id}', [OrderController::class, 'destroy'])->name('destroy')->middleware('permission:delete order');

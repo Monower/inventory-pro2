@@ -109,7 +109,7 @@ const Refund = ({ order, items, banks, products }) => {
                         <h3 className="heading">Return case for {order.order_number}</h3>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                        Returnable paid amount: {Number(order.refundable_amount).toFixed(2)}
+                        Available refund amount: {Number(order.refundable_amount).toFixed(2)}
                     </div>
                 </div>
 
@@ -272,6 +272,9 @@ const Refund = ({ order, items, banks, products }) => {
                                 />
                             </fieldset>
                             <small className="text-destructive">{errors.notes}</small>
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                This case will be submitted for approval before stock and refund balances are updated.
+                            </p>
                         </div>
                     </div>
 
@@ -445,7 +448,7 @@ const Refund = ({ order, items, banks, products }) => {
                             disabled={processing}
                             className="create-button"
                         >
-                            {processing ? "Processing..." : "Process return case"}
+                            {processing ? "Submitting..." : "Submit return case"}
                         </button>
                     </div>
                 </form>

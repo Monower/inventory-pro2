@@ -21,4 +21,9 @@ class StockLedger extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function causer()
+    {
+        return $this->belongsTo(User::class, 'causer_id');
+    }
 }

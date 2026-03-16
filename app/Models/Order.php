@@ -36,6 +36,9 @@ class Order extends Model
         'branch_name',
         'shipping_address',
         'coupon_code',
+        'coupon_id',
+        'manual_discount_amount',
+        'coupon_discount_amount',
         'discount_amount',
         'tax_rate',
         'tax_amount',
@@ -68,6 +71,11 @@ class Order extends Model
     public function salesperson()
     {
         return $this->belongsTo(Staff::class, 'salesperson_staff_id');
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     /**

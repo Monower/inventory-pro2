@@ -3,6 +3,7 @@ import SidebarDropdown from "@/Components/SidebarDropdown";
 import {
     BriefcaseBusiness,
     CircleDollarSign,
+    ClipboardList,
     CreditCard,
     FolderKanban,
     LayoutDashboard,
@@ -10,6 +11,7 @@ import {
     Settings2,
     ShieldCheck,
     ShoppingCart,
+    TicketPercent,
     Users,
 } from "lucide-react";
 
@@ -52,10 +54,13 @@ const Menu = ({ url }) => {
         isPathPrefix("/categories") ||
         isPathPrefix("/sub-categories") ||
         isPathPrefix("/attributes") ||
-        isPathPrefix("/attribute-values");
+        isPathPrefix("/attribute-values") ||
+        isPathPrefix("/stock-ledgers");
     const inventoryActive = isPathPrefix("/purchases");
     const financeActive =
-        isPathPrefix("/banks") || isPathPrefix("/transactions");
+        isPathPrefix("/banks") ||
+        isPathPrefix("/transactions") ||
+        isPathPrefix("/coupons");
     const peopleActive =
         isPathPrefix("/staffs") ||
         isPathPrefix("/salaries") ||
@@ -76,11 +81,13 @@ const Menu = ({ url }) => {
         permissions.includes("view category") ||
         permissions.includes("view subcategory") ||
         permissions.includes("view attribute") ||
-        permissions.includes("view attribute value");
+        permissions.includes("view attribute value") ||
+        permissions.includes("view stock ledger");
     const canViewInventory = permissions.includes("view purchase");
     const canViewFinance =
         permissions.includes("view transaction") ||
-        permissions.includes("view bank");
+        permissions.includes("view bank") ||
+        permissions.includes("view coupon");
     const canViewPeople =
         permissions.includes("view staff") ||
         permissions.includes("view salary") ||
@@ -269,13 +276,24 @@ const Menu = ({ url }) => {
                         </SidebarDropdown>
                     )}
                     {canViewInventory && (
-                        <Link
-                            href="/purchases"
-                            className={linkClass(inventoryActive)}
-                        >
-                            <PackagePlus size={18} />
-                            <span>Purchases</span>
-                        </Link>
+                        <div className="space-y-1">
+                            <Link
+                                href="/purchases"
+                                className={linkClass(inventoryActive)}
+                            >
+                                <PackagePlus size={18} />
+                                <span>Purchases</span>
+                            </Link>
+                            {permissions.includes("view stock ledger") && (
+                                <Link
+                                    href="/stock-ledgers"
+                                    className={linkClass(isPathPrefix("/stock-ledgers"))}
+                                >
+                                    <ClipboardList size={18} />
+                                    <span>Stock Ledger</span>
+                                </Link>
+                            )}
+                        </div>
                     )}
                 </MenuSection>
             )}
@@ -298,6 +316,15 @@ const Menu = ({ url }) => {
                         >
                             <CircleDollarSign size={18} />
                             <span>Transactions</span>
+                        </Link>
+                    )}
+                    {permissions.includes("view coupon") && (
+                        <Link
+                            href="/coupons"
+                            className={linkClass(isPathPrefix("/coupons"))}
+                        >
+                            <TicketPercent size={18} />
+                            <span>Coupons</span>
                         </Link>
                     )}
                 </MenuSection>

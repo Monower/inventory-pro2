@@ -17,6 +17,9 @@ class OrderRefund extends Model
         'total_amount',
         'replacement_total',
         'workflow_status',
+        'reviewed_at',
+        'reviewed_by',
+        'workflow_notes',
         'reason',
         'notes',
         'processed_by',
@@ -26,6 +29,7 @@ class OrderRefund extends Model
         'refunded_at' => 'datetime',
         'total_amount' => 'decimal:2',
         'replacement_total' => 'decimal:2',
+        'reviewed_at' => 'datetime',
     ];
 
     public function order()
@@ -51,5 +55,10 @@ class OrderRefund extends Model
     public function processedBy()
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function reviewedBy()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }

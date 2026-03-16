@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
-import { Link, useForm, usePage } from "@inertiajs/react";
+import { Link, router, useForm, usePage } from "@inertiajs/react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
 const Show = ({ order, stockLedger = [] }) => {
@@ -42,6 +42,8 @@ const Show = ({ order, stockLedger = [] }) => {
     const canChangeStatus = permissions.includes("change order status");
     const canManageFulfillment = permissions.includes("manage order fulfillment");
     const canPrintInvoice = permissions.includes("print order invoice");
+    const canApproveRefund = permissions.includes("approve refund case");
+    const canRejectRefund = permissions.includes("reject refund case");
 
     const refundBadgeClass =
         order?.refund_status === "full"
@@ -68,6 +70,19 @@ const Show = ({ order, stockLedger = [] }) => {
     const handleFulfillmentSubmit = (event) => {
         event.preventDefault();
         patchFulfillment(route("orders.fulfillment.update", order.id));
+    };
+
+    const handleRefundReview = (refundId, action) => {
+        router.patch(
+            route(
+                action === "approve"
+                    ? "orders.refunds.approve"
+                    : "orders.refunds.reject",
+                [order.id, refundId]
+            ),
+            {},
+            { preserveScroll: true }
+        );
     };
 
     return (
@@ -502,6 +517,59 @@ const Show = ({ order, stockLedger = [] }) => {
                                             {refund.replacement_total}
                                         </p>
                                     </div>
+                                    {(refund.reviewedBy || refund.workflow_notes) && (
+                                        <div className="mb-3 grid gap-2 md:grid-cols-2">
+                                            <p>
+                                                <strong>Reviewed by:</strong>{" "}
+                                                {refund.reviewedBy?.name || "N/A"}
+                                            </p>
+                                            <p>
+                                                <strong>Reviewed at:</strong>{" "}
+                                                {refund.reviewed_at
+                                                    ? dateTimeFormater(refund.reviewed_at)
+                                                    : "N/A"}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {refund.workflow_notes && (
+                                        <p className="mb-3">
+                                            <strong>Workflow notes:</strong>{" "}
+                                            {refund.workflow_notes}
+                                        </p>
+                                    )}
+                                    {refund.workflow_status === "requested" &&
+                                        (canApproveRefund || canRejectRefund) && (
+                                            <div className="mb-4 flex flex-wrap gap-2">
+                                                {canApproveRefund && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleRefundReview(
+                                                                refund.id,
+                                                                "approve"
+                                                            )
+                                                        }
+                                                        className="create-button"
+                                                    >
+                                                        Approve case
+                                                    </button>
+                                                )}
+                                                {canRejectRefund && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleRefundReview(
+                                                                refund.id,
+                                                                "reject"
+                                                            )
+                                                        }
+                                                        className="delete-button"
+                                                    >
+                                                        Reject case
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                     {refund.reason && (
                                         <p className="mb-2">
                                             <strong>Reason:</strong> {refund.reason}

@@ -9,6 +9,7 @@ use App\Models\OrderPayment;
 use App\Models\OrderRefund;
 use App\Models\OrderRefundExchangeItem;
 use App\Models\OrderRefundItem;
+use App\Models\Coupon;
 use App\Models\StockLedger;
 use App\Models\Staff;
 use App\Models\Customer;
@@ -160,18 +161,13 @@ class OrderController extends Controller
                     $subTotalAmount += $product->selling_price * $item['quantity'];
                 }
 
-                $discountAmount = min((float) ($validated['discount_amount'] ?? 0), $subTotalAmount);
-                $taxRate = (float) ($validated['tax_rate'] ?? 0);
-                $taxableBase = max($subTotalAmount - $discountAmount, 0);
-                $taxAmount = round($taxableBase * ($taxRate / 100), 2);
-                $shippingCharge = (float) ($validated['shipping_charge'] ?? 0);
-                $totalAmount = $taxableBase + $taxAmount + $shippingCharge;
+                $pricing = $this->calculateOrderPricing($validated, $subTotalAmount);
 
                 $paidAmount = $validated['payment_amount'];
-                if ($paidAmount > $totalAmount) {
+                if ($paidAmount > $pricing['total_amount']) {
                     throw new \Exception('Payment amount cannot exceed total amount.');
                 }
-                $dueAmount = max($totalAmount - $paidAmount, 0);
+                $dueAmount = max($pricing['total_amount'] - $paidAmount, 0);
                 $paymentStatus = $paidAmount == 0
                     ? 'pending'
                     : ($dueAmount > 0 ? 'partial' : 'paid');
@@ -184,12 +180,15 @@ class OrderController extends Controller
                     'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
                     'branch_name' => $validated['branch_name'] ?? null,
                     'shipping_address' => $validated['shipping_address'] ?? null,
-                    'coupon_code' => $validated['coupon_code'] ?? null,
-                    'discount_amount' => $discountAmount,
-                    'tax_rate' => $taxRate,
-                    'tax_amount' => $taxAmount,
-                    'total_amount' => $totalAmount,
-                    'shipping_charge' => $shippingCharge,
+                    'coupon_id' => $pricing['coupon']?->id,
+                    'coupon_code' => $pricing['coupon_code'],
+                    'manual_discount_amount' => $pricing['manual_discount_amount'],
+                    'coupon_discount_amount' => $pricing['coupon_discount_amount'],
+                    'discount_amount' => $pricing['discount_amount'],
+                    'tax_rate' => $pricing['tax_rate'],
+                    'tax_amount' => $pricing['tax_amount'],
+                    'total_amount' => $pricing['total_amount'],
+                    'shipping_charge' => $pricing['shipping_charge'],
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
@@ -212,6 +211,8 @@ class OrderController extends Controller
                         ? $validated['mfs']
                         : null,
                 ]);
+
+                $this->syncCouponUsage(null, $pricing['coupon']?->id);
 
                 foreach ($validated['cart'] as $item) {
                     $product = Product::findOrFail($item['id']);
@@ -359,22 +360,17 @@ class OrderController extends Controller
                     $subTotalAmount += $product->selling_price * $item['quantity'];
                 }
 
-                $discountAmount = min((float) ($validated['discount_amount'] ?? 0), $subTotalAmount);
-                $taxRate = (float) ($validated['tax_rate'] ?? 0);
-                $taxableBase = max($subTotalAmount - $discountAmount, 0);
-                $taxAmount = round($taxableBase * ($taxRate / 100), 2);
-                $shippingCharge = (float) ($validated['shipping_charge'] ?? 0);
-                $totalAmount = $taxableBase + $taxAmount + $shippingCharge;
+                $pricing = $this->calculateOrderPricing($validated, $subTotalAmount, $order);
 
                 /* ----------------------------
                Prevent overpayment
             ----------------------------- */
-                if ($validated['payment_amount'] > $totalAmount) {
+                if ($validated['payment_amount'] > $pricing['total_amount']) {
                     throw new \Exception("Payment amount cannot exceed total amount.");
                 }
 
                 $paidAmount = $validated['payment_amount'];
-                $dueAmount = $totalAmount - $paidAmount;
+                $dueAmount = $pricing['total_amount'] - $paidAmount;
 
                 $paymentStatus = $paidAmount == 0
                     ? 'pending'
@@ -383,18 +379,23 @@ class OrderController extends Controller
                 /* ----------------------------
                Update order
             ----------------------------- */
+                $previousCouponId = $order->coupon_id;
+
                 $order->update([
                     'customer_id' => $validated['customer_id'],
                     'subtotal_amount' => $subTotalAmount,
                     'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
                     'branch_name' => $validated['branch_name'] ?? null,
                     'shipping_address' => $validated['shipping_address'] ?? null,
-                    'coupon_code' => $validated['coupon_code'] ?? null,
-                    'discount_amount' => $discountAmount,
-                    'tax_rate' => $taxRate,
-                    'tax_amount' => $taxAmount,
-                    'total_amount' => $totalAmount,
-                    'shipping_charge' => $shippingCharge,
+                    'coupon_id' => $pricing['coupon']?->id,
+                    'coupon_code' => $pricing['coupon_code'],
+                    'manual_discount_amount' => $pricing['manual_discount_amount'],
+                    'coupon_discount_amount' => $pricing['coupon_discount_amount'],
+                    'discount_amount' => $pricing['discount_amount'],
+                    'tax_rate' => $pricing['tax_rate'],
+                    'tax_amount' => $pricing['tax_amount'],
+                    'total_amount' => $pricing['total_amount'],
+                    'shipping_charge' => $pricing['shipping_charge'],
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
@@ -416,6 +417,8 @@ class OrderController extends Controller
                         ? $validated['mfs']
                         : null,
                 ]);
+
+                $this->syncCouponUsage($previousCouponId, $pricing['coupon']?->id);
 
                 /* ----------------------------
                Create new items & deduct stock
@@ -486,16 +489,19 @@ class OrderController extends Controller
                     'customer',
                     'salesperson',
                     'items.product',
+                    'coupon',
                     'payments.bank',
                     'payments.receivedBy',
                     'refunds.items.product',
                     'refunds.exchangeItems.product',
                     'refunds.bank',
                     'refunds.processedBy',
+                    'refunds.reviewedBy',
                     'activityLogs.causer',
                 ]);
 
                 $refundedQuantities = $order->refunds
+                    ->whereIn('workflow_status', ['requested', 'processed'])
                     ->flatMap->items
                     ->groupBy('order_item_id')
                     ->map(fn ($items) => (int) $items->sum('quantity'));
@@ -506,9 +512,12 @@ class OrderController extends Controller
                     $item->refundable_quantity = max($item->quantity - $refundedQuantity, 0);
                 });
 
+                $availableRefundableAmount = $this->availableRefundableAmount($order);
+
                 $order->can_refund = $order->items->contains(
                     fn ($item) => $item->refundable_quantity > 0
-                ) && $order->refundable_amount > 0;
+                ) && $availableRefundableAmount > 0;
+                $order->available_refundable_amount = $availableRefundableAmount;
                 $order->can_collect_payment =
                     $order->due_amount > 0 && $order->order_status !== 'cancelled';
                 $order->status_options = Order::STATUSES;
@@ -558,7 +567,7 @@ class OrderController extends Controller
                 ->with('error', 'This order has no refundable quantities remaining.');
         }
 
-        if ((float) $order->refundable_amount <= 0) {
+        if ((float) $this->availableRefundableAmount($order) <= 0) {
             return redirect()
                 ->route('orders.show', $order->id)
                 ->with('error', 'This order has no refundable payment remaining.');
@@ -575,7 +584,7 @@ class OrderController extends Controller
                 'total_amount' => $order->total_amount,
                 'paid_amount' => $order->paid_amount,
                 'refunded_amount' => $order->refunded_amount,
-                'refundable_amount' => $order->refundable_amount,
+                'refundable_amount' => $this->availableRefundableAmount($order),
                 'customer' => [
                     'name' => $order->customer?->name,
                     'phone' => $order->customer?->phone,
@@ -683,7 +692,7 @@ class OrderController extends Controller
             $replacementTotal += $exchangeItem['quantity'] * (float) $product->selling_price;
         }
 
-        if ($validated['resolution_type'] === 'refund' && $returnValue > (float) $order->refundable_amount) {
+        if ($validated['resolution_type'] === 'refund' && $returnValue > (float) $this->availableRefundableAmount($order)) {
             return back()->withErrors([
                 'items' => 'Refund total cannot exceed the paid amount still available for refund.',
             ]);
@@ -729,10 +738,10 @@ class OrderController extends Controller
                         : null,
                     'total_amount' => $refundTotal,
                     'replacement_total' => $replacementTotal,
-                    'workflow_status' => 'processed',
+                    'workflow_status' => 'requested',
                     'reason' => $validated['reason'] ?? null,
                     'notes' => $validated['notes'] ?? null,
-                    'processed_by' => auth()->id(),
+                    'processed_by' => null,
                 ]);
 
                 foreach ($selectedItems as $item) {
@@ -749,18 +758,6 @@ class OrderController extends Controller
                         'restock_to_inventory' => $item['restock_to_inventory'],
                     ]);
 
-                    if ($item['restock_to_inventory']) {
-                        $orderItem->product->increment('stock', $item['quantity']);
-                        $orderItem->product->refresh();
-                        $this->recordStockMovement(
-                            $orderItem->product,
-                            'customer_return',
-                            (int) $item['quantity'],
-                            OrderRefund::class,
-                            $refund->id,
-                            "Customer return restocked for order {$order->order_number}."
-                        );
-                    }
                 }
 
                 foreach ($exchangeItems as $exchangeItem) {
@@ -775,25 +772,13 @@ class OrderController extends Controller
                         'total_amount' => $lineTotal,
                     ]);
 
-                    $product->decrement('stock', $exchangeItem['quantity']);
-                    $product->refresh();
-                    $this->recordStockMovement(
-                        $product,
-                        'exchange_issue',
-                        -1 * (int) $exchangeItem['quantity'],
-                        OrderRefund::class,
-                        $refund->id,
-                        "Replacement stock issued for exchange on order {$order->order_number}."
-                    );
                 }
-
-                $this->syncRefundSummary($order->fresh()->load('items.refundItems'));
 
                 $this->logActivity(
                     $order->fresh(),
-                    'return_processed',
-                    'Return processed',
-                    "Return case {$refund->refund_number} was processed for order {$order->order_number}.",
+                    'return_requested',
+                    'Return requested',
+                    "Return case {$refund->refund_number} was requested for order {$order->order_number}.",
                     [
                         'refund_number' => $refund->refund_number,
                         'resolution_type' => $refund->resolution_type,
@@ -806,7 +791,7 @@ class OrderController extends Controller
 
             return redirect()
                 ->route('orders.show', $order->id)
-                ->with('success', 'Order return case processed successfully.');
+                ->with('success', 'Order return case submitted for approval successfully.');
         } catch (\Throwable $e) {
             return back()
                 ->withInput()
@@ -904,6 +889,133 @@ class OrderController extends Controller
                 ->withInput()
                 ->with('error', $e->getMessage());
         }
+    }
+
+    public function approveRefund(Request $request, Order $order, OrderRefund $refund)
+    {
+        if ($refund->order_id !== $order->id) {
+            abort(404);
+        }
+
+        if ($refund->workflow_status !== 'requested') {
+            return back()->with('error', 'Only requested return cases can be approved.');
+        }
+
+        $validated = $request->validate([
+            'workflow_notes' => 'nullable|string|max:2000',
+        ]);
+
+        try {
+            DB::transaction(function () use ($order, $refund, $validated) {
+                $refund->loadMissing('items.product', 'exchangeItems.product');
+
+                if (
+                    $refund->resolution_type === 'refund' &&
+                    (float) $refund->total_amount > (float) $this->availableRefundableAmount($order, $refund->id)
+                ) {
+                    throw new \Exception('This refund exceeds the amount still available for refund.');
+                }
+
+                foreach ($refund->exchangeItems as $exchangeItem) {
+                    if ((int) $exchangeItem->product->stock < (int) $exchangeItem->quantity) {
+                        throw new \Exception("Not enough stock available for exchange item {$exchangeItem->product->name}.");
+                    }
+                }
+
+                foreach ($refund->items as $refundItem) {
+                    if ($refundItem->restock_to_inventory) {
+                        $refundItem->product->increment('stock', $refundItem->quantity);
+                        $refundItem->product->refresh();
+                        $this->recordStockMovement(
+                            $refundItem->product,
+                            'customer_return',
+                            (int) $refundItem->quantity,
+                            OrderRefund::class,
+                            $refund->id,
+                            "Customer return restocked for order {$order->order_number}."
+                        );
+                    }
+                }
+
+                foreach ($refund->exchangeItems as $exchangeItem) {
+                    $exchangeItem->product->decrement('stock', $exchangeItem->quantity);
+                    $exchangeItem->product->refresh();
+                    $this->recordStockMovement(
+                        $exchangeItem->product,
+                        'exchange_issue',
+                        -1 * (int) $exchangeItem->quantity,
+                        OrderRefund::class,
+                        $refund->id,
+                        "Replacement stock issued for exchange on order {$order->order_number}."
+                    );
+                }
+
+                $refund->update([
+                    'workflow_status' => 'processed',
+                    'reviewed_at' => now(),
+                    'reviewed_by' => auth()->id(),
+                    'workflow_notes' => $validated['workflow_notes'] ?? null,
+                    'processed_by' => auth()->id(),
+                ]);
+
+                $this->syncRefundSummary($order->fresh()->load('items.refundItems.refund'));
+
+                $this->logActivity(
+                    $order->fresh(),
+                    'return_approved',
+                    'Return approved',
+                    "Return case {$refund->refund_number} was approved for order {$order->order_number}.",
+                    [
+                        'refund_number' => $refund->refund_number,
+                        'resolution_type' => $refund->resolution_type,
+                        'reviewed_by' => auth()->id(),
+                    ]
+                );
+            });
+
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('success', 'Return case approved successfully.');
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function rejectRefund(Request $request, Order $order, OrderRefund $refund)
+    {
+        if ($refund->order_id !== $order->id) {
+            abort(404);
+        }
+
+        if ($refund->workflow_status !== 'requested') {
+            return back()->with('error', 'Only requested return cases can be rejected.');
+        }
+
+        $validated = $request->validate([
+            'workflow_notes' => 'nullable|string|max:2000',
+        ]);
+
+        $refund->update([
+            'workflow_status' => 'rejected',
+            'reviewed_at' => now(),
+            'reviewed_by' => auth()->id(),
+            'workflow_notes' => $validated['workflow_notes'] ?? null,
+        ]);
+
+        $this->logActivity(
+            $order,
+            'return_rejected',
+            'Return rejected',
+            "Return case {$refund->refund_number} was rejected for order {$order->order_number}.",
+            [
+                'refund_number' => $refund->refund_number,
+                'reviewed_by' => auth()->id(),
+            ]
+        );
+
+        return redirect()
+            ->route('orders.show', $order->id)
+            ->with('success', 'Return case rejected successfully.');
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -1025,6 +1137,7 @@ class OrderController extends Controller
                     $item->product->increment('stock', $item->quantity);
                 }
                 $order->items()->delete();
+                $this->syncCouponUsage($order->coupon_id, null);
                 $order->delete();
 
                 return redirect()->route('orders.index')->with('success', 'Order deleted successfully.');
@@ -1039,6 +1152,9 @@ class OrderController extends Controller
     private function buildRefundableItems(Order $order): array
     {
         $refundedQuantities = OrderRefundItem::query()
+            ->whereHas('refund', function ($query) {
+                $query->whereIn('workflow_status', ['requested', 'processed']);
+            })
             ->whereIn('order_item_id', $order->items->pluck('id'))
             ->selectRaw('order_item_id, SUM(quantity) as refunded_quantity')
             ->groupBy('order_item_id')
@@ -1063,15 +1179,18 @@ class OrderController extends Controller
 
     private function syncRefundSummary(Order $order): void
     {
-        $order->loadMissing('items.refundItems');
+        $order->loadMissing('items.refundItems.refund');
 
         $refundedAmount = (float) OrderRefund::query()
             ->where('order_id', $order->id)
+            ->where('workflow_status', 'processed')
             ->sum('total_amount');
 
         $hasRefunds = false;
         $isFullyRefunded = $order->items->every(function ($item) use (&$hasRefunds) {
-            $refundedQuantity = (int) $item->refundItems->sum('quantity');
+            $refundedQuantity = (int) $item->refundItems
+                ->filter(fn ($refundItem) => $refundItem->refund?->workflow_status === 'processed')
+                ->sum('quantity');
 
             if ($refundedQuantity > 0) {
                 $hasRefunds = true;
@@ -1142,6 +1261,80 @@ class OrderController extends Controller
         }
 
         return null;
+    }
+
+    private function calculateOrderPricing(array $validated, float $subTotalAmount, ?Order $existingOrder = null): array
+    {
+        $manualDiscountAmount = min((float) ($validated['discount_amount'] ?? 0), $subTotalAmount);
+        $couponCode = strtoupper(trim((string) ($validated['coupon_code'] ?? '')));
+        $coupon = null;
+        $couponDiscountAmount = 0;
+
+        if ($couponCode !== '') {
+            $coupon = Coupon::query()->whereRaw('UPPER(code) = ?', [$couponCode])->first();
+
+            if (!$coupon) {
+                throw new \Exception('Coupon code is invalid.');
+            }
+
+            if (
+                !$existingOrder ||
+                $existingOrder->coupon_id !== $coupon->id ||
+                strtoupper((string) $existingOrder->coupon_code) !== $couponCode
+            ) {
+                if (!$coupon->isUsableFor($subTotalAmount)) {
+                    throw new \Exception('Coupon is not active or does not meet the order rules.');
+                }
+            }
+
+            $couponDiscountAmount = min(
+                $coupon->calculateDiscount(max($subTotalAmount - $manualDiscountAmount, 0)),
+                max($subTotalAmount - $manualDiscountAmount, 0)
+            );
+            $couponCode = $coupon->code;
+        } else {
+            $couponCode = null;
+        }
+
+        $discountAmount = min($manualDiscountAmount + $couponDiscountAmount, $subTotalAmount);
+        $taxRate = (float) ($validated['tax_rate'] ?? 0);
+        $taxableBase = max($subTotalAmount - $discountAmount, 0);
+        $taxAmount = round($taxableBase * ($taxRate / 100), 2);
+        $shippingCharge = (float) ($validated['shipping_charge'] ?? 0);
+
+        return [
+            'coupon' => $coupon,
+            'coupon_code' => $couponCode,
+            'manual_discount_amount' => $manualDiscountAmount,
+            'coupon_discount_amount' => $couponDiscountAmount,
+            'discount_amount' => $discountAmount,
+            'tax_rate' => $taxRate,
+            'tax_amount' => $taxAmount,
+            'shipping_charge' => $shippingCharge,
+            'total_amount' => $taxableBase + $taxAmount + $shippingCharge,
+        ];
+    }
+
+    private function syncCouponUsage(?int $previousCouponId, ?int $nextCouponId): void
+    {
+        if ($previousCouponId && $previousCouponId !== $nextCouponId) {
+            Coupon::query()->whereKey($previousCouponId)->decrement('times_used');
+        }
+
+        if ($nextCouponId && $previousCouponId !== $nextCouponId) {
+            Coupon::query()->whereKey($nextCouponId)->increment('times_used');
+        }
+    }
+
+    private function availableRefundableAmount(Order $order, ?int $ignoreRefundId = null): float
+    {
+        $reservedAmount = (float) OrderRefund::query()
+            ->where('order_id', $order->id)
+            ->whereIn('workflow_status', ['requested', 'processed'])
+            ->when($ignoreRefundId, fn ($query) => $query->where('id', '!=', $ignoreRefundId))
+            ->sum('total_amount');
+
+        return max((float) $order->paid_amount - $reservedAmount, 0);
     }
 
     private function logActivity(
