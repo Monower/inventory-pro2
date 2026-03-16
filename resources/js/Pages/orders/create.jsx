@@ -303,7 +303,7 @@ const Create = ({ customers, products, banks }) => {
                                             key={customer.id}
                                             value={customer.id}
                                         >
-                                            {customer.name}
+                                            {customer.phone}
                                         </option>
                                     ))}
                                 </select>

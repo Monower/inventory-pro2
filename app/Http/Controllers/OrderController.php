@@ -43,7 +43,7 @@ class OrderController extends Controller
 
     public function create()
     {
-        $customers = Customer::query()->select('id', 'name')->orderBy('name')->get();
+        $customers = Customer::query()->select('id', 'phone')->orderBy('phone')->get();
         $products = Product::query()
             ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
             ->orderBy('name')
@@ -142,7 +142,7 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $order->load('items.product');
-        $customers = Customer::query()->select('id', 'name')->orderBy('name')->get();
+        $customers = Customer::query()->select('id', 'phone')->orderBy('phone')->get();
         $products = Product::query()
             ->select('id', 'name', 'buying_price', 'selling_price', 'stock')
             ->orderBy('name')
