@@ -1,8 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm, Link } from "@inertiajs/react";
+import { useForm, Link, usePage } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
+import { sanitizePhoneInput } from "@/lib/phone";
 
 const Edit = ({ customer }) => {
+    const { settings } = usePage().props;
+    const phoneDigits = Number(settings?.phone_digits || 11);
     const {
         data,
         setData,
@@ -45,15 +48,23 @@ const Edit = ({ customer }) => {
                                     </legend>
                                     <input
                                         value={data.phone}
-                                        type="number"
+                                        type="text"
                                         name="phone"
                                         onChange={(e) =>
-                                            setData("phone", e.target.value)
+                                            setData(
+                                                "phone",
+                                                sanitizePhoneInput(e.target.value, phoneDigits)
+                                            )
                                         }
                                         className="custom-input"
                                         placeholder="Enter customer phone"
+                                        inputMode="numeric"
+                                        maxLength={phoneDigits}
                                     />
                                 </fieldset>
+                                <div className="mt-1 text-right text-xs text-muted-foreground">
+                                    {data.phone.length}/{phoneDigits}
+                                </div>
                                 <small className="text-destructive">
                                     {errors.phone}
                                 </small>

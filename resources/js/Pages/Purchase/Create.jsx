@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
+import { formatCurrency } from "@/lib/currency";
 
 const branchStockForProduct = (product, branchId) => {
     if (!branchId) {
@@ -22,6 +23,8 @@ export default function Create({
     suppliers = [],
     banks = [],
 }) {
+    const { settings } = usePage().props;
+    const currencySymbol = settings?.currency_symbol || "TK";
     const [rows, setRows] = useState([
         { product_id: "", quantity: 1, buying_price: 0 },
     ]);
@@ -305,7 +308,7 @@ export default function Create({
                                         </td>
 
                                         <td className="border p-2">
-                                            ৳ {(row.quantity * row.buying_price).toFixed(2)}
+                                            {formatCurrency(row.quantity * row.buying_price, currencySymbol)}
                                         </td>
 
                                         <td className="border p-2 text-center">
@@ -334,7 +337,7 @@ export default function Create({
                     {/* Total & Paid Amount */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         <div className="text-lg font-semibold flex items-end">
-                            Total Amount: ৳ {totalAmount.toFixed(2)}
+                            Total Amount: {formatCurrency(totalAmount, currencySymbol)}
                         </div>
 
                         <div>

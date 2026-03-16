@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\Setting;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -26,8 +27,10 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        $phoneDigits = Setting::getPhoneDigits();
+
         return [
-            'phone' => ['required', 'string', 'max:11', 'min:11'],
+            'phone' => ['required', 'digits:' . $phoneDigits],
             // 'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ];

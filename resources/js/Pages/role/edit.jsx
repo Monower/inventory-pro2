@@ -60,6 +60,16 @@ const Edit = ({ role, permissions }) => {
         groups[resource].push(permission);
         return groups;
     }, {});
+    const allPermissionNames = permissions.map((permission) => permission.name);
+    const allPermissionsSelected =
+        allPermissionNames.length > 0 &&
+        allPermissionNames.every((permissionName) =>
+            data.permissions.includes(permissionName)
+        );
+
+    const handleToggleAllPermissions = () => {
+        setData("permissions", allPermissionsSelected ? [] : allPermissionNames);
+    };
 
     return (
         <AuthenticatedLayout title="Edit Role">
@@ -96,7 +106,18 @@ const Edit = ({ role, permissions }) => {
                         </fieldset>
                     </div>
 
-                    <h3 className="text-lg font-semibold mb-2">Permissions:</h3>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                        <h3 className="text-lg font-semibold">Permissions:</h3>
+                        <button
+                            type="button"
+                            onClick={handleToggleAllPermissions}
+                            className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+                        >
+                            {allPermissionsSelected
+                                ? "Unselect All Permissions"
+                                : "Select All Permissions"}
+                        </button>
+                    </div>
 
                     {/* Grouped permissions */}
                     <div className="mb-4">

@@ -5,8 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Staff;
 
 class PermissionSeeder extends Seeder
 {
@@ -62,10 +61,6 @@ class PermissionSeeder extends Seeder
             'create role',
             'edit role',
             'delete role',
-            'view user',
-            'create user',
-            'edit user',
-            'delete user',
             'view bank',
             'create bank',
             'edit bank',
@@ -122,26 +117,33 @@ class PermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
+        Permission::query()->whereIn('name', [
+            'view user',
+            'create user',
+            'edit user',
+            'delete user',
+        ])->delete();
+
         // Create admin role
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'super admin']);
+        Role::firstOrCreate(['name' => 'staff']);
+        Role::query()->whereIn('name', ['admin', 'user'])->delete();
 
         // Give all permissions to admin
         $adminRole->syncPermissions(Permission::all());
 
         // Check if there is at least one user
-        $user = User::first();
+        $user = Staff::first();
 
         if (!$user) {
-            // Create default admin user
-            $user = User::create([
-                'name' => 'Admin',
+            $user = Staff::create([
+                'name' => 'Super Admin',
                 'phone' => '01111111111',
-                'password' => '12345678', // hash the password
+                'password' => '12345678',
             ]);
         }
 
-        // Assign admin role if not already assigned
-        if (!$user->hasRole('admin')) {
+        if (!$user->hasRole('super admin')) {
             $user->assignRole($adminRole);
         }
     }

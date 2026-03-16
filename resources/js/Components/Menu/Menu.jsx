@@ -66,7 +66,8 @@ const Menu = ({ url }) => {
         isPathPrefix("/transactions") ||
         isPathPrefix("/coupons");
     const peopleActive =
-        isPathPrefix("/staffs") ||
+        isPathPrefix("/employees") ||
+        isPathPrefix("/employee") ||
         isPathPrefix("/salaries") ||
         isPathPrefix("/advance-salaries");
     const branchActive = isPathPrefix("/branches") || isPathPrefix("/branch");
@@ -105,7 +106,6 @@ const Menu = ({ url }) => {
     const canViewAdministration =
         permissions.includes("view branch") ||
         permissions.includes("view role") ||
-        permissions.includes("view user") ||
         permissions.includes("view settings") ||
         permissions.includes("edit profile");
 
@@ -370,9 +370,10 @@ const Menu = ({ url }) => {
                         <div className="mt-2 flex flex-col space-y-2">
                             {permissions.includes("view staff") && (
                                 <Link
-                                    href="/staffs"
+                                    href="/employees"
                                     className={subLinkClass(
-                                        isPathPrefix("/staffs")
+                                        isPathPrefix("/employees") ||
+                                            isPathPrefix("/employee")
                                     )}
                                 >
                                     Employees
@@ -414,19 +415,12 @@ const Menu = ({ url }) => {
                             <span>Branches</span>
                         </Link>
                     )}
-                    {(permissions.includes("view role") ||
-                        permissions.includes("view user")) && (
+                    {permissions.includes("view role") && (
                         <SidebarDropdown
                             title="Access Control"
                             icon={<ShieldCheck size={18} />}
-                            active={
-                                isPathPrefix("/roles") ||
-                                isPathPrefix("/users")
-                            }
-                            defaultOpen={
-                                isPathPrefix("/roles") ||
-                                isPathPrefix("/users")
-                            }
+                            active={isPathPrefix("/roles")}
+                            defaultOpen={isPathPrefix("/roles")}
                         >
                             <div className="mt-2 flex flex-col space-y-2">
                                 {permissions.includes("view role") && (
@@ -437,16 +431,6 @@ const Menu = ({ url }) => {
                                         )}
                                     >
                                         Roles
-                                    </Link>
-                                )}
-                                {permissions.includes("view user") && (
-                                    <Link
-                                        href="/users"
-                                        className={subLinkClass(
-                                            isPathPrefix("/users")
-                                        )}
-                                    >
-                                        Users
                                     </Link>
                                 )}
                             </div>

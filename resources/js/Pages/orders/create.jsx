@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
+import Modal from "@/Components/Modal/Modal";
 import { useState, useEffect } from "react";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
+import { sanitizePhoneInput } from "@/lib/phone";
 
 const calculateCouponDiscount = (coupon, subtotalAfterManualDiscount) => {
     if (!coupon || subtotalAfterManualDiscount <= 0) {
@@ -46,9 +48,15 @@ const Create = ({
     branches = [],
     activeBranchId = "",
 }) => {
+    const { auth, flash, settings } = usePage().props;
+    const permissions = auth.user?.permissions || [];
+    const phoneDigits = Number(settings?.phone_digits || 11);
+    const canCreateCustomer = permissions.includes("create customer");
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
     const [couponSearch, setCouponSearch] = useState("");
+    const [customerOptions, setCustomerOptions] = useState(customers || []);
+    const [showCustomerModal, setShowCustomerModal] = useState(false);
 
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
@@ -70,8 +78,18 @@ const Create = ({
         payment_amount: "",
         cart: [],
     });
+    const customerForm = useForm({
+        name: "",
+        phone: "",
+        email: "",
+        address: "",
+    });
 
     const allErrors = Object.values(errors);
+
+    useEffect(() => {
+        setCustomerOptions(customers || []);
+    }, [customers]);
 
     // Add product to cart
     const addToCart = (product) => {
@@ -149,6 +167,37 @@ const Create = ({
         }
     }, [data.coupon_code]);
 
+    useEffect(() => {
+        const createdCustomer = flash?.createdCustomer;
+
+        if (!createdCustomer?.id) {
+            return;
+        }
+
+        setCustomerOptions((previous) => {
+            if (previous.some((customer) => String(customer.id) === String(createdCustomer.id))) {
+                return previous;
+            }
+
+            return [...previous, createdCustomer];
+        });
+        setData("customer_id", createdCustomer.id);
+        setShowCustomerModal(false);
+        customerForm.reset();
+    }, [flash?.createdCustomer]);
+
+    const openCustomerModal = () => {
+        customerForm.reset();
+        customerForm.clearErrors();
+        setShowCustomerModal(true);
+    };
+
+    const closeCustomerModal = () => {
+        customerForm.reset();
+        customerForm.clearErrors();
+        setShowCustomerModal(false);
+    };
+
     // Submit form
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -158,6 +207,14 @@ const Create = ({
         }
         setClientError("");
         post("/orders");
+    };
+
+    const handleCustomerSubmit = (event) => {
+        event.preventDefault();
+        customerForm.post(route("customer.quick-store"), {
+            preserveScroll: true,
+            preserveState: true,
+        });
     };
 
     return (
@@ -404,9 +461,20 @@ const Create = ({
 
                             {/* Customer */}
                             <div>
-                                <label className="required-label mb-1">
-                                    Select customer
-                                </label>
+                                <div className="mb-1 flex items-center justify-between gap-3">
+                                    <label className="required-label">
+                                        Select customer
+                                    </label>
+                                    {canCreateCustomer && (
+                                        <button
+                                            type="button"
+                                            onClick={openCustomerModal}
+                                            className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+                                        >
+                                            Add new customer
+                                        </button>
+                                    )}
+                                </div>
                                 <select
                                     value={data.customer_id}
                                     onChange={(e) =>
@@ -415,12 +483,12 @@ const Create = ({
                                     className="custom-input"
                                 >
                                     <option value="">-- Select --</option>
-                                    {customers?.map((customer) => (
+                                    {customerOptions?.map((customer) => (
                                         <option
                                             key={customer.id}
                                             value={customer.id}
                                         >
-                                            {customer.phone}
+                                            {customer.name ? `${customer.name} - ${customer.phone}` : customer.phone}
                                         </option>
                                     ))}
                                 </select>
@@ -782,6 +850,96 @@ const Create = ({
                         </div>
                     </div>
                 </form>
+
+                <Modal
+                    open={showCustomerModal}
+                    onOpenChange={(isOpen) => {
+                        if (isOpen) {
+                            openCustomerModal();
+                            return;
+                        }
+
+                        closeCustomerModal();
+                    }}
+                    title="Add Customer"
+                    description="Create a customer without leaving checkout."
+                    footer={
+                        <>
+                            <button
+                                type="button"
+                                onClick={closeCustomerModal}
+                                className="rounded-md border border-ring px-4 py-2 text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCustomerSubmit}
+                                disabled={customerForm.processing}
+                                className="create-button"
+                            >
+                                {customerForm.processing ? "Saving..." : "Save customer"}
+                            </button>
+                        </>
+                    }
+                >
+                    <form onSubmit={handleCustomerSubmit} className="space-y-4">
+                        <div>
+                            <label className="mb-1 block">Name</label>
+                            <input
+                                type="text"
+                                value={customerForm.data.name}
+                                onChange={(e) => customerForm.setData("name", e.target.value)}
+                                className="custom-input"
+                                placeholder="Customer name"
+                            />
+                            <small className="text-destructive">{customerForm.errors.name}</small>
+                        </div>
+                        <div>
+                            <label className="required-label mb-1 block">Phone</label>
+                            <input
+                                type="text"
+                                value={customerForm.data.phone}
+                                onChange={(e) =>
+                                    customerForm.setData(
+                                        "phone",
+                                        sanitizePhoneInput(e.target.value, phoneDigits),
+                                    )
+                                }
+                                className="custom-input"
+                                placeholder={`${phoneDigits}-digit phone number`}
+                                inputMode="numeric"
+                                maxLength={phoneDigits}
+                            />
+                            <div className="mt-1 text-right text-xs text-muted-foreground">
+                                {customerForm.data.phone.length}/{phoneDigits}
+                            </div>
+                            <small className="text-destructive">{customerForm.errors.phone}</small>
+                        </div>
+                        <div>
+                            <label className="mb-1 block">Email</label>
+                            <input
+                                type="email"
+                                value={customerForm.data.email}
+                                onChange={(e) => customerForm.setData("email", e.target.value)}
+                                className="custom-input"
+                                placeholder="Optional email"
+                            />
+                            <small className="text-destructive">{customerForm.errors.email}</small>
+                        </div>
+                        <div>
+                            <label className="mb-1 block">Address</label>
+                            <textarea
+                                value={customerForm.data.address}
+                                onChange={(e) => customerForm.setData("address", e.target.value)}
+                                className="custom-input resize-none"
+                                rows={3}
+                                placeholder="Optional address"
+                            />
+                            <small className="text-destructive">{customerForm.errors.address}</small>
+                        </div>
+                    </form>
+                </Modal>
             </section>
         </AuthenticatedLayout>
     );

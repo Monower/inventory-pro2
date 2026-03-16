@@ -1,14 +1,12 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { usePage } from "@inertiajs/react";
 import { useState } from "react";
 import DashboardCard from "../Components/DasboardCard/DashboardCard";
-
-const currencyFormatter = new Intl.NumberFormat("en-BD", {
-    maximumFractionDigits: 0,
-});
-
-const formatCurrency = (value) => `${currencyFormatter.format(Number(value || 0))} TK`;
+import { formatCurrency } from "@/lib/currency";
 
 function EarningsChart({ data }) {
+    const { settings } = usePage().props;
+    const currencySymbol = settings?.currency_symbol || "TK";
     const { labels = [], income = [], expense = [] } = data || {};
     const chartData = labels.map((label, index) => ({
         label,
@@ -53,7 +51,7 @@ function EarningsChart({ data }) {
                 <div className="hidden h-72 flex-col justify-between py-2 text-xs text-muted-foreground sm:flex">
                     {axisLabels.map((value, index) => (
                         <span key={`${value}-${index}`}>
-                            {formatCurrency(value)}
+                            {formatCurrency(value, currencySymbol)}
                         </span>
                     ))}
                 </div>
@@ -70,14 +68,14 @@ function EarningsChart({ data }) {
                                     style={{
                                         height: `${(item.income / scaleMax) * 100}%`,
                                     }}
-                                    title={`${item.label} income: ${formatCurrency(item.income)}`}
+                                    title={`${item.label} income: ${formatCurrency(item.income, currencySymbol)}`}
                                 />
                                 <div
                                     className="w-full max-w-4 rounded-full bg-rose-500 transition-all duration-300"
                                     style={{
                                         height: `${(item.expense / scaleMax) * 100}%`,
                                     }}
-                                    title={`${item.label} expense: ${formatCurrency(item.expense)}`}
+                                    title={`${item.label} expense: ${formatCurrency(item.expense, currencySymbol)}`}
                                 />
                             </div>
                             <div className="space-y-1 text-center">
@@ -85,7 +83,7 @@ function EarningsChart({ data }) {
                                     {item.label}
                                 </p>
                                 <p className="hidden text-[11px] text-muted-foreground lg:block">
-                                    {formatCurrency(item.income)}
+                                    {formatCurrency(item.income, currencySymbol)}
                                 </p>
                             </div>
                         </div>
@@ -137,6 +135,8 @@ export default function Dashboard({
     earningStatistics = {},
     salesAnalytics = {},
 }) {
+    const { settings } = usePage().props;
+    const currencySymbol = settings?.currency_symbol || "TK";
     const [activeView, setActiveView] = useState("monthly");
     const activeChart = earningStatistics?.[activeView] || {
         labels: [],
@@ -188,7 +188,7 @@ export default function Dashboard({
                     {businessStatistics.map((item) => (
                         <DashboardCard
                             key={item.title}
-                            value={formatCurrency(item.value)}
+                            value={formatCurrency(item.value, currencySymbol)}
                             title={item.title}
                             icon={item.icon}
                             subtitle="Updated from recorded sales, purchases, and transactions"
@@ -212,7 +212,7 @@ export default function Dashboard({
                         subtitle="Orders with partial or full refunds"
                     />
                     <DashboardCard
-                        value={formatCurrency(summary.average_order_value || 0)}
+                        value={formatCurrency(summary.average_order_value || 0, currencySymbol)}
                         title="Average order value"
                         icon="revenue"
                         subtitle="Average billed amount per order"
@@ -236,7 +236,7 @@ export default function Dashboard({
                             {
                                 key: "total_sales",
                                 label: "Sales",
-                                render: (row) => formatCurrency(row.total_sales),
+                                render: (row) => formatCurrency(row.total_sales, currencySymbol),
                             },
                         ]}
                     />
@@ -249,7 +249,7 @@ export default function Dashboard({
                             {
                                 key: "total_sales",
                                 label: "Sales",
-                                render: (row) => formatCurrency(row.total_sales),
+                                render: (row) => formatCurrency(row.total_sales, currencySymbol),
                             },
                         ]}
                     />

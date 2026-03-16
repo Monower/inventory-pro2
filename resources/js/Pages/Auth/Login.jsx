@@ -2,9 +2,12 @@ import Checkbox from "@/Components/Checkbox";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import GuestLayout from "@/Layouts/GuestLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
+import { sanitizePhoneInput } from "@/lib/phone";
 
 export default function Login({ status }) {
+    const { settings } = usePage().props;
+    const phoneDigits = Number(settings?.phone_digits || 11);
     const { data, setData, post, processing, errors, reset } = useForm({
         phone: "",
         email: "",
@@ -92,12 +95,18 @@ export default function Login({ status }) {
                                     className="mt-2 block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-16 text-slate-900 shadow-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                                     autoComplete={false}
                                     autoFocus
-                                    maxLength={11}
-                                    onChange={(e) => setData("phone", e.target.value)}
+                                    inputMode="numeric"
+                                    maxLength={phoneDigits}
+                                    onChange={(e) =>
+                                        setData(
+                                            "phone",
+                                            sanitizePhoneInput(e.target.value, phoneDigits),
+                                        )
+                                    }
                                 />
 
                                 <span className="pointer-events-none absolute right-4 top-[2.5rem] text-xs font-semibold text-slate-400 dark:text-slate-500">
-                                    {data.phone.length}/11
+                                    {data.phone.length}/{phoneDigits}
                                 </span>
 
                                 <InputError message={errors.phone} className="mt-2" />

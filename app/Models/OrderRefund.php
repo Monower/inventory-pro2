@@ -54,11 +54,11 @@ class OrderRefund extends Model
 
     public function processedBy()
     {
-        return $this->belongsTo(User::class, 'processed_by');
+        return $this->belongsTo(Staff::class, 'processed_by');
     }
 
     public function reviewedBy()
     {
-        return $this->belongsTo(User::class, 'reviewed_by');
+        return $this->belongsTo(Staff::class, 'reviewed_by');
     }
 }

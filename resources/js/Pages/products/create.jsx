@@ -1,16 +1,18 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import BackButton from "@/Components/BackButton/BackButton";
 
-const Create = ({ categories, attributes }) => {
+const Create = ({ categories, attributes, productUnits = [] }) => {
+    const { settings } = usePage().props;
+    const currencySymbol = settings?.currency_symbol || "TK";
     const { data, setData, post, errors } = useForm({
         name: "",
         description: "",
         selling_price: "",
         buying_price: "",
         stock: "",
-        unit: "",
+        unit: productUnits[0] || "",
         category: categories[0]?.id || "",
         sub_category_id: categories[0]?.sub_categories[0]?.id || "",
         product_image: null,
@@ -138,7 +140,7 @@ const Create = ({ categories, attributes }) => {
                                         setData("selling_price", e.target.value)
                                     }
                                     className="custom-input"
-                                    placeholder="Enter selling price"
+                                    placeholder={`Enter selling price in ${currencySymbol}`}
                                     required
                                 />
                                 {errors.selling_price && (
@@ -161,7 +163,7 @@ const Create = ({ categories, attributes }) => {
                                         setData("buying_price", e.target.value)
                                     }
                                     className="custom-input"
-                                    placeholder="Enter buying price"
+                                    placeholder={`Enter buying price in ${currencySymbol}`}
                                     required
                                 />
                                 {errors.buying_price && (
@@ -194,16 +196,21 @@ const Create = ({ categories, attributes }) => {
                             {/* Unit */}
                             <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2 after:content-['*'] after:ml-0.5 after:text-red-500">Unit</legend>
-                                <input
-                                    type="text"
+                                <select
                                     value={data.unit}
                                     onChange={(e) =>
                                         setData("unit", e.target.value)
                                     }
                                     className="custom-input"
-                                    placeholder="e.g. pcs, kg"
                                     required
-                                />
+                                >
+                                    <option value="">Select unit</option>
+                                    {productUnits.map((unit) => (
+                                        <option key={unit} value={unit}>
+                                            {unit}
+                                        </option>
+                                    ))}
+                                </select>
                                 {errors.unit && (
                                     <p className="text-red-500 text-xs">
                                         {errors.unit}

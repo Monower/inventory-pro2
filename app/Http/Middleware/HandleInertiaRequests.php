@@ -32,8 +32,17 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $settings = Setting::whereIn('name', ['company_name', 'logo', 'favicon'])->get()->keyBy('name');
+        $settings = Setting::whereIn('name', ['company_name', 'logo', 'favicon', 'phone_digits', 'currency_symbol', 'currency_code', 'product_units'])->get()->keyBy('name');
         $companyName = $settings['company_name']->value ?? 'Default Company Name';
+        $phoneDigits = max((int) ($settings['phone_digits']->value ?? 11), 1);
+        $currencySymbol = trim((string) ($settings['currency_symbol']->value ?? 'TK')) ?: 'TK';
+        $currencyCode = trim((string) ($settings['currency_code']->value ?? 'BDT')) ?: 'BDT';
+        $productUnits = collect(preg_split('/\r\n|\r|\n/', (string) ($settings['product_units']->value ?? "pcs\nkg\nliter")) ?: [])
+            ->map(fn ($unit) => trim($unit))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
         $user = $request->user()?->loadMissing('branch');
         $accessibleBranches = collect();
         $activeBranch = null;
@@ -79,9 +88,14 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                'createdCustomer' => fn () => $request->session()->get('createdCustomer'),
             ],
             'settings' => [
                 'company_name' => $companyName,
+                'phone_digits' => $phoneDigits,
+                'currency_symbol' => $currencySymbol,
+                'currency_code' => $currencyCode,
+                'product_units' => $productUnits,
                 'logo_url' => isset($settings['logo']) && $settings['logo']->value
                     ? Storage::url($settings['logo']->value)
                     : null,

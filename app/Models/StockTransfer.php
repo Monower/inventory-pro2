@@ -45,21 +45,21 @@ class StockTransfer extends Model
 
     public function requestedBy()
     {
-        return $this->belongsTo(User::class, 'requested_by');
+        return $this->belongsTo(Staff::class, 'requested_by');
     }
 
     public function approvedBy()
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        return $this->belongsTo(Staff::class, 'approved_by');
     }
 
     public function dispatchedBy()
     {
-        return $this->belongsTo(User::class, 'dispatched_by');
+        return $this->belongsTo(Staff::class, 'dispatched_by');
     }
 
     public function receivedBy()
     {
-        return $this->belongsTo(User::class, 'received_by');
+        return $this->belongsTo(Staff::class, 'received_by');
     }
 }

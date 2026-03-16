@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { router, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
+import { formatCurrency } from "@/lib/currency";
 
 const branchStockForProduct = (product, branchId) => {
     if (!branchId) {
@@ -16,7 +17,8 @@ const branchStockForProduct = (product, branchId) => {
 };
 
 export default function Edit() {
-    const { purchase, products, branches = [], suppliers = [], banks = [] } = usePage().props;
+    const { purchase, products, branches = [], suppliers = [], banks = [], settings } = usePage().props;
+    const currencySymbol = settings?.currency_symbol || "TK";
     const [clientError, setClientError] = useState("");
 
     const previousPaid = Number(purchase.paid_amount || 0); // total paid before this edit
@@ -72,7 +74,7 @@ export default function Edit() {
 
         if (cumulativePaid > totalAmount) {
             setClientError(
-                `The payment exceeds the total amount by ৳ ${(cumulativePaid - totalAmount).toFixed(2)}.`
+                `The payment exceeds the total amount by ${formatCurrency(cumulativePaid - totalAmount, currencySymbol)}.`
             );
             return;
         }
@@ -285,17 +287,17 @@ export default function Edit() {
                     {/* Total & Paid / Remaining */}
                     <div className="mt-4">
                         <div className="text-lg font-semibold">
-                            Total Amount: ৳ {totalAmount.toFixed(2)}
+                            Total Amount: {formatCurrency(totalAmount, currencySymbol)}
                         </div>
 
                         {previousPaid > 0 && (
                             <div className="mt-2">
-                                Previously Paid: ৳ {previousPaid.toFixed(2)}
+                                Previously Paid: {formatCurrency(previousPaid, currencySymbol)}
                             </div>
                         )}
 
                         <div className="mt-2">
-                            Remaining: ৳ {remainingAmount.toFixed(2)}
+                            Remaining: {formatCurrency(remainingAmount, currencySymbol)}
                         </div>
 
                         {/* New Payment Input */}

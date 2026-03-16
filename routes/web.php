@@ -28,7 +28,6 @@ require __DIR__ . '/modules/SubCategoryRoutes.php';
 require __DIR__ . '/modules/CustomerRoutes.php';
 require __DIR__ . '/modules/SupplierRoutes.php';
 require __DIR__ . '/modules/BranchRoutes.php';
-require __DIR__ . '/modules/UserRoutes.php';
 require __DIR__ . '/modules/StaffRoutes.php';
 require __DIR__ . '/modules/TransactionRoutes.php';
 require __DIR__ . '/modules/ProductRoutes.php';

@@ -30,6 +30,6 @@ class StockLedger extends Model
 
     public function causer()
     {
-        return $this->belongsTo(User::class, 'causer_id');
+        return $this->belongsTo(Staff::class, 'causer_id');
     }
 }

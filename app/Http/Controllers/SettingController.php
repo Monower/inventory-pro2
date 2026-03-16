@@ -15,11 +15,15 @@ class SettingController extends Controller
     public function index()
     {
         // Fetch branding settings from key-value storage
-        $settings = Setting::whereIn('name', ['company_name', 'logo', 'favicon'])->get()->keyBy('name');
+        $settings = Setting::whereIn('name', ['company_name', 'logo', 'favicon', 'phone_digits', 'currency_symbol', 'currency_code', 'product_units'])->get()->keyBy('name');
 
         return Inertia::render('settings/index', [
             'settings' => [
                 'company_name' => $settings['company_name']->value ?? '',
+                'phone_digits' => (int) ($settings['phone_digits']->value ?? 11),
+                'currency_symbol' => $settings['currency_symbol']->value ?? 'TK',
+                'currency_code' => $settings['currency_code']->value ?? 'BDT',
+                'product_units' => $settings['product_units']->value ?? "pcs\nkg\nliter",
                 'logo_url' => isset($settings['logo']) && $settings['logo']->value
                     ? Storage::url($settings['logo']->value)
                     : null,
@@ -38,16 +42,52 @@ class SettingController extends Controller
         // Validate inputs
         $request->validate([
             'company_name' => 'required|string|max:255',
+            'phone_digits' => 'required|integer|min:1|max:20',
+            'currency_symbol' => 'required|string|max:10',
+            'currency_code' => 'required|string|max:10',
+            'product_units' => 'required|string',
             'logo' => 'nullable|image|max:2048', // max 2MB
             'favicon' => 'nullable|file|mimes:ico,png,jpg,jpeg,svg,webp|max:1024',
             'remove_logo' => 'nullable|boolean',
             'remove_favicon' => 'nullable|boolean',
         ]);
 
+        $productUnits = collect(preg_split('/\r\n|\r|\n/', (string) $request->input('product_units')) ?: [])
+            ->map(fn ($unit) => trim($unit))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($productUnits->isEmpty()) {
+            return back()->withErrors([
+                'product_units' => 'Please provide at least one product unit.',
+            ]);
+        }
+
         // Update or create company_name
         Setting::updateOrCreate(
             ['name' => 'company_name'],
             ['value' => $request->company_name]
+        );
+
+        Setting::updateOrCreate(
+            ['name' => 'phone_digits'],
+            ['value' => (string) $request->integer('phone_digits')]
+        );
+
+        Setting::updateOrCreate(
+            ['name' => 'currency_symbol'],
+            ['value' => trim((string) $request->input('currency_symbol'))]
+        );
+
+        Setting::updateOrCreate(
+            ['name' => 'currency_code'],
+            ['value' => strtoupper(trim((string) $request->input('currency_code')))]
+        );
+
+        Setting::updateOrCreate(
+            ['name' => 'product_units'],
+            ['value' => $productUnits->implode("\n")]
         );
 
         if ($request->boolean('remove_logo')) {

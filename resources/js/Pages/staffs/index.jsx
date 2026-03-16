@@ -20,7 +20,7 @@ const Index = ({ staffs }) => {
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this employee?")) {
             setData("id", id);
-            destroy(route("staff.destroy", id));
+            destroy(route("employee.destroy", id));
         }
     };
 
@@ -31,13 +31,13 @@ const Index = ({ staffs }) => {
                     <h3 className="heading">Employees</h3>
 
                     {canCreateStaff && (
-                        <Link href="/staff/create" className="create-button">
+                        <Link href="/employee/create" className="create-button">
                             Create Employee
                         </Link>
                     )}
                 </div>
                 <IndexFilters
-                    routeName="staffs.index"
+                    routeName="employees.index"
                     initialQuery={filters?.q || ""}
                     placeholder="Search employees..."
                     className="mb-4"
@@ -53,6 +53,8 @@ const Index = ({ staffs }) => {
                                     <th className="custom-th rounded-l-md">SI</th>
                                     <th className="custom-th">Name</th>
                                     <th className="custom-th">Phone</th>
+                                    <th className="custom-th">Role</th>
+                                    <th className="custom-th">Branch</th>
                                     <th className="custom-th">Salary</th>
                                     <th className="custom-th">Email</th>
                                     <th className="custom-th">Address</th>
@@ -68,15 +70,14 @@ const Index = ({ staffs }) => {
                                         <td className="custom-body-td">{(staffs.current_page - 1) * staffs.per_page + index + 1}</td>
                                         <td className="custom-body-td">{staff?.name}</td>
                                         <td className="custom-body-td">{staff?.phone}</td>
+                                        <td className="custom-body-td">{staff?.roles?.[0]?.name || "N/A"}</td>
+                                        <td className="custom-body-td">{staff?.branch?.name || "Head office"}</td>
                                         <td className="custom-body-td">{staff?.salary}</td>
                                         <td className="custom-body-td">{staff?.email?.length > 0 ? staff?.email : "N/A"}</td>
                                         <td className="custom-body-td">{staff?.address?.length > 0 ? staff?.address : "N/A"}</td>
                                         <td className="custom-body-td text-center flex justify-center items-center gap-2">
                                             <Link
-                                                href={route(
-                                                    "staff.edit",
-                                                    staff?.id
-                                                )}
+                                                href={route("employee.edit", staff?.id)}
                                                 className="edit-button"
                                             >
                                                 <EditIcon className="w-4 h-4 inline" />

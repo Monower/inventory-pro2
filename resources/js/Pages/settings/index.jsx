@@ -11,6 +11,10 @@ const DEFAULT_FAVICON = "/favicon.ico";
 const Index = ({ settings }) => {
     const { data, setData, post, processing, errors } = useForm({
         company_name: settings?.company_name || "",
+        phone_digits: settings?.phone_digits || 11,
+        currency_symbol: settings?.currency_symbol || "TK",
+        currency_code: settings?.currency_code || "BDT",
+        product_units: settings?.product_units || "pcs\nkg\nliter",
         logo: null,
         favicon: null,
         remove_logo: false,
@@ -76,6 +80,10 @@ const Index = ({ settings }) => {
 
         const formData = new FormData();
         formData.append("company_name", data.company_name);
+        formData.append("phone_digits", data.phone_digits);
+        formData.append("currency_symbol", data.currency_symbol);
+        formData.append("currency_code", data.currency_code);
+        formData.append("product_units", data.product_units);
 
         if (data.logo) {
             formData.append("logo", data.logo);
@@ -126,6 +134,93 @@ const Index = ({ settings }) => {
                                     required
                                 />
                                 <InputError className="mt-2" message={errors.company_name} />
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="phone_digits"
+                                    value="Phone Digits"
+                                    hint="This controls login, employee, and customer phone input length."
+                                    required
+                                />
+                                <input
+                                    id="phone_digits"
+                                    type="number"
+                                    min="1"
+                                    max="20"
+                                    value={data.phone_digits}
+                                    onChange={(e) =>
+                                        setData("phone_digits", e.target.value)
+                                    }
+                                    className="mt-1"
+                                    placeholder="Enter allowed phone digits"
+                                    required
+                                />
+                                <InputError className="mt-2" message={errors.phone_digits} />
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <InputLabel
+                                        htmlFor="currency_symbol"
+                                        value="Currency Symbol"
+                                        hint="Examples: TK, $, EUR"
+                                        required
+                                    />
+                                    <input
+                                        id="currency_symbol"
+                                        type="text"
+                                        value={data.currency_symbol}
+                                        onChange={(e) =>
+                                            setData("currency_symbol", e.target.value)
+                                        }
+                                        className="mt-1"
+                                        placeholder="Enter currency symbol"
+                                        required
+                                    />
+                                    <InputError className="mt-2" message={errors.currency_symbol} />
+                                </div>
+
+                                <div>
+                                    <InputLabel
+                                        htmlFor="currency_code"
+                                        value="Currency Code"
+                                        hint="Examples: BDT, USD, EUR"
+                                        required
+                                    />
+                                    <input
+                                        id="currency_code"
+                                        type="text"
+                                        value={data.currency_code}
+                                        onChange={(e) =>
+                                            setData("currency_code", e.target.value.toUpperCase())
+                                        }
+                                        className="mt-1"
+                                        placeholder="Enter currency code"
+                                        required
+                                    />
+                                    <InputError className="mt-2" message={errors.currency_code} />
+                                </div>
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="product_units"
+                                    value="Product Units"
+                                    hint="Add one unit per line. Example: pcs, kg, liter."
+                                    required
+                                />
+                                <textarea
+                                    id="product_units"
+                                    value={data.product_units}
+                                    onChange={(e) =>
+                                        setData("product_units", e.target.value)
+                                    }
+                                    className="mt-1 min-h-32"
+                                    placeholder={"pcs\nkg\nliter"}
+                                    required
+                                />
+                                <InputError className="mt-2" message={errors.product_units} />
                             </div>
 
                             <div>

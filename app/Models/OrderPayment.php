@@ -35,6 +35,6 @@ class OrderPayment extends Model
 
     public function receivedBy()
     {
-        return $this->belongsTo(User::class, 'received_by');
+        return $this->belongsTo(Staff::class, 'received_by');
     }
 }

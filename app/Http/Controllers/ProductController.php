@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Attribute;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -59,18 +61,21 @@ class ProductController extends Controller
         return Inertia::render('products/create', [
             'categories' => $categories,
             'attributes' => $attributes,
+            'productUnits' => Setting::getProductUnits(),
         ]);
     }
 
     // Store a newly created product in storage
     public function store(Request $request)
     {
+        $productUnits = Setting::getProductUnits();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'selling_price' => 'required|numeric|min:0',
             'buying_price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'unit' => 'required|string|max:50',
+            'unit' => ['required', 'string', 'max:50', Rule::in($productUnits)],
             'description' => 'nullable|string',
             'product_image' => 'nullable|image|max:2048',
             'sub_category_id' => 'required|exists:sub_categories,id',
@@ -127,18 +132,21 @@ class ProductController extends Controller
             'product' => $product->load('attributeValue'),
             'categories' => $categories,
             'attributes' => $attributes,
+            'productUnits' => Setting::getProductUnits(),
         ]);
     }
 
     // Update the specified product in storage
     public function update(Request $request, Product $product)
     {
+        $productUnits = Setting::getProductUnits();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'selling_price' => 'required|numeric|min:0',
             'buying_price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'unit' => 'required|string|max:50',
+            'unit' => ['required', 'string', 'max:50', Rule::in($productUnits)],
             'description' => 'nullable|string',
             'product_image' => 'nullable|image|max:2048',
             'sub_category_id' => 'required|exists:sub_categories,id',

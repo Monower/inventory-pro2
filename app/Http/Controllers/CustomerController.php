@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Customer;
-use Illuminate\Support\Str;
+use App\Models\Setting;
 
 class CustomerController extends Controller
 {
@@ -40,26 +40,26 @@ class CustomerController extends Controller
 
 
     public function store(Request $request){
-        $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'phone' => 'required|string|size:11|unique:customers,phone',
-            'email' => 'nullable|email|max:255|unique:customers,email',
-            'address' => 'nullable|string|max:1000',
-        ]);
-
-        $email = $validated['email'] ?? '';
-        // if (!$email) {
-        //     $email = 'customer+' . $validated['phone'] . '+' . Str::lower(Str::random(8)) . '@placeholder.local';
-        // }
-
-        Customer::create([
-            'name' => $validated['name'] ?? '',
-            'email' => $email,
-            'phone' => $validated['phone'],
-            'address' => $validated['address'] ?? '',
-        ]);
+        $validated = $this->validateCustomer($request);
+        $customer = $this->createCustomer($validated);
 
         return to_route('customers.index')->with('success', 'Customer created successfully.');
+    }
+
+    public function quickStore(Request $request)
+    {
+        $validated = $this->validateCustomer($request);
+        $customer = $this->createCustomer($validated);
+
+        return back()
+            ->with('success', 'Customer created successfully.')
+            ->with('createdCustomer', [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'phone' => $customer->phone,
+                'email' => $customer->email,
+                'address' => $customer->address,
+            ]);
     }
 
 
@@ -70,10 +70,11 @@ class CustomerController extends Controller
 
 
     public function update(Request $request, $customer_id){
+        $phoneDigits = Setting::getPhoneDigits();
 
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
-            'phone' => 'required|string|size:11|unique:customers,phone,' . $customer_id,
+            'phone' => ['required', 'digits:' . $phoneDigits, 'unique:customers,phone,' . $customer_id],
             'email' => 'nullable|email|max:255|unique:customers,email,' . $customer_id,
             'address' => 'nullable|string|max:1000',
         ]);
@@ -85,10 +86,10 @@ class CustomerController extends Controller
         }
 
         $customer->update([
-            'name' => $validated['name'] ?? '',
-            'email' => $validated['email'] ?? '',
+            'name' => $this->normalizeNullableString($validated['name'] ?? null) ?? '',
+            'email' => $this->normalizeNullableString($validated['email'] ?? null),
             'phone' => $validated['phone'],
-            'address' => $validated['address'] ?? '',
+            'address' => $this->normalizeNullableString($validated['address'] ?? null) ?? '',
         ]);
 
         return to_route('customers.index')->with('success', 'Customer updated successfully.');
@@ -102,5 +103,34 @@ class CustomerController extends Controller
         }
         $customer->delete();
         return to_route('customers.index')->with('success', 'Customer deleted successfully.');
+    }
+
+    private function validateCustomer(Request $request): array
+    {
+        $phoneDigits = Setting::getPhoneDigits();
+
+        return $request->validate([
+            'name' => 'nullable|string|max:255',
+            'phone' => ['required', 'digits:' . $phoneDigits, 'unique:customers,phone'],
+            'email' => 'nullable|email|max:255|unique:customers,email',
+            'address' => 'nullable|string|max:1000',
+        ]);
+    }
+
+    private function createCustomer(array $validated): Customer
+    {
+        return Customer::create([
+            'name' => $this->normalizeNullableString($validated['name'] ?? null) ?? '',
+            'email' => $this->normalizeNullableString($validated['email'] ?? null),
+            'phone' => $validated['phone'],
+            'address' => $this->normalizeNullableString($validated['address'] ?? null) ?? '',
+        ]);
+    }
+
+    private function normalizeNullableString(?string $value): ?string
+    {
+        $value = $value !== null ? trim($value) : null;
+
+        return $value === '' ? null : $value;
     }
 }

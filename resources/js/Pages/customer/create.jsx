@@ -1,10 +1,13 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { useForm } from "@inertiajs/react";
+import { useForm, usePage } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
 import { useState } from "react";
 import Alert from "@/Components/Alert/Alert";
+import { sanitizePhoneInput } from "@/lib/phone";
 
 const Create = () => {
+    const { settings } = usePage().props;
+    const phoneDigits = Number(settings?.phone_digits || 11);
     const { data, setData, post, processing, errors } = useForm({
         name: "",
         phone: "",
@@ -48,17 +51,25 @@ const Create = () => {
                                         </label>
                                     </legend>
                                     <input
-                                        type="number"
+                                        type="text"
                                         name="phone"
                                         onChange={(e) =>
-                                            setData("phone", e.target.value)
+                                            setData(
+                                                "phone",
+                                                sanitizePhoneInput(e.target.value, phoneDigits)
+                                            )
                                         }
                                         value={data.phone}
                                         className="custom-input"
                                         placeholder="Enter customer phone"
+                                        inputMode="numeric"
+                                        maxLength={phoneDigits}
                                         required
                                     />
                                 </fieldset>
+                                <div className="mt-1 text-right text-xs text-muted-foreground">
+                                    {data.phone.length}/{phoneDigits}
+                                </div>
                                 <small className="text-destructive">
                                     {errors.phone}
                                 </small>
