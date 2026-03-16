@@ -2,13 +2,14 @@ import React from "react";
 import { Link, usePage, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
-import { EditIcon, Trash2Icon } from "lucide-react";
+import { EditIcon, EyeIcon, Trash2Icon } from "lucide-react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
 export default function Index() {
-    const { purchase_items, filters } = usePage().props;
-    const list = purchase_items?.data ?? [];
+    const { purchases, filters, auth } = usePage().props;
+    const list = purchases?.data ?? [];
+    const permissions = auth.user?.permissions || [];
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id) => {
@@ -45,13 +46,11 @@ export default function Index() {
                                 <tr>
                                     <th className="custom-th rounded-l-md">SI</th>
                                     <th className="custom-th">Invoice</th>
-                                    <th className="custom-th">Product</th>
                                     <th className="custom-th">Supplier</th>
                                     <th className="custom-th">Branch</th>
-                                    <th className="custom-th">Quantity</th>
-                                    <th className="custom-th">Unit Price</th>
                                     <th className="custom-th">Total</th>
                                     <th className="custom-th">Paid</th>
+                                    <th className="custom-th">Due</th>
                                     <th className="custom-th">Payment Status</th>
                                     <th className="custom-th">Date</th>
                                     <th className="custom-th rounded-r-md">
@@ -60,50 +59,52 @@ export default function Index() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {list.map((item, index) => (
-                                    <tr key={item.id} className="custom-body-tr">
+                                {list.map((purchase, index) => (
+                                    <tr key={purchase.id} className="custom-body-tr">
                                         <td className="custom-body-td">
-                                            {(purchase_items.current_page - 1) * purchase_items.per_page + index + 1}
+                                            {(purchases.current_page - 1) * purchases.per_page + index + 1}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.purchase?.invoice_no}
+                                            {purchase.invoice_no}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.product?.name}
+                                            {purchase.supplier?.name || purchase.supplier_name}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.purchase?.supplier?.name || item.purchase?.supplier_name}
+                                            {purchase.branch?.name || "N/A"}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.purchase?.branch?.name || "N/A"}
+                                            {purchase.total_amount}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.quantity}
+                                            {purchase.paid_amount}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.buying_price}
+                                            {purchase.due_amount}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.purchase?.total_amount}
+                                            {purchase.payment_status}
                                         </td>
                                         <td className="custom-body-td">
-                                            {item.purchase?.paid_amount}
-                                        </td>
-                                        <td className="custom-body-td">
-                                            {item.purchase?.payment_status}
-                                        </td>
-                                        <td className="custom-body-td">
-                                            {item.purchase?.purchase_date}
+                                            {purchase.purchase_date}
                                         </td>
                                         <td className="custom-body-td text-center flex items-center gap-2">
                                             <Link
-                                                href={route("purchases.edit", item.purchase?.id)}
+                                                href={route("purchases.show", purchase.id)}
+                                                className="edit-button"
+                                            >
+                                                <EyeIcon className="w-4 h-4 inline" />
+                                            </Link>
+                                            {permissions.includes("edit purchase") && (
+                                            <Link
+                                                href={route("purchases.edit", purchase.id)}
                                                 className="edit-button"
                                             >
                                                 <EditIcon className="w-4 h-4 inline" />
                                             </Link>
+                                            )}
                                             <button
-                                                onClick={() => handleDelete(item.purchase?.id)}
+                                                onClick={() => handleDelete(purchase.id)}
                                                 className="delete-button"
                                                 disabled={processing}
                                             >
@@ -116,7 +117,7 @@ export default function Index() {
                         </table>
                     )}
                 </div>
-                <Pagination links={purchase_items?.links} />
+                <Pagination links={purchases?.links} />
             </section>
         </AuthenticatedLayout>
     );

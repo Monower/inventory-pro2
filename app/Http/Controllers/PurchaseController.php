@@ -7,7 +7,6 @@ use App\Models\BranchProductInventory;
 use App\Models\Bank;
 use App\Models\Product;
 use App\Models\Purchase;
-use App\Models\PurchaseItem;
 use App\Models\StockLedger;
 use App\Models\Supplier;
 use App\Models\SupplierPayment;
@@ -24,26 +23,23 @@ class PurchaseController extends Controller
         $activeBranchId = $this->activeBranchId();
         $q = trim((string) request()->query('q', ''));
 
-        $purchase_items = PurchaseItem::with(['purchase.branch', 'purchase.supplier', 'product'])
-            ->when($activeBranchId, fn ($query) => $query->whereHas('purchase', fn ($purchaseQuery) => $purchaseQuery->where('branch_id', $activeBranchId)))
+        $purchases = Purchase::query()
+            ->with(['branch', 'supplier'])
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
-                    $subQuery->whereHas('product', function ($productQuery) use ($q) {
-                        $productQuery->where('name', 'like', "%{$q}%");
-                    })->orWhereHas('purchase', function ($purchaseQuery) use ($q) {
-                        $purchaseQuery->where('invoice_no', 'like', "%{$q}%")
-                            ->orWhere('supplier_name', 'like', "%{$q}%")
-                            ->orWhereHas('supplier', fn ($supplierQuery) => $supplierQuery->where('name', 'like', "%{$q}%"))
-                            ->orWhere('payment_status', 'like', "%{$q}%");
-                    });
+                    $subQuery->where('invoice_no', 'like', "%{$q}%")
+                        ->orWhere('supplier_name', 'like', "%{$q}%")
+                        ->orWhere('payment_status', 'like', "%{$q}%")
+                        ->orWhereHas('supplier', fn ($supplierQuery) => $supplierQuery->where('name', 'like', "%{$q}%"));
                 });
             })
+            ->when($activeBranchId, fn ($query) => $query->where('branch_id', $activeBranchId))
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
         return Inertia::render('Purchase/Index', [
-            'purchase_items' => $purchase_items,
+            'purchases' => $purchases,
             'filters' => [
                 'q' => $q,
             ],
@@ -165,6 +161,30 @@ class PurchaseController extends Controller
 
 
         return redirect()->route('purchases.index')->with('success', 'Purchase recorded successfully.');
+    }
+
+    public function show(Purchase $purchase)
+    {
+        $this->ensurePurchaseInActiveBranch($purchase);
+
+        $purchase->load([
+            'supplier',
+            'branch',
+            'items.product',
+            'payments.bank',
+            'payments.receivedBy',
+        ]);
+
+        $purchase->payments->each(function ($payment) {
+            $payment->received_by_name = $payment->receivedBy?->name;
+            $payment->payment_channel_label = $payment->bank?->name ?: $payment->mfs;
+        });
+
+        $purchase->can_collect_payment = (float) $purchase->due_amount > 0;
+
+        return Inertia::render('Purchase/Show', [
+            'purchase' => $purchase,
+        ]);
     }
 
     public function edit(Purchase $purchase)
@@ -296,6 +316,73 @@ class PurchaseController extends Controller
             ->with('success', 'Purchase updated successfully.');
     }
 
+    public function createPayment(Purchase $purchase)
+    {
+        $this->ensurePurchaseInActiveBranch($purchase);
+        $purchase->load('supplier', 'branch');
+
+        if ((float) $purchase->due_amount <= 0) {
+            return redirect()
+                ->route('purchases.show', $purchase->id)
+                ->with('error', 'This purchase has no due amount remaining.');
+        }
+
+        $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
+
+        return Inertia::render('Purchase/Payment', [
+            'purchase' => $purchase,
+            'banks' => $banks,
+        ]);
+    }
+
+    public function storePayment(Request $request, Purchase $purchase)
+    {
+        $this->ensurePurchaseInActiveBranch($purchase);
+        $purchase->load('supplier', 'branch');
+
+        $validated = $request->validate([
+            'paid_at' => 'required|date',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|in:cash,bank,mobile',
+            'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
+            'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        if ((float) $validated['amount'] > (float) $purchase->due_amount) {
+            return back()->withErrors([
+                'amount' => 'Payment amount cannot exceed the current due amount.',
+            ]);
+        }
+
+        DB::transaction(function () use ($purchase, $validated) {
+            $supplier = $purchase->supplier ?? Supplier::findOrFail($purchase->supplier_id);
+            $amount = (float) $validated['amount'];
+            $newPaid = (float) $purchase->paid_amount + $amount;
+            $newDue = max((float) $purchase->total_amount - $newPaid, 0);
+
+            $payment = $this->createSupplierPaymentRecord($purchase, $supplier, $validated, $amount);
+
+            $purchase->update([
+                'paid_amount' => $newPaid,
+                'due_amount' => $newDue,
+                'payment_status' => $newDue <= 0 ? 'paid' : ($newPaid > 0 ? 'partial' : 'unpaid'),
+            ]);
+
+            Transaction::create([
+                'name' => 'Purchase Payment - ' . $purchase->invoice_no,
+                'payment_method' => $payment->payment_method,
+                'transaction_type' => 'expense',
+                'source' => $supplier->name,
+                'amount' => $amount,
+            ]);
+        });
+
+        return redirect()
+            ->route('purchases.show', $purchase->id)
+            ->with('success', 'Purchase payment recorded successfully.');
+    }
+
 
     public function destroy(Purchase $purchase)
     {
@@ -417,7 +504,7 @@ class PurchaseController extends Controller
             'purchase_id' => $purchase->id,
             'branch_id' => $purchase->branch_id,
             'payment_number' => 'SPY-' . Str::upper(Str::random(8)),
-            'paid_at' => $paymentData['purchase_date'],
+            'paid_at' => $paymentData['paid_at'] ?? $paymentData['purchase_date'],
             'amount' => $amount,
             'payment_method' => $paymentData['payment_method'] ?? 'cash',
             'bank_id' => ($paymentData['payment_method'] ?? 'cash') === 'bank'
@@ -426,7 +513,7 @@ class PurchaseController extends Controller
             'mfs' => ($paymentData['payment_method'] ?? 'cash') === 'mobile'
                 ? ($paymentData['mfs'] ?? null)
                 : null,
-            'notes' => 'Payment recorded from purchase form.',
+            'notes' => $paymentData['notes'] ?? 'Payment recorded from purchase form.',
             'received_by' => auth()->id(),
         ]);
     }

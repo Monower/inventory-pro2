@@ -21,6 +21,10 @@ Route::middleware(['auth'])->group(function () {
                 ->name('store')
                 ->middleware('permission:create purchase');
 
+            Route::get('/{purchase}', [PurchaseController::class, 'show'])
+                ->name('show')
+                ->middleware('permission:view purchase');
+
             Route::get('/{purchase}/edit', [PurchaseController::class, 'edit'])
                 ->name('edit')
                 ->middleware('permission:edit purchase');
@@ -28,6 +32,14 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{purchase}', [PurchaseController::class, 'update'])
                 ->name('update')
                 ->middleware('permission:edit purchase');
+
+            Route::get('/{purchase}/payments/create', [PurchaseController::class, 'createPayment'])
+                ->name('payments.create')
+                ->middleware('permission:pay supplier due');
+
+            Route::post('/{purchase}/payments', [PurchaseController::class, 'storePayment'])
+                ->name('payments.store')
+                ->middleware('permission:pay supplier due');
 
             Route::delete('/{purchase}', [PurchaseController::class, 'destroy'])
                 ->name('destroy')
