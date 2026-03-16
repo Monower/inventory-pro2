@@ -10,6 +10,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [OrderController::class, 'create'])->name('create')->middleware('permission:create order');
         Route::post('/', [OrderController::class, 'store'])->name('store')->middleware('permission:create order');
         Route::get('/show/{id}', [OrderController::class, 'show'])->name('show')->middleware('permission:view order');
+        Route::get('/{order}/payments/create', [OrderController::class, 'createPayment'])->name('payments.create')->middleware('permission:collect order payment');
+        Route::post('/{order}/payments', [OrderController::class, 'storePayment'])->name('payments.store')->middleware('permission:collect order payment');
+        Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])->name('status.update')->middleware('permission:change order status');
         Route::get('/{order}/refunds/create', [OrderController::class, 'createRefund'])->name('refunds.create')->middleware('permission:refund order');
         Route::post('/{order}/refunds', [OrderController::class, 'storeRefund'])->name('refunds.store')->middleware('permission:refund order');
         Route::get('/{order}/edit', [OrderController::class, 'edit'])->name('edit')->middleware('permission:edit order');

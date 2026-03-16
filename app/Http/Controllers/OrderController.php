@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderActivityLog;
 use App\Models\OrderItem;
+use App\Models\OrderPayment;
 use App\Models\OrderRefund;
 use App\Models\OrderRefundItem;
 use App\Models\Customer;
@@ -28,8 +30,7 @@ class OrderController extends Controller
 
         $orders = Order::with('customer', 'items.product')
             ->when($view === 'completed', function ($query) {
-                $query->where('payment_status', 'paid')
-                    ->where('refund_status', 'none');
+                $query->where('order_status', 'completed');
             })
             ->when($view === 'refunded', function ($query) {
                 $query->whereIn('refund_status', ['partial', 'full']);
@@ -40,6 +41,7 @@ class OrderController extends Controller
                         ->orWhere('total_amount', 'like', "%{$q}%")
                         ->orWhere('payment_status', 'like', "%{$q}%")
                         ->orWhere('refund_status', 'like', "%{$q}%")
+                        ->orWhere('order_status', 'like', "%{$q}%")
                         ->orWhereHas('customer', function ($customerQuery) use ($q) {
                             $customerQuery->where('name', 'like', "%{$q}%");
                         });
@@ -123,6 +125,7 @@ class OrderController extends Controller
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
+                    'order_status' => 'confirmed',
                     'payment_method' => $validated['payment_method'],
                     'bank_id' => $validated['payment_method'] === 'bank'
                         ? $validated['bank_id']
@@ -144,6 +147,34 @@ class OrderController extends Controller
 
                     $product->decrement('stock', $item['quantity']);
                 }
+
+                if ($paidAmount > 0) {
+                    $this->createPaymentRecord($order, [
+                        'paid_at' => now(),
+                        'amount' => $paidAmount,
+                        'payment_method' => $validated['payment_method'],
+                        'bank_id' => $validated['payment_method'] === 'bank'
+                            ? ($validated['bank_id'] ?? null)
+                            : null,
+                        'mfs' => $validated['payment_method'] === 'mobile'
+                            ? ($validated['mfs'] ?? null)
+                            : null,
+                        'notes' => 'Initial payment captured during order creation.',
+                    ]);
+                }
+
+                $this->logActivity(
+                    $order,
+                    'order_created',
+                    'Order created',
+                    "Order {$order->order_number} was created.",
+                    [
+                        'total_amount' => $order->total_amount,
+                        'paid_amount' => $order->paid_amount,
+                        'payment_status' => $order->payment_status,
+                        'order_status' => $order->order_status,
+                    ]
+                );
             });
 
             return redirect()
@@ -158,10 +189,10 @@ class OrderController extends Controller
 
     public function edit(Order $order)
     {
-        if ($order->refunds()->exists()) {
+        if ($order->refunds()->exists() || $order->payments()->exists()) {
             return redirect()
                 ->route('orders.show', $order->id)
-                ->with('error', 'Refunded orders cannot be edited.');
+                ->with('error', 'Orders with payment or refund history cannot be edited.');
         }
 
         $order->load('items.product');
@@ -177,10 +208,10 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
-        if ($order->refunds()->exists()) {
+        if ($order->refunds()->exists() || $order->payments()->exists()) {
             return redirect()
                 ->route('orders.show', $order->id)
-                ->with('error', 'Refunded orders cannot be updated.');
+                ->with('error', 'Orders with payment or refund history cannot be updated.');
         }
 
         $validated = $request->validate([
@@ -272,6 +303,19 @@ class OrderController extends Controller
 
                     $product->decrement('stock', $item['quantity']);
                 }
+
+                $this->logActivity(
+                    $order,
+                    'order_updated',
+                    'Order updated',
+                    "Order {$order->order_number} was updated.",
+                    [
+                        'total_amount' => $order->total_amount,
+                        'paid_amount' => $order->paid_amount,
+                        'payment_status' => $order->payment_status,
+                        'payment_method' => $order->payment_method,
+                    ]
+                );
             });
 
             return redirect()
@@ -298,8 +342,12 @@ class OrderController extends Controller
                 $order->load([
                     'customer',
                     'items.product',
+                    'payments.bank',
+                    'payments.receivedBy',
                     'refunds.items.product',
                     'refunds.bank',
+                    'refunds.processedBy',
+                    'activityLogs.causer',
                 ]);
 
                 $refundedQuantities = $order->refunds
@@ -316,6 +364,9 @@ class OrderController extends Controller
                 $order->can_refund = $order->items->contains(
                     fn ($item) => $item->refundable_quantity > 0
                 ) && $order->refundable_amount > 0;
+                $order->can_collect_payment =
+                    $order->due_amount > 0 && $order->order_status !== 'cancelled';
+                $order->status_options = Order::STATUSES;
 
                 return Inertia::render('orders/show', compact('order'));
             } else {
@@ -470,6 +521,18 @@ class OrderController extends Controller
                 }
 
                 $this->syncRefundSummary($order->fresh()->load('items.refundItems'));
+
+                $this->logActivity(
+                    $order->fresh(),
+                    'refund_recorded',
+                    'Refund recorded',
+                    "Refund {$refund->refund_number} was recorded for order {$order->order_number}.",
+                    [
+                        'refund_number' => $refund->refund_number,
+                        'total_amount' => $refund->total_amount,
+                        'refund_method' => $refund->refund_method,
+                    ]
+                );
             });
 
             return redirect()
@@ -482,6 +545,139 @@ class OrderController extends Controller
         }
     }
 
+    public function createPayment(Order $order)
+    {
+        if ((float) $order->due_amount <= 0) {
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('error', 'This order does not have any outstanding balance.');
+        }
+
+        if ($order->order_status === 'cancelled') {
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('error', 'Cancelled orders cannot receive additional payments.');
+        }
+
+        $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
+
+        return Inertia::render('orders/payment', [
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'payment_method' => $order->payment_method,
+                'payment_status' => $order->payment_status,
+                'order_status' => $order->order_status,
+                'total_amount' => $order->total_amount,
+                'paid_amount' => $order->paid_amount,
+                'due_amount' => $order->due_amount,
+                'customer' => [
+                    'name' => $order->customer?->name,
+                    'phone' => $order->customer?->phone,
+                ],
+            ],
+            'banks' => $banks,
+        ]);
+    }
+
+    public function storePayment(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'paid_at' => 'required|date',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|in:cash,bank,mobile',
+            'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
+            'mfs' => 'nullable|required_if:payment_method,mobile|in:bkash,nagad,rocket',
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        if ((float) $order->due_amount <= 0) {
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('error', 'This order does not have any outstanding balance.');
+        }
+
+        if ($order->order_status === 'cancelled') {
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('error', 'Cancelled orders cannot receive additional payments.');
+        }
+
+        if ((float) $validated['amount'] > (float) $order->due_amount) {
+            return back()->withErrors([
+                'amount' => 'Collected amount cannot exceed the current due amount.',
+            ]);
+        }
+
+        try {
+            DB::transaction(function () use ($validated, $order) {
+                $payment = $this->createPaymentRecord($order, $validated);
+                $this->syncPaymentSummary($order->fresh());
+
+                $this->logActivity(
+                    $order->fresh(),
+                    'payment_collected',
+                    'Payment collected',
+                    "Payment {$payment->payment_number} was collected for order {$order->order_number}.",
+                    [
+                        'payment_number' => $payment->payment_number,
+                        'amount' => $payment->amount,
+                        'payment_method' => $payment->payment_method,
+                    ]
+                );
+            });
+
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('success', 'Order payment collected successfully.');
+        } catch (\Throwable $e) {
+            return back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    public function updateStatus(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'order_status' => 'required|in:' . implode(',', Order::STATUSES),
+        ]);
+
+        $newStatus = $validated['order_status'];
+        $currentStatus = $order->order_status;
+
+        if ($newStatus === $currentStatus) {
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('success', 'Order status is already up to date.');
+        }
+
+        $transitionError = $this->validateStatusTransition($order, $newStatus);
+
+        if ($transitionError) {
+            return back()->with('error', $transitionError);
+        }
+
+        $order->update([
+            'order_status' => $newStatus,
+        ]);
+
+        $this->logActivity(
+            $order,
+            'status_changed',
+            'Order status updated',
+            "Order {$order->order_number} status changed from {$currentStatus} to {$newStatus}.",
+            [
+                'from' => $currentStatus,
+                'to' => $newStatus,
+            ]
+        );
+
+        return redirect()
+            ->route('orders.show', $order->id)
+            ->with('success', 'Order status updated successfully.');
+    }
+
 
     public function destroy($id)
     {
@@ -489,10 +685,10 @@ class OrderController extends Controller
             $order = Order::findOrFail($id);
 
             if ($order) {
-                if ($order->refunds()->exists()) {
+                if ($order->refunds()->exists() || $order->payments()->exists()) {
                     return redirect()
                         ->route('orders.show', $order->id)
-                        ->with('error', 'Refunded orders cannot be deleted.');
+                        ->with('error', 'Orders with payment or refund history cannot be deleted.');
                 }
 
                 foreach ($order->items as $item) {
@@ -559,6 +755,79 @@ class OrderController extends Controller
             'refund_status' => !$hasRefunds
                 ? 'none'
                 : ($isFullyRefunded ? 'full' : 'partial'),
+        ]);
+    }
+
+    private function createPaymentRecord(Order $order, array $paymentData): OrderPayment
+    {
+        return OrderPayment::create([
+            'order_id' => $order->id,
+            'payment_number' => 'PAY-' . Str::upper(Str::random(8)),
+            'paid_at' => $paymentData['paid_at'],
+            'amount' => $paymentData['amount'],
+            'payment_method' => $paymentData['payment_method'],
+            'bank_id' => $paymentData['payment_method'] === 'bank'
+                ? ($paymentData['bank_id'] ?? null)
+                : null,
+            'mfs' => $paymentData['payment_method'] === 'mobile'
+                ? ($paymentData['mfs'] ?? null)
+                : null,
+            'notes' => $paymentData['notes'] ?? null,
+            'received_by' => auth()->id(),
+        ]);
+    }
+
+    private function syncPaymentSummary(Order $order): void
+    {
+        $paidAmount = (float) $order->payments()->sum('amount');
+        $dueAmount = max((float) $order->total_amount - $paidAmount, 0);
+
+        $paymentStatus = $paidAmount <= 0
+            ? 'pending'
+            : ($dueAmount > 0 ? 'partial' : 'paid');
+
+        $order->update([
+            'paid_amount' => $paidAmount,
+            'due_amount' => $dueAmount,
+            'payment_status' => $paymentStatus,
+        ]);
+    }
+
+    private function validateStatusTransition(Order $order, string $newStatus): ?string
+    {
+        if ($newStatus === 'cancelled' && ((float) $order->paid_amount > 0 || $order->refunds()->exists())) {
+            return 'Orders with payments or refunds cannot be cancelled directly.';
+        }
+
+        if ($order->order_status === 'cancelled') {
+            return 'Cancelled orders cannot be moved to another status.';
+        }
+
+        if ($order->order_status === 'completed' && $newStatus !== 'completed') {
+            return 'Completed orders cannot be moved back to another status.';
+        }
+
+        if ($newStatus === 'completed' && (float) $order->due_amount > 0) {
+            return 'Collect the full payment before marking the order as completed.';
+        }
+
+        return null;
+    }
+
+    private function logActivity(
+        Order $order,
+        string $eventType,
+        string $title,
+        ?string $description = null,
+        ?array $meta = null
+    ): void {
+        OrderActivityLog::create([
+            'order_id' => $order->id,
+            'event_type' => $eventType,
+            'title' => $title,
+            'description' => $description,
+            'meta' => $meta,
+            'causer_id' => auth()->id(),
         ]);
     }
 }

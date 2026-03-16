@@ -38,4 +38,9 @@ class OrderRefund extends Model
     {
         return $this->belongsTo(Bank::class);
     }
+
+    public function processedBy()
+    {
+        return $this->belongsTo(User::class, 'processed_by');
+    }
 }

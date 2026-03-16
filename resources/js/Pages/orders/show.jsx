@@ -1,11 +1,14 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, useForm, usePage } from "@inertiajs/react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
 const Show = ({ order }) => {
     const { auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
+    const { data, setData, patch, processing, errors } = useForm({
+        order_status: order?.order_status || "confirmed",
+    });
     const totalPrice = order?.items.reduce(
         (sum, item) => sum + item?.price * item?.quantity,
         0
@@ -13,7 +16,13 @@ const Show = ({ order }) => {
     const canRefund =
         permissions.includes("refund order") && order?.can_refund;
     const canEdit =
-        permissions.includes("edit order") && order?.refund_status === "none";
+        permissions.includes("edit order") &&
+        order?.refund_status === "none" &&
+        (!order?.payments?.length || Number(order?.paid_amount) === 0);
+    const canCollectPayment =
+        permissions.includes("collect order payment") &&
+        order?.can_collect_payment;
+    const canChangeStatus = permissions.includes("change order status");
 
     const refundBadgeClass =
         order?.refund_status === "full"
@@ -21,6 +30,21 @@ const Show = ({ order }) => {
             : order?.refund_status === "partial"
             ? "bg-yellow-500"
             : "bg-slate-500";
+    const orderBadgeClass =
+        order?.order_status === "completed"
+            ? "bg-emerald-600"
+            : order?.order_status === "processing"
+            ? "bg-blue-600"
+            : order?.order_status === "cancelled"
+            ? "bg-rose-600"
+            : order?.order_status === "draft"
+            ? "bg-slate-500"
+            : "bg-violet-600";
+
+    const handleStatusSubmit = (event) => {
+        event.preventDefault();
+        patch(route("orders.status.update", order.id));
+    };
 
     return (
         <AuthenticatedLayout title="View Order">
@@ -33,6 +57,14 @@ const Show = ({ order }) => {
                         </h3>
                     </div>
                     <div className="flex gap-2">
+                        {canCollectPayment && (
+                            <Link
+                                href={route("orders.payments.create", order.id)}
+                                className="create-button"
+                            >
+                                Collect payment
+                            </Link>
+                        )}
                         {canRefund && (
                             <Link
                                 href={route("orders.refunds.create", order.id)}
@@ -87,6 +119,13 @@ const Show = ({ order }) => {
                         {order?.refunded_amount || "00.00"}
                     </p>
                     <p>
+                        <strong>Order status:</strong>
+                        <span className={`ml-2 px-2 py-1 rounded text-white ${orderBadgeClass}`}>
+                            {order?.order_status?.charAt(0).toUpperCase() +
+                                order?.order_status?.slice(1)}
+                        </span>
+                    </p>
+                    <p>
                         <strong>Payment status:</strong>
                         <span
                             className={`ml-2 px-2 py-1 rounded text-white ${
@@ -117,6 +156,58 @@ const Show = ({ order }) => {
                         </span>
                     </p>
                 </div>
+
+                {canChangeStatus && (
+                    <div className="bg-background border border-ring shadow-md rounded-lg p-4 mb-6">
+                        <div className="mb-4 flex items-center justify-between">
+                            <h4 className="text-lg font-semibold">
+                                Order lifecycle
+                            </h4>
+                            <span className="text-sm text-muted-foreground">
+                                Move the order through its operational stages.
+                            </span>
+                        </div>
+
+                        <form
+                            onSubmit={handleStatusSubmit}
+                            className="flex flex-col gap-3 md:flex-row md:items-end"
+                        >
+                            <div className="w-full md:max-w-xs">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-2 text-sm">
+                                        <label className="required-label">
+                                            Order status
+                                        </label>
+                                    </legend>
+                                    <select
+                                        value={data.order_status}
+                                        onChange={(event) =>
+                                            setData("order_status", event.target.value)
+                                        }
+                                        className="custom-input"
+                                    >
+                                        {order?.status_options?.map((status) => (
+                                            <option key={status} value={status}>
+                                                {status.charAt(0).toUpperCase() +
+                                                    status.slice(1)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                <small className="text-destructive">
+                                    {errors.order_status}
+                                </small>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="edit-button"
+                            >
+                                {processing ? "Saving..." : "Update status"}
+                            </button>
+                        </form>
+                    </div>
+                )}
 
                 {/* Customer info */}
                 <div className="bg-background border border-ring shadow-md rounded-lg p-4 mb-6">
@@ -270,6 +361,87 @@ const Show = ({ order }) => {
                     ) : (
                         <p className="text-sm text-muted-foreground">
                             No refunds have been recorded for this order yet.
+                        </p>
+                    )}
+                </div>
+
+                <div className="bg-background border border-ring shadow-md rounded-lg p-4 mt-6">
+                    <h4 className="text-lg font-semibold mb-4">Payment history</h4>
+                    {order?.payments?.length ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[760px] text-sm border border-gray-200 rounded-lg">
+                                <thead className="custom-thead">
+                                    <tr>
+                                        <th className="custom-th rounded-l-md">Payment no</th>
+                                        <th className="custom-th">Date</th>
+                                        <th className="custom-th">Method</th>
+                                        <th className="custom-th">Amount</th>
+                                        <th className="custom-th">Received by</th>
+                                        <th className="custom-th rounded-r-md">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {order.payments.map((payment) => (
+                                        <tr key={payment.id} className="custom-body-tr">
+                                            <td className="custom-body-td">
+                                                {payment.payment_number}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {dateTimeFormater(payment.paid_at)}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {payment.payment_method}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {payment.amount}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {payment.received_by?.name ||
+                                                    payment.receivedBy?.name ||
+                                                    "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {payment.notes || "N/A"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            No payments have been recorded for this order yet.
+                        </p>
+                    )}
+                </div>
+
+                <div className="bg-background border border-ring shadow-md rounded-lg p-4 mt-6">
+                    <h4 className="text-lg font-semibold mb-4">Activity timeline</h4>
+                    {order?.activity_logs?.length || order?.activityLogs?.length ? (
+                        <div className="space-y-3">
+                            {(order.activity_logs || order.activityLogs).map((entry) => (
+                                <div
+                                    key={entry.id}
+                                    className="rounded-lg border border-ring p-4"
+                                >
+                                    <div className="mb-1 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                        <p className="font-semibold">{entry.title}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {dateTimeFormater(entry.created_at)}
+                                        </p>
+                                    </div>
+                                    {entry.description && (
+                                        <p className="text-sm mb-2">{entry.description}</p>
+                                    )}
+                                    <p className="text-xs text-muted-foreground">
+                                        By: {entry.causer?.name || "System"}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            No activity entries are available for this order yet.
                         </p>
                     )}
                 </div>

@@ -9,6 +9,14 @@ class Order extends Model
 {
     use HasFactory;
 
+    public const STATUSES = [
+        'draft',
+        'confirmed',
+        'processing',
+        'completed',
+        'cancelled',
+    ];
+
     /**
      * The attributes that are mass assignable.
      */
@@ -21,6 +29,7 @@ class Order extends Model
         'refunded_amount',
         'payment_status',
         'refund_status',
+        'order_status',
         'payment_method',
         'bank_id',
         'mfs',
@@ -68,6 +77,16 @@ class Order extends Model
         return $this->hasMany(OrderRefund::class)->latest('refunded_at');
     }
 
+    public function payments()
+    {
+        return $this->hasMany(OrderPayment::class)->latest('paid_at');
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(OrderActivityLog::class)->latest();
+    }
+
     public function products()
     {
         return $this->belongsToMany(Product::class, 'order_items')
@@ -83,5 +102,10 @@ class Order extends Model
     public function getRefundableAmountAttribute(): float
     {
         return max((float) $this->paid_amount - (float) $this->refunded_amount, 0);
+    }
+
+    public function getOutstandingAmountAttribute(): float
+    {
+        return max((float) $this->total_amount - (float) $this->paid_amount, 0);
     }
 }

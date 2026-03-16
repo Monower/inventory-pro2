@@ -33,6 +33,7 @@ const Index = ({ orders }) => {
         { key: "si", label: "SI" },
         { key: "order_number", label: "Order number" },
         { key: "total_amount", label: "Total amount" },
+        { key: "order_status", label: "Order status" },
         { key: "payment_status", label: "Payment status" },
         { key: "refund_status", label: "Refund status" },
         { key: "created_at", label: "Created at" },
@@ -44,11 +45,17 @@ const Index = ({ orders }) => {
         id: o.id,
         order_number: o.order_number,
         total_amount: o.total_amount,
+        order_status: o.order_status,
         payment_status: o.payment_status,
         refund_status: o.refund_status,
-        can_edit: o.refund_status === "none" && permissions.includes("edit order"),
+        can_edit:
+            o.refund_status === "none" &&
+            Number(o.paid_amount || 0) === 0 &&
+            permissions.includes("edit order"),
         can_delete:
-            o.refund_status === "none" && permissions.includes("delete order"),
+            o.refund_status === "none" &&
+            Number(o.paid_amount || 0) === 0 &&
+            permissions.includes("delete order"),
         created_at: dateTimeFormater(o.created_at),
     }));
 
@@ -97,6 +104,27 @@ const Index = ({ orders }) => {
                                               .charAt(0)
                                               .toUpperCase() +
                                           row?.payment_status.slice(1)}
+                                </span>
+                            );
+                        }
+
+                        if (col.key === "order_status") {
+                            return (
+                                <span
+                                    className={`p-1 rounded-md text-white ${
+                                        row.order_status === "completed"
+                                            ? "bg-emerald-600"
+                                            : row.order_status === "processing"
+                                            ? "bg-blue-600"
+                                            : row.order_status === "cancelled"
+                                            ? "bg-rose-600"
+                                            : row.order_status === "draft"
+                                            ? "bg-slate-500"
+                                            : "bg-violet-600"
+                                    }`}
+                                >
+                                    {row.order_status.charAt(0).toUpperCase() +
+                                        row.order_status.slice(1)}
                                 </span>
                             );
                         }
