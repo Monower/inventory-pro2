@@ -109,7 +109,21 @@ class OrderController extends Controller
             ->orderBy('name')
             ->get();
         $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
-        return Inertia::render('orders/create', compact('customers', 'products', 'banks', 'staffs'));
+        $coupons = Coupon::query()
+            ->where('is_active', true)
+            ->orderBy('code')
+            ->get([
+                'id',
+                'code',
+                'name',
+                'discount_type',
+                'discount_value',
+                'max_discount_amount',
+                'minimum_order_amount',
+                'starts_at',
+                'expires_at',
+            ]);
+        return Inertia::render('orders/create', compact('customers', 'products', 'banks', 'staffs', 'coupons'));
     }
 
     public function store(Request $request)
@@ -296,8 +310,23 @@ class OrderController extends Controller
             ->orderBy('name')
             ->get();
         $banks = Bank::query()->select('id', 'name')->orderBy('name')->get();
+        $coupons = Coupon::query()
+            ->where('is_active', true)
+            ->orWhere('id', $order->coupon_id)
+            ->orderBy('code')
+            ->get([
+                'id',
+                'code',
+                'name',
+                'discount_type',
+                'discount_value',
+                'max_discount_amount',
+                'minimum_order_amount',
+                'starts_at',
+                'expires_at',
+            ]);
 
-        return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks', 'staffs'));
+        return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks', 'staffs', 'coupons'));
     }
 
     public function update(Request $request, Order $order)

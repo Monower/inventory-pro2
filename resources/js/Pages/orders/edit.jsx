@@ -4,8 +4,30 @@ import Alert from "@/Components/Alert/Alert";
 import { useState, useEffect } from "react";
 import { useForm, Link } from "@inertiajs/react";
 
-const Edit = ({ order, customers, products, banks, staffs }) => {
+const calculateCouponDiscount = (coupon, subtotalAfterManualDiscount) => {
+    if (!coupon || subtotalAfterManualDiscount <= 0) {
+        return 0;
+    }
+
+    if (Number(coupon.minimum_order_amount || 0) > subtotalAfterManualDiscount) {
+        return 0;
+    }
+
+    let discount =
+        coupon.discount_type === "percent"
+            ? subtotalAfterManualDiscount * (Number(coupon.discount_value || 0) / 100)
+            : Number(coupon.discount_value || 0);
+
+    if (coupon.max_discount_amount !== null && coupon.max_discount_amount !== undefined) {
+        discount = Math.min(discount, Number(coupon.max_discount_amount || 0));
+    }
+
+    return Math.min(discount, subtotalAfterManualDiscount);
+};
+
+const Edit = ({ order, customers, products, banks, staffs, coupons = [] }) => {
     const [clientError, setClientError] = useState("");
+    const [couponSearch, setCouponSearch] = useState("");
 
     /* -----------------------------
         Form
@@ -69,6 +91,12 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
         }
     }, [data.payment_method]);
 
+    useEffect(() => {
+        if (selectedCoupon) {
+            setCouponSearch(`${selectedCoupon.code} - ${selectedCoupon.name}`);
+        }
+    }, [data.coupon_code]);
+
     /* -----------------------------
         Cart Actions
     ------------------------------ */
@@ -112,11 +140,33 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
         (sum, i) => sum + i.selling_price * i.quantity,
         0
     );
-    const discountAmount = Math.min(Number(data.discount_amount) || 0, totalPrice);
+    const manualDiscountAmount = Math.min(
+        Number(data.discount_amount) || 0,
+        totalPrice
+    );
+    const selectedCoupon = coupons.find(
+        (coupon) => coupon.code === data.coupon_code
+    );
+    const couponDiscountAmount = calculateCouponDiscount(
+        selectedCoupon,
+        Math.max(totalPrice - manualDiscountAmount, 0)
+    );
+    const discountAmount = manualDiscountAmount + couponDiscountAmount;
     const taxableBase = Math.max(totalPrice - discountAmount, 0);
     const taxAmount = taxableBase * ((Number(data.tax_rate) || 0) / 100);
     const shippingCharge = Number(data.shipping_charge) || 0;
     const grandTotal = taxableBase + taxAmount + shippingCharge;
+    const filteredCoupons = coupons.filter((coupon) => {
+        const term = couponSearch.trim().toLowerCase();
+        if (!term) {
+            return true;
+        }
+
+        return (
+            coupon.code.toLowerCase().includes(term) ||
+            coupon.name.toLowerCase().includes(term)
+        );
+    });
 
     const paidAmount = Number(data.payment_amount) || 0;
     const dueAmount = Math.max(grandTotal - paidAmount, 0);
@@ -386,16 +436,59 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
+                            <label className="mb-1 block">Coupon</label>
+                            <input
+                                type="text"
+                                value={couponSearch}
+                                onChange={(e) => setCouponSearch(e.target.value)}
+                                className="custom-input mb-2"
+                                placeholder="Search coupon by code or name"
+                            />
+                            <select
+                                value={data.coupon_code}
+                                onChange={(e) => {
+                                    const nextCoupon = coupons.find(
+                                        (coupon) => coupon.code === e.target.value
+                                    );
+                                    setData("coupon_code", e.target.value);
+                                    setCouponSearch(
+                                        nextCoupon
+                                            ? `${nextCoupon.code} - ${nextCoupon.name}`
+                                            : ""
+                                    );
+                                }}
+                                className="custom-input"
+                            >
+                                <option value="">-- No coupon --</option>
+                                {filteredCoupons.map((coupon) => (
+                                    <option key={coupon.id} value={coupon.code}>
+                                        {coupon.code} - {coupon.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {selectedCoupon && (
+                                <p className="mt-2 text-xs text-muted-foreground">
+                                    {selectedCoupon.discount_type === "percent"
+                                        ? `${selectedCoupon.discount_value}% off`
+                                        : `${selectedCoupon.discount_value} off`}
+                                    {" • "}Minimum order {selectedCoupon.minimum_order_amount}
+                                    {" • "}Coupon discount preview {couponDiscountAmount.toFixed(2)}
+                                </p>
+                            )}
+                        </div>
+                        <div>
                             <label className="mb-1 block">Coupon code</label>
                             <input
                                 type="text"
                                 value={data.coupon_code}
-                                onChange={(e) => setData("coupon_code", e.target.value)}
+                                onChange={(e) =>
+                                    setData("coupon_code", e.target.value.toUpperCase())
+                                }
                                 className="custom-input"
                                 placeholder="Coupon code"
                             />
                         </div>
-                        <div>
+                        <div className="md:col-span-2">
                             <label className="mb-1 block">Discount amount</label>
                             <input
                                 type="number"
@@ -407,6 +500,10 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
                                 }
                                 className="custom-input"
                             />
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                Manual discount: {manualDiscountAmount.toFixed(2)}
+                                {" • "}Coupon discount: {couponDiscountAmount.toFixed(2)}
+                            </p>
                         </div>
                     </div>
 
