@@ -31,7 +31,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $settings = Setting::whereIn('name', ['company_name', 'logo'])->get()->keyBy('name');
+        $settings = Setting::whereIn('name', ['company_name', 'logo', 'favicon'])->get()->keyBy('name');
         $companyName = $settings['company_name']->value ?? 'Default Company Name';
 
         return array_merge(parent::share($request), [
@@ -54,6 +54,9 @@ class HandleInertiaRequests extends Middleware
                 'company_name' => $companyName,
                 'logo_url' => isset($settings['logo']) && $settings['logo']->value
                     ? Storage::url($settings['logo']->value)
+                    : null,
+                'favicon_url' => isset($settings['favicon']) && $settings['favicon']->value
+                    ? Storage::url($settings['favicon']->value)
                     : null,
             ],
             'company_name' => $companyName,

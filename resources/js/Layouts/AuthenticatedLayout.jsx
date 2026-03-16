@@ -14,6 +14,7 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
     const { settings, flash } = usePage().props;
     const { url } = usePage();
+    const faviconUrl = settings?.favicon_url ?? "/favicon.ico";
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
 
@@ -32,7 +33,14 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
 
     return (
         <div className="min-h-screen bg-background">
-            <Head title={title} />
+            <Head title={title}>
+                <link rel="icon" href={faviconUrl} head-key="app-favicon" />
+                <link
+                    rel="shortcut icon"
+                    href={faviconUrl}
+                    head-key="app-shortcut-favicon"
+                />
+            </Head>
             <nav className="bg-background">
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">

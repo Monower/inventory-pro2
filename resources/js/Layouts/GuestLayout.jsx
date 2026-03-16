@@ -11,6 +11,7 @@ export default function GuestLayout({
     hideBranding = false,
 }) {
     const { settings } = usePage().props;
+    const faviconUrl = settings?.favicon_url ?? "/favicon.ico";
     const [theme, setTheme] = useState(() => resolveTheme());
 
     useEffect(() => {
@@ -29,7 +30,14 @@ export default function GuestLayout({
                     : "items-center pt-6 sm:justify-center sm:pt-0"
             }`}
         >
-            <Head title={"Login"} />
+            <Head title={"Login"}>
+                <link rel="icon" href={faviconUrl} head-key="app-favicon" />
+                <link
+                    rel="shortcut icon"
+                    href={faviconUrl}
+                    head-key="app-shortcut-favicon"
+                />
+            </Head>
             <button
                 type="button"
                 onClick={toggleTheme}
