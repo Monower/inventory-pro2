@@ -7,6 +7,7 @@ const IndexFilters = ({
     initialQuery = "",
     placeholder = "Search...",
     className = "",
+    extraParams = {},
 }) => {
     const [query, setQuery] = useState(initialQuery);
     const isFirstRender = useRef(true);
@@ -25,7 +26,7 @@ const IndexFilters = ({
         const timeout = setTimeout(() => {
             router.get(
                 route(routeName),
-                { q: query || undefined },
+                { ...extraParams, q: query || undefined },
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -35,7 +36,7 @@ const IndexFilters = ({
         }, 300);
 
         return () => clearTimeout(timeout);
-    }, [query, routeName]);
+    }, [extraParams, query, routeName]);
 
     const clearSearch = () => {
         setQuery("");

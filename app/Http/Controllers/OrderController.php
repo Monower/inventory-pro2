@@ -17,8 +17,22 @@ class OrderController extends Controller
     public function index()
     {
         $q = trim((string) request()->query('q', ''));
+        $view = request()->query('view', 'all');
+        $allowedViews = ['all', 'completed', 'refunded'];
+
+        if (!in_array($view, $allowedViews, true)) {
+            $view = 'all';
+        }
 
         $orders = Order::with('customer', 'items.product')
+            ->when($view === 'completed', function ($query) {
+                $query->where('payment_status', 'paid');
+            })
+            ->when($view === 'refunded', function ($query) {
+                // Refunds are not modeled yet, so keep this view empty until
+                // the module gains a refunded order state.
+                $query->whereRaw('1 = 0');
+            })
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
                     $subQuery->where('order_number', 'like', "%{$q}%")
@@ -37,6 +51,7 @@ class OrderController extends Controller
             'orders' => $orders,
             'filters' => [
                 'q' => $q,
+                'view' => $view,
             ],
         ]);
     }

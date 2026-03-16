@@ -25,6 +25,8 @@ const MenuSection = ({ title, children }) => (
 const Menu = ({ url }) => {
     const { auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
+    const currentQueryString = url.includes("?") ? url.split("?")[1] : "";
+    const currentQuery = new URLSearchParams(currentQueryString);
     const currentPath =
         url.split("?")[0].split("#")[0].replace(/\/+$/, "") || "/";
 
@@ -58,9 +60,16 @@ const Menu = ({ url }) => {
         isPathPrefix("/staffs") ||
         isPathPrefix("/salaries") ||
         isPathPrefix("/advance-salaries");
-    const canViewSales =
-        permissions.includes("view order") ||
-        permissions.includes("view customer");
+    const customerActive =
+        isPathPrefix("/customers") || isPathPrefix("/customer");
+    const posActive = isPath("/orders/create");
+    const orderView = currentQuery.get("view") || "all";
+    const ordersActive = isPathPrefix("/orders") && !isPath("/orders/create");
+    const canViewSales = permissions.includes("view order");
+    const canViewPos = permissions.includes("create order");
+    const canViewCustomer =
+        permissions.includes("view customer") ||
+        permissions.includes("create customer");
     const canViewCatalog =
         permissions.includes("view product") ||
         permissions.includes("create product") ||
@@ -97,41 +106,90 @@ const Menu = ({ url }) => {
             )}
 
             {canViewSales && (
-                <MenuSection title="Sales">
+                <MenuSection title="Order Section">
                     {permissions.includes("view order") && (
                         <SidebarDropdown
-                            title="Order Management"
+                            title="Orders"
                             icon={<ShoppingCart size={18} />}
-                            active={isPathPrefix("/orders")}
-                            defaultOpen={isPathPrefix("/orders")}
+                            active={ordersActive}
+                            defaultOpen={ordersActive}
                         >
                             <div className="mt-2 flex flex-col space-y-2">
                                 <Link
                                     href="/orders"
-                                    className={subLinkClass(isPath("/orders"))}
-                                >
-                                    Order List
-                                </Link>
-                                <Link
-                                    href="/orders/create"
                                     className={subLinkClass(
-                                        isPath("/orders/create")
+                                        isPath("/orders") && orderView === "all"
                                     )}
                                 >
-                                    Create Order
+                                    All
+                                </Link>
+                                <Link
+                                    href="/orders?view=completed"
+                                    className={subLinkClass(
+                                        isPath("/orders") &&
+                                            orderView === "completed"
+                                    )}
+                                >
+                                    Completed
+                                </Link>
+                                <Link
+                                    href="/orders?view=refunded"
+                                    className={subLinkClass(
+                                        isPath("/orders") &&
+                                            orderView === "refunded"
+                                    )}
+                                >
+                                    Refunded
                                 </Link>
                             </div>
                         </SidebarDropdown>
                     )}
-                    {permissions.includes("view customer") && (
-                        <Link
-                            href="/customers"
-                            className={linkClass(isPathPrefix("/customers"))}
-                        >
-                            <Users size={18} />
-                            <span>Customers</span>
-                        </Link>
-                    )}
+                </MenuSection>
+            )}
+
+            {canViewPos && (
+                <MenuSection title="POS section">
+                    <Link
+                        href="/orders/create"
+                        className={linkClass(posActive)}
+                    >
+                        <CircleDollarSign size={18} />
+                        <span>New Sale</span>
+                    </Link>
+                </MenuSection>
+            )}
+
+            {canViewCustomer && (
+                <MenuSection title="Customer section">
+                    <SidebarDropdown
+                        title="Customer"
+                        icon={<Users size={18} />}
+                        active={customerActive}
+                        defaultOpen={customerActive}
+                    >
+                        <div className="mt-2 flex flex-col space-y-2">
+                            {permissions.includes("create customer") && (
+                                <Link
+                                    href="/customer/create"
+                                    className={subLinkClass(
+                                        isPath("/customer/create")
+                                    )}
+                                >
+                                    Add customer
+                                </Link>
+                            )}
+                            {permissions.includes("view customer") && (
+                                <Link
+                                    href="/customers"
+                                    className={subLinkClass(
+                                        isPath("/customers")
+                                    )}
+                                >
+                                    Customer list
+                                </Link>
+                            )}
+                        </div>
+                    </SidebarDropdown>
                 </MenuSection>
             )}
 

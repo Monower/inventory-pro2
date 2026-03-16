@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm} from "@inertiajs/react";
+import { Link, useForm } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { Trash2Icon, EyeIcon, EditIcon } from "lucide-react";
 import { dateTimeFormater } from "@/util/DateFormater";
@@ -11,6 +11,13 @@ const Index = ({ orders }) => {
     const { filters } = usePage().props;
     const list = orders?.data ?? [];
     const { delete: destroy, processing } = useForm();
+    const currentView = filters?.view || "all";
+    const pageTitle =
+        currentView === "completed"
+            ? "Completed Orders"
+            : currentView === "refunded"
+            ? "Refunded Orders"
+            : "Orders";
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this order?")) {
@@ -52,7 +59,7 @@ const Index = ({ orders }) => {
             <section>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Orders</h3>
+                    <h3 className="text-xl font-semibold">{pageTitle}</h3>
                     <Link
                         href={route("orders.create")}
                         className="create-button"
@@ -63,6 +70,9 @@ const Index = ({ orders }) => {
                 <IndexFilters
                     routeName="orders.index"
                     initialQuery={filters?.q || ""}
+                    extraParams={{
+                        view: currentView !== "all" ? currentView : undefined,
+                    }}
                     placeholder="Search orders..."
                     className="mb-4"
                 />
