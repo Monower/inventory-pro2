@@ -139,6 +139,26 @@ const Show = ({ order, stockLedger = [] }) => {
                         {dateTimeFormater(order?.updated_at) || "N/A"}
                     </p>
                     <p>
+                        <strong>Subtotal amount:</strong>{" "}
+                        {order?.subtotal_amount || "00.00"}
+                    </p>
+                    <p>
+                        <strong>Coupon code:</strong>{" "}
+                        {order?.coupon_code || "N/A"}
+                    </p>
+                    <p>
+                        <strong>Discount amount:</strong>{" "}
+                        {order?.discount_amount || "00.00"}
+                    </p>
+                    <p>
+                        <strong>Tax rate:</strong>{" "}
+                        {order?.tax_rate || "0"}%
+                    </p>
+                    <p>
+                        <strong>Tax amount:</strong>{" "}
+                        {order?.tax_amount || "00.00"}
+                    </p>
+                    <p>
                         <strong>Total amount:</strong>{" "}
                         {order?.total_amount || "00.00"}
                     </p>

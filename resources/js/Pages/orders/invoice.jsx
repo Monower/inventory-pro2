@@ -4,11 +4,7 @@ import { dateTimeFormater } from "@/util/DateFormater";
 
 const Invoice = ({ order }) => {
     const { settings } = usePage().props;
-    const subTotal =
-        order?.items?.reduce(
-            (sum, item) => sum + Number(item.price) * Number(item.quantity),
-            0
-        ) || 0;
+    const subTotal = Number(order?.subtotal_amount || 0);
 
     useEffect(() => {
         document.title = `${order?.invoice_number || order?.order_number} Invoice`;
@@ -155,6 +151,18 @@ const Invoice = ({ order }) => {
                         <div className="flex justify-between">
                             <span>Shipping</span>
                             <span>{Number(order?.shipping_charge || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Coupon</span>
+                            <span>{order?.coupon_code || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Discount</span>
+                            <span>- {Number(order?.discount_amount || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Tax ({Number(order?.tax_rate || 0).toFixed(2)}%)</span>
+                            <span>{Number(order?.tax_amount || 0).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between border-t border-slate-200 pt-2 font-semibold text-slate-900">
                             <span>Total</span>

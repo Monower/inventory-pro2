@@ -15,6 +15,8 @@ class DashboardController extends Controller
     {
         $totalRevenue = (float) Order::sum('total_amount');
         $totalIncome = (float) Order::sum('paid_amount');
+        $totalRefunded = (float) Order::sum('refunded_amount');
+        $netSales = max($totalIncome - $totalRefunded, 0);
         $totalExpense = (float) Transaction::where('transaction_type', 'expense')->sum('amount');
         $accountPayable = (float) Purchase::sum(DB::raw('total_amount - paid_amount'));
         $accountReceivable = (float) Order::sum('due_amount');
@@ -28,6 +30,16 @@ class DashboardController extends Controller
             [
                 'title' => 'Total income',
                 'value' => $totalIncome,
+                'icon' => 'income',
+            ],
+            [
+                'title' => 'Refunded sales',
+                'value' => $totalRefunded,
+                'icon' => 'expense',
+            ],
+            [
+                'title' => 'Net sales',
+                'value' => $netSales,
                 'icon' => 'income',
             ],
             [
@@ -55,6 +67,11 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'businessStatistics' => $businessStatistics,
             'earningStatistics' => $earningStatistics,
+            'salesAnalytics' => [
+                'topCustomers' => $this->getTopCustomers(),
+                'topProducts' => $this->getTopProducts(),
+                'salesSummary' => $this->getSalesSummary(),
+            ],
         ]);
     }
 
@@ -115,6 +132,53 @@ class DashboardController extends Controller
             'labels' => $years->map(fn ($year) => (string) $year)->values()->all(),
             'income' => $years->map(fn ($year) => (float) ($income[$year] ?? 0))->values()->all(),
             'expense' => $years->map(fn ($year) => (float) ($expense[$year] ?? 0))->values()->all(),
+        ];
+    }
+
+    private function getTopCustomers(): array
+    {
+        return Order::query()
+            ->join('customers', 'customers.id', '=', 'orders.customer_id')
+            ->selectRaw('customers.id, customers.name, customers.phone, SUM(orders.total_amount) as total_sales, COUNT(orders.id) as total_orders')
+            ->groupBy('customers.id', 'customers.name', 'customers.phone')
+            ->orderByDesc('total_sales')
+            ->limit(5)
+            ->get()
+            ->map(fn ($item) => [
+                'id' => $item->id,
+                'name' => $item->name ?: 'N/A',
+                'phone' => $item->phone,
+                'total_sales' => (float) $item->total_sales,
+                'total_orders' => (int) $item->total_orders,
+            ])
+            ->all();
+    }
+
+    private function getTopProducts(): array
+    {
+        return DB::table('order_items')
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->selectRaw('products.id, products.name, SUM(order_items.quantity) as total_quantity, SUM(order_items.price * order_items.quantity) as total_sales')
+            ->groupBy('products.id', 'products.name')
+            ->orderByDesc('total_sales')
+            ->limit(5)
+            ->get()
+            ->map(fn ($item) => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'total_quantity' => (int) $item->total_quantity,
+                'total_sales' => (float) $item->total_sales,
+            ])
+            ->all();
+    }
+
+    private function getSalesSummary(): array
+    {
+        return [
+            'completed_orders' => (int) Order::where('order_status', 'completed')->count(),
+            'refunded_orders' => (int) Order::whereIn('refund_status', ['partial', 'full'])->count(),
+            'average_order_value' => (float) Order::avg('total_amount'),
+            'pending_deliveries' => (int) Order::whereIn('fulfillment_status', ['pending', 'packed', 'shipped'])->count(),
         ];
     }
 }

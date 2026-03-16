@@ -25,28 +25,51 @@ class OrderController extends Controller
     {
         $q = trim((string) request()->query('q', ''));
         $view = request()->query('view', 'all');
+        $paymentStatus = trim((string) request()->query('payment_status', ''));
+        $refundStatus = trim((string) request()->query('refund_status', ''));
+        $orderStatus = trim((string) request()->query('order_status', ''));
+        $fulfillmentStatus = trim((string) request()->query('fulfillment_status', ''));
+        $customerId = request()->query('customer_id');
+        $salespersonId = request()->query('salesperson_staff_id');
+        $dateFrom = request()->query('date_from');
+        $dateTo = request()->query('date_to');
         $allowedViews = ['all', 'completed', 'refunded'];
 
         if (!in_array($view, $allowedViews, true)) {
             $view = 'all';
         }
 
-        $orders = Order::with('customer', 'items.product')
+        $orders = Order::with('customer', 'items.product', 'salesperson')
             ->when($view === 'completed', function ($query) {
                 $query->where('order_status', 'completed');
             })
             ->when($view === 'refunded', function ($query) {
                 $query->whereIn('refund_status', ['partial', 'full']);
             })
+            ->when($paymentStatus !== '', fn ($query) => $query->where('payment_status', $paymentStatus))
+            ->when($refundStatus !== '', fn ($query) => $query->where('refund_status', $refundStatus))
+            ->when($orderStatus !== '', fn ($query) => $query->where('order_status', $orderStatus))
+            ->when($fulfillmentStatus !== '', fn ($query) => $query->where('fulfillment_status', $fulfillmentStatus))
+            ->when($customerId, fn ($query) => $query->where('customer_id', $customerId))
+            ->when($salespersonId, fn ($query) => $query->where('salesperson_staff_id', $salespersonId))
+            ->when($dateFrom, fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
                     $subQuery->where('order_number', 'like', "%{$q}%")
+                        ->orWhere('invoice_number', 'like', "%{$q}%")
                         ->orWhere('total_amount', 'like', "%{$q}%")
                         ->orWhere('payment_status', 'like', "%{$q}%")
                         ->orWhere('refund_status', 'like', "%{$q}%")
                         ->orWhere('order_status', 'like', "%{$q}%")
+                        ->orWhere('coupon_code', 'like', "%{$q}%")
                         ->orWhereHas('customer', function ($customerQuery) use ($q) {
-                            $customerQuery->where('name', 'like', "%{$q}%");
+                            $customerQuery->where('name', 'like', "%{$q}%")
+                                ->orWhere('phone', 'like', "%{$q}%");
+                        })
+                        ->orWhereHas('salesperson', function ($staffQuery) use ($q) {
+                            $staffQuery->where('name', 'like', "%{$q}%")
+                                ->orWhere('phone', 'like', "%{$q}%");
                         });
                 });
             })
@@ -54,11 +77,24 @@ class OrderController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $customers = Customer::query()->select('id', 'phone', 'name')->orderBy('phone')->get();
+        $staffs = Staff::query()->select('id', 'name')->orderBy('name')->get();
+
         return Inertia::render('orders/index', [
             'orders' => $orders,
+            'customers' => $customers,
+            'staffs' => $staffs,
             'filters' => [
                 'q' => $q,
                 'view' => $view,
+                'payment_status' => $paymentStatus,
+                'refund_status' => $refundStatus,
+                'order_status' => $orderStatus,
+                'fulfillment_status' => $fulfillmentStatus,
+                'customer_id' => $customerId,
+                'salesperson_staff_id' => $salespersonId,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
             ],
         ]);
     }
@@ -85,6 +121,9 @@ class OrderController extends Controller
             'salesperson_staff_id' => 'nullable|exists:staff,id',
             'branch_name' => 'nullable|string|max:255',
             'shipping_address' => 'nullable|string|max:2000',
+            'coupon_code' => 'nullable|string|max:100',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
             'shipping_charge' => 'nullable|numeric|min:0',
             'courier_name' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',
@@ -121,8 +160,12 @@ class OrderController extends Controller
                     $subTotalAmount += $product->selling_price * $item['quantity'];
                 }
 
+                $discountAmount = min((float) ($validated['discount_amount'] ?? 0), $subTotalAmount);
+                $taxRate = (float) ($validated['tax_rate'] ?? 0);
+                $taxableBase = max($subTotalAmount - $discountAmount, 0);
+                $taxAmount = round($taxableBase * ($taxRate / 100), 2);
                 $shippingCharge = (float) ($validated['shipping_charge'] ?? 0);
-                $totalAmount = $subTotalAmount + $shippingCharge;
+                $totalAmount = $taxableBase + $taxAmount + $shippingCharge;
 
                 $paidAmount = $validated['payment_amount'];
                 if ($paidAmount > $totalAmount) {
@@ -137,9 +180,14 @@ class OrderController extends Controller
                     'order_number' => $orderNumber,
                     'invoice_number' => $invoiceNumber,
                     'customer_id' => $validated['customer_id'],
+                    'subtotal_amount' => $subTotalAmount,
                     'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
                     'branch_name' => $validated['branch_name'] ?? null,
                     'shipping_address' => $validated['shipping_address'] ?? null,
+                    'coupon_code' => $validated['coupon_code'] ?? null,
+                    'discount_amount' => $discountAmount,
+                    'tax_rate' => $taxRate,
+                    'tax_amount' => $taxAmount,
                     'total_amount' => $totalAmount,
                     'shipping_charge' => $shippingCharge,
                     'paid_amount' => $paidAmount,
@@ -209,6 +257,9 @@ class OrderController extends Controller
                     "Order {$order->order_number} was created.",
                     [
                         'total_amount' => $order->total_amount,
+                        'subtotal_amount' => $order->subtotal_amount,
+                        'discount_amount' => $order->discount_amount,
+                        'tax_amount' => $order->tax_amount,
                         'invoice_number' => $order->invoice_number,
                         'paid_amount' => $order->paid_amount,
                         'payment_status' => $order->payment_status,
@@ -264,6 +315,9 @@ class OrderController extends Controller
             'salesperson_staff_id' => 'nullable|exists:staff,id',
             'branch_name' => 'nullable|string|max:255',
             'shipping_address' => 'nullable|string|max:2000',
+            'coupon_code' => 'nullable|string|max:100',
+            'discount_amount' => 'nullable|numeric|min:0',
+            'tax_rate' => 'nullable|numeric|min:0|max:100',
             'shipping_charge' => 'nullable|numeric|min:0',
             'courier_name' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',
@@ -305,8 +359,12 @@ class OrderController extends Controller
                     $subTotalAmount += $product->selling_price * $item['quantity'];
                 }
 
+                $discountAmount = min((float) ($validated['discount_amount'] ?? 0), $subTotalAmount);
+                $taxRate = (float) ($validated['tax_rate'] ?? 0);
+                $taxableBase = max($subTotalAmount - $discountAmount, 0);
+                $taxAmount = round($taxableBase * ($taxRate / 100), 2);
                 $shippingCharge = (float) ($validated['shipping_charge'] ?? 0);
-                $totalAmount = $subTotalAmount + $shippingCharge;
+                $totalAmount = $taxableBase + $taxAmount + $shippingCharge;
 
                 /* ----------------------------
                Prevent overpayment
@@ -327,9 +385,14 @@ class OrderController extends Controller
             ----------------------------- */
                 $order->update([
                     'customer_id' => $validated['customer_id'],
+                    'subtotal_amount' => $subTotalAmount,
                     'salesperson_staff_id' => $validated['salesperson_staff_id'] ?? null,
                     'branch_name' => $validated['branch_name'] ?? null,
                     'shipping_address' => $validated['shipping_address'] ?? null,
+                    'coupon_code' => $validated['coupon_code'] ?? null,
+                    'discount_amount' => $discountAmount,
+                    'tax_rate' => $taxRate,
+                    'tax_amount' => $taxAmount,
                     'total_amount' => $totalAmount,
                     'shipping_charge' => $shippingCharge,
                     'paid_amount' => $paidAmount,
@@ -386,6 +449,9 @@ class OrderController extends Controller
                     "Order {$order->order_number} was updated.",
                     [
                         'total_amount' => $order->total_amount,
+                        'subtotal_amount' => $order->subtotal_amount,
+                        'discount_amount' => $order->discount_amount,
+                        'tax_amount' => $order->tax_amount,
                         'paid_amount' => $order->paid_amount,
                         'payment_status' => $order->payment_status,
                         'payment_method' => $order->payment_method,

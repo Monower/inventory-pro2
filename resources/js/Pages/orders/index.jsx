@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Link, useForm } from "@inertiajs/react";
+import { Link, router, useForm } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
 import { Trash2Icon, EyeIcon, EditIcon } from "lucide-react";
 import { dateTimeFormater } from "@/util/DateFormater";
@@ -7,11 +7,24 @@ import { usePage } from "@inertiajs/react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
-const Index = ({ orders }) => {
+const Index = ({ orders, customers = [], staffs = [] }) => {
     const { filters, auth } = usePage().props;
     const permissions = auth.user?.permissions || [];
     const list = orders?.data ?? [];
     const { delete: destroy, processing } = useForm();
+    const {
+        data: filterData,
+        setData: setFilterData,
+    } = useForm({
+        payment_status: filters?.payment_status || "",
+        refund_status: filters?.refund_status || "",
+        order_status: filters?.order_status || "",
+        fulfillment_status: filters?.fulfillment_status || "",
+        customer_id: filters?.customer_id || "",
+        salesperson_staff_id: filters?.salesperson_staff_id || "",
+        date_from: filters?.date_from || "",
+        date_to: filters?.date_to || "",
+    });
     const currentView = filters?.view || "all";
     const pageTitle =
         currentView === "completed"
@@ -26,6 +39,53 @@ const Index = ({ orders }) => {
                 preserveScroll: true,
             });
         }
+    };
+
+    const applyAdvancedFilters = () => {
+        router.get(
+            route("orders.index"),
+            {
+                q: filters?.q || undefined,
+                view: currentView !== "all" ? currentView : undefined,
+                ...Object.fromEntries(
+                    Object.entries(filterData).map(([key, value]) => [
+                        key,
+                        value || undefined,
+                    ])
+                ),
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
+    };
+
+    const clearAdvancedFilters = () => {
+        const cleared = {
+            payment_status: "",
+            refund_status: "",
+            order_status: "",
+            fulfillment_status: "",
+            customer_id: "",
+            salesperson_staff_id: "",
+            date_from: "",
+            date_to: "",
+        };
+        Object.entries(cleared).forEach(([key, value]) => setFilterData(key, value));
+        router.get(
+            route("orders.index"),
+            {
+                q: filters?.q || undefined,
+                view: currentView !== "all" ? currentView : undefined,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            }
+        );
     };
 
     // Define columns for DataTable
@@ -79,10 +139,135 @@ const Index = ({ orders }) => {
                     initialQuery={filters?.q || ""}
                     extraParams={{
                         view: currentView !== "all" ? currentView : undefined,
+                        payment_status: filterData.payment_status || undefined,
+                        refund_status: filterData.refund_status || undefined,
+                        order_status: filterData.order_status || undefined,
+                        fulfillment_status:
+                            filterData.fulfillment_status || undefined,
+                        customer_id: filterData.customer_id || undefined,
+                        salesperson_staff_id:
+                            filterData.salesperson_staff_id || undefined,
+                        date_from: filterData.date_from || undefined,
+                        date_to: filterData.date_to || undefined,
                     }}
                     placeholder="Search orders..."
                     className="mb-4"
                 />
+
+                <div className="mb-4 rounded-lg border border-ring bg-background p-4 shadow-sm">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        <select
+                            value={filterData.payment_status}
+                            onChange={(e) =>
+                                setFilterData("payment_status", e.target.value)
+                            }
+                            className="custom-input"
+                        >
+                            <option value="">All payment statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="partial">Partial</option>
+                            <option value="paid">Paid</option>
+                        </select>
+                        <select
+                            value={filterData.refund_status}
+                            onChange={(e) =>
+                                setFilterData("refund_status", e.target.value)
+                            }
+                            className="custom-input"
+                        >
+                            <option value="">All refund statuses</option>
+                            <option value="none">None</option>
+                            <option value="partial">Partial</option>
+                            <option value="full">Full</option>
+                        </select>
+                        <select
+                            value={filterData.order_status}
+                            onChange={(e) =>
+                                setFilterData("order_status", e.target.value)
+                            }
+                            className="custom-input"
+                        >
+                            <option value="">All order statuses</option>
+                            <option value="draft">Draft</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="processing">Processing</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <select
+                            value={filterData.fulfillment_status}
+                            onChange={(e) =>
+                                setFilterData("fulfillment_status", e.target.value)
+                            }
+                            className="custom-input"
+                        >
+                            <option value="">All fulfillment statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="packed">Packed</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                        </select>
+                        <select
+                            value={filterData.customer_id}
+                            onChange={(e) =>
+                                setFilterData("customer_id", e.target.value)
+                            }
+                            className="custom-input"
+                        >
+                            <option value="">All customers</option>
+                            {customers.map((customer) => (
+                                <option key={customer.id} value={customer.id}>
+                                    {customer.phone} {customer.name ? `- ${customer.name}` : ""}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            value={filterData.salesperson_staff_id}
+                            onChange={(e) =>
+                                setFilterData(
+                                    "salesperson_staff_id",
+                                    e.target.value
+                                )
+                            }
+                            className="custom-input"
+                        >
+                            <option value="">All salespeople</option>
+                            {staffs.map((staff) => (
+                                <option key={staff.id} value={staff.id}>
+                                    {staff.name}
+                                </option>
+                            ))}
+                        </select>
+                        <input
+                            type="date"
+                            value={filterData.date_from}
+                            onChange={(e) => setFilterData("date_from", e.target.value)}
+                            className="custom-input"
+                        />
+                        <input
+                            type="date"
+                            value={filterData.date_to}
+                            onChange={(e) => setFilterData("date_to", e.target.value)}
+                            className="custom-input"
+                        />
+                    </div>
+                    <div className="mt-3 flex gap-3">
+                        <button
+                            type="button"
+                            onClick={applyAdvancedFilters}
+                            className="edit-button"
+                        >
+                            Apply filters
+                        </button>
+                        <button
+                            type="button"
+                            onClick={clearAdvancedFilters}
+                            className="delete-button"
+                        >
+                            Clear filters
+                        </button>
+                    </div>
+                </div>
 
                 {/* Data Table */}
                 <DataTable

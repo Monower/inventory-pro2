@@ -96,7 +96,47 @@ function EarningsChart({ data }) {
     );
 }
 
-export default function Dashboard({ businessStatistics = [], earningStatistics = {} }) {
+function AnalyticsTable({ title, rows = [], columns = [] }) {
+    return (
+        <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <h2 className="mb-4 text-xl font-semibold text-foreground">{title}</h2>
+            {rows.length ? (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="border-b border-border text-left text-muted-foreground">
+                            <tr>
+                                {columns.map((column) => (
+                                    <th key={column.key} className="px-2 py-3 font-medium">
+                                        {column.label}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows.map((row) => (
+                                <tr key={row.id} className="border-b border-border/60 last:border-b-0">
+                                    {columns.map((column) => (
+                                        <td key={column.key} className="px-2 py-3 text-foreground">
+                                            {column.render ? column.render(row) : row[column.key]}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <p className="text-sm text-muted-foreground">No data available yet.</p>
+            )}
+        </div>
+    );
+}
+
+export default function Dashboard({
+    businessStatistics = [],
+    earningStatistics = {},
+    salesAnalytics = {},
+}) {
     const [activeView, setActiveView] = useState("monthly");
     const activeChart = earningStatistics?.[activeView] || {
         labels: [],
@@ -104,6 +144,7 @@ export default function Dashboard({ businessStatistics = [], earningStatistics =
         expense: [],
         period: "",
     };
+    const summary = salesAnalytics?.salesSummary || {};
 
     return (
         <AuthenticatedLayout
@@ -156,6 +197,63 @@ export default function Dashboard({ businessStatistics = [], earningStatistics =
                 </div>
 
                 <EarningsChart data={activeChart} />
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <DashboardCard
+                        value={String(summary.completed_orders || 0)}
+                        title="Completed orders"
+                        icon="income"
+                        subtitle="Orders moved to completed status"
+                    />
+                    <DashboardCard
+                        value={String(summary.refunded_orders || 0)}
+                        title="Refunded orders"
+                        icon="expense"
+                        subtitle="Orders with partial or full refunds"
+                    />
+                    <DashboardCard
+                        value={formatCurrency(summary.average_order_value || 0)}
+                        title="Average order value"
+                        icon="revenue"
+                        subtitle="Average billed amount per order"
+                    />
+                    <DashboardCard
+                        value={String(summary.pending_deliveries || 0)}
+                        title="Pending deliveries"
+                        icon="receivable"
+                        subtitle="Orders not fully delivered yet"
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                    <AnalyticsTable
+                        title="Top Customers"
+                        rows={salesAnalytics?.topCustomers || []}
+                        columns={[
+                            { key: "name", label: "Customer" },
+                            { key: "phone", label: "Phone" },
+                            { key: "total_orders", label: "Orders" },
+                            {
+                                key: "total_sales",
+                                label: "Sales",
+                                render: (row) => formatCurrency(row.total_sales),
+                            },
+                        ]}
+                    />
+                    <AnalyticsTable
+                        title="Top Products"
+                        rows={salesAnalytics?.topProducts || []}
+                        columns={[
+                            { key: "name", label: "Product" },
+                            { key: "total_quantity", label: "Qty sold" },
+                            {
+                                key: "total_sales",
+                                label: "Sales",
+                                render: (row) => formatCurrency(row.total_sales),
+                            },
+                        ]}
+                    />
+                </div>
 
             </section>
         </AuthenticatedLayout>

@@ -15,6 +15,9 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
         salesperson_staff_id: order.salesperson_staff_id || "",
         branch_name: order.branch_name || "",
         shipping_address: order.shipping_address || "",
+        coupon_code: order.coupon_code || "",
+        discount_amount: Number(order.discount_amount) || 0,
+        tax_rate: Number(order.tax_rate) || 0,
         shipping_charge: Number(order.shipping_charge) || 0,
         courier_name: order.courier_name || "",
         tracking_number: order.tracking_number || "",
@@ -109,8 +112,11 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
         (sum, i) => sum + i.selling_price * i.quantity,
         0
     );
+    const discountAmount = Math.min(Number(data.discount_amount) || 0, totalPrice);
+    const taxableBase = Math.max(totalPrice - discountAmount, 0);
+    const taxAmount = taxableBase * ((Number(data.tax_rate) || 0) / 100);
     const shippingCharge = Number(data.shipping_charge) || 0;
-    const grandTotal = totalPrice + shippingCharge;
+    const grandTotal = taxableBase + taxAmount + shippingCharge;
 
     const paidAmount = Number(data.payment_amount) || 0;
     const dueAmount = Math.max(grandTotal - paidAmount, 0);
@@ -306,8 +312,16 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
                             <strong>{shippingCharge}</strong>
                         </div>
                         <div>
+                            <p>Discount</p>
+                            <strong>{discountAmount}</strong>
+                        </div>
+                        <div>
+                            <p>Tax</p>
+                            <strong>{taxAmount.toFixed(2)}</strong>
+                        </div>
+                        <div>
                             <p>Grand total</p>
-                            <strong>{grandTotal}</strong>
+                            <strong>{grandTotal.toFixed(2)}</strong>
                         </div>
                         <div>
                             <p>Paid</p>
@@ -371,6 +385,44 @@ const Edit = ({ order, customers, products, banks, staffs }) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="mb-1 block">Coupon code</label>
+                            <input
+                                type="text"
+                                value={data.coupon_code}
+                                onChange={(e) => setData("coupon_code", e.target.value)}
+                                className="custom-input"
+                                placeholder="Coupon code"
+                            />
+                        </div>
+                        <div>
+                            <label className="mb-1 block">Discount amount</label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={data.discount_amount}
+                                onChange={(e) =>
+                                    setData("discount_amount", e.target.value)
+                                }
+                                className="custom-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="mb-1 block">Tax rate (%)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                value={data.tax_rate}
+                                onChange={(e) => setData("tax_rate", e.target.value)}
+                                className="custom-input"
+                            />
+                        </div>
                         <div>
                             <label className="mb-1 block">Shipping charge</label>
                             <input

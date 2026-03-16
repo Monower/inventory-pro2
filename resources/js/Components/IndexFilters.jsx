@@ -12,6 +12,7 @@ const IndexFilters = ({
     const [query, setQuery] = useState(initialQuery);
     const isFirstRender = useRef(true);
     const inputRef = useRef(null);
+    const serializedExtraParams = JSON.stringify(extraParams);
 
     useEffect(() => {
         setQuery(initialQuery);
@@ -26,7 +27,7 @@ const IndexFilters = ({
         const timeout = setTimeout(() => {
             router.get(
                 route(routeName),
-                { ...extraParams, q: query || undefined },
+                { ...JSON.parse(serializedExtraParams), q: query || undefined },
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -36,7 +37,7 @@ const IndexFilters = ({
         }, 300);
 
         return () => clearTimeout(timeout);
-    }, [extraParams, query, routeName]);
+    }, [serializedExtraParams, query, routeName]);
 
     const clearSearch = () => {
         setQuery("");

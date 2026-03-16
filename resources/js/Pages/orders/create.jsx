@@ -14,6 +14,9 @@ const Create = ({ customers, products, banks, staffs }) => {
         salesperson_staff_id: "",
         branch_name: "",
         shipping_address: "",
+        coupon_code: "",
+        discount_amount: 0,
+        tax_rate: 0,
         shipping_charge: 0,
         courier_name: "",
         tracking_number: "",
@@ -64,8 +67,11 @@ const Create = ({ customers, products, banks, staffs }) => {
         (sum, item) => sum + item.selling_price * item.quantity,
         0
     );
+    const discountAmount = Math.min(Number(data.discount_amount) || 0, totalPrice);
+    const taxableBase = Math.max(totalPrice - discountAmount, 0);
+    const taxAmount = taxableBase * ((Number(data.tax_rate) || 0) / 100);
     const shippingCharge = Number(data.shipping_charge) || 0;
-    const grandTotal = totalPrice + shippingCharge;
+    const grandTotal = taxableBase + taxAmount + shippingCharge;
 
     // Sync cart with form data whenever it changes
     useEffect(() => {
@@ -299,9 +305,21 @@ const Create = ({ customers, products, banks, staffs }) => {
                                     </h3>
                                 </div>
                                 <div>
+                                    <p className="text-primary">Discount</p>
+                                    <h3 className="text-xl font-bold text-primary">
+                                        {discountAmount}
+                                    </h3>
+                                </div>
+                                <div>
+                                    <p className="text-primary">Tax</p>
+                                    <h3 className="text-xl font-bold text-primary">
+                                        {taxAmount.toFixed(2)}
+                                    </h3>
+                                </div>
+                                <div>
                                     <p className="text-primary">Grand total</p>
                                     <h3 className="text-xl font-bold text-primary">
-                                        {grandTotal}
+                                        {grandTotal.toFixed(2)}
                                     </h3>
                                 </div>
                             </div>
@@ -368,6 +386,50 @@ const Create = ({ customers, products, banks, staffs }) => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="mb-1 block">Coupon code</label>
+                                    <input
+                                        type="text"
+                                        value={data.coupon_code}
+                                        onChange={(e) =>
+                                            setData("coupon_code", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Optional coupon code"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-1 block">Discount amount</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={data.discount_amount}
+                                        onChange={(e) =>
+                                            setData("discount_amount", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="mb-1 block">Tax rate (%)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        value={data.tax_rate}
+                                        onChange={(e) =>
+                                            setData("tax_rate", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="0"
+                                    />
+                                </div>
                                 <div>
                                     <label className="mb-1 block">Shipping charge</label>
                                     <input
