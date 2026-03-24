@@ -4,6 +4,7 @@ import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import ListPageLayout from "@/Components/List/ListPageLayout";
 
 const Index = ({ branches }) => {
     const { filters } = usePage().props;
@@ -19,13 +20,19 @@ const Index = ({ branches }) => {
 
     return (
         <AuthenticatedLayout title="Branches">
-            <section>
-                <div className="mb-4 flex items-center justify-between">
-                    <h3 className="heading">Branches</h3>
+            <ListPageLayout
+                title="Branches"
+                description="Review branch identities, status, and contact details in a more polished multi-location management view."
+                actions={
                     <Link href={route("branch.create")} className="create-button">
                         Create Branch
                     </Link>
-                </div>
+                }
+                stats={[
+                    { label: "Visible branches", value: `${list.length}` },
+                    { label: "Total branches", value: `${branches?.total || 0}` },
+                ]}
+            >
 
                 <IndexFilters
                     routeName="branches.index"
@@ -85,7 +92,7 @@ const Index = ({ branches }) => {
                 </div>
 
                 <Pagination links={branches?.links} />
-            </section>
+            </ListPageLayout>
         </AuthenticatedLayout>
     );
 };

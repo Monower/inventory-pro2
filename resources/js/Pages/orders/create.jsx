@@ -1,10 +1,12 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import BackButton from "@/Components/BackButton/BackButton";
 import Modal from "@/Components/Modal/Modal";
 import { useState, useEffect } from "react";
 import { useForm, usePage } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 import { sanitizePhoneInput } from "@/lib/phone";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const calculateCouponDiscount = (coupon, subtotalAfterManualDiscount) => {
     if (!coupon || subtotalAfterManualDiscount <= 0) {
@@ -219,16 +221,32 @@ const Create = ({
 
     return (
         <AuthenticatedLayout title="Create Order">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"orders.index"} />
-                    <div>
-                        <h3 className="heading">Create Order</h3>
-                        <p className="text-gray-500">
-                            Manage products, customers and checkout below.
-                        </p>
-                    </div>
-                </div>
+            <CreatePageLayout
+                title="Create Order"
+                description="Build a sales order with products, customer, checkout adjustments, fulfillment details, and payment collection in one polished flow."
+                backRoute="orders.index"
+                meta={[
+                    { label: "Items in cart", value: `${cart.length}` },
+                    { label: "Grand total", value: grandTotal.toFixed(2) },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Order Flow Tips"
+                        items={[
+                            {
+                                title: "Select the right branch first",
+                                description:
+                                    "Available stock, fulfillment, and reporting all depend on the active order branch.",
+                            },
+                            {
+                                title: "Review discounts carefully",
+                                description:
+                                    "Manual and coupon discounts stack here, so double-check the final payable amount before submission.",
+                            },
+                        ]}
+                    />
+                }
+            >
 
                 {allErrors.length > 0 && (
                     <Alert
@@ -251,11 +269,10 @@ const Create = ({
                     {/* Products & Cart */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Products */}
-                        <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">Products list</h3>
-                            <p className="mb-3 text-sm text-muted-foreground">
-                                Available stock is shown for the selected branch.
-                            </p>
+                        <CreateSectionCard
+                            title="Products"
+                            description="Available stock is shown for the selected branch so sales staff can assemble the order with confidence."
+                        >
                             <div className="overflow-x-auto">
                                 <table className="custom-table">
                                     <thead className="custom-thead">
@@ -327,13 +344,15 @@ const Create = ({
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </CreateSectionCard>
 
                         {/* Cart */}
-                        <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">Cart list</h3>
+                        <CreateSectionCard
+                            title="Cart"
+                            description="Adjust quantities, review item totals, and remove products before checkout."
+                        >
                             {cart.length === 0 ? (
-                                <p className="text-gray-500">
+                                <p className="text-muted-foreground">
                                     No items in cart
                                 </p>
                             ) : (
@@ -410,23 +429,25 @@ const Create = ({
                                     </table>
                                 </div>
                             )}
-                        </div>
+                        </CreateSectionCard>
                     </div>
 
                     {/* Checkout */}
-                    <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                        <h3 className="heading">Checkout</h3>
+                    <CreateSectionCard
+                        title="Checkout"
+                        description="Complete the customer, pricing, delivery, and payment details required to finalize this order."
+                    >
                         <div className="grid gap-6">
                             {/* Summary */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-background* border border-ring shadow-md py-50 p-4 rounded-lg">
+                            <div className="grid grid-cols-1 gap-4 rounded-[24px] border border-border bg-background/80 p-4 sm:grid-cols-2">
                                 <div>
-                                    <p className="text-primary">Subtotal</p>
+                                    <p className="text-sm text-muted-foreground">Subtotal</p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {totalPrice}
                                     </h3>
                                 </div>
                                 <div>
-                                    <p className="text-primary">
+                                    <p className="text-sm text-muted-foreground">
                                         Total quantity
                                     </p>
                                     <h3 className="text-xl font-bold text-primary">
@@ -434,25 +455,25 @@ const Create = ({
                                     </h3>
                                 </div>
                                 <div>
-                                    <p className="text-primary">Shipping</p>
+                                    <p className="text-sm text-muted-foreground">Shipping</p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {shippingCharge}
                                     </h3>
                                 </div>
                                 <div>
-                                    <p className="text-primary">Discount</p>
+                                    <p className="text-sm text-muted-foreground">Discount</p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {discountAmount}
                                     </h3>
                                 </div>
                                 <div>
-                                    <p className="text-primary">Tax</p>
+                                    <p className="text-sm text-muted-foreground">Tax</p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {taxAmount.toFixed(2)}
                                     </h3>
                                 </div>
                                 <div>
-                                    <p className="text-primary">Grand total</p>
+                                    <p className="text-sm text-muted-foreground">Grand total</p>
                                     <h3 className="text-xl font-bold text-primary">
                                         {grandTotal.toFixed(2)}
                                     </h3>
@@ -840,7 +861,7 @@ const Create = ({
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-green-600 text-white w-full md:w-auto px-6 py-2 rounded-lg font-semibold hover:bg-green-700"
+                                    className="create-button w-full md:w-auto"
                                 >
                                     {processing
                                         ? "Creating..."
@@ -848,7 +869,7 @@ const Create = ({
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </CreateSectionCard>
                 </form>
 
                 <Modal
@@ -940,7 +961,7 @@ const Create = ({
                         </div>
                     </form>
                 </Modal>
-            </section>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

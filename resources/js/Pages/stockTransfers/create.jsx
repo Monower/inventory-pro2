@@ -1,7 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import BackButton from "@/Components/BackButton/BackButton";
 import { useForm } from "@inertiajs/react";
 import { useEffect, useMemo, useState } from "react";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const branchStockForProduct = (product, branchId) => {
     if (!branchId) {
@@ -64,84 +66,147 @@ const Create = ({
 
     return (
         <AuthenticatedLayout title="Create Stock Transfer">
-            <section className="space-y-4">
-                <div className="flex items-center gap-4">
-                    <BackButton url={"stock-transfers.index"} />
-                    <h3 className="heading">Create Stock Transfer</h3>
-                </div>
+            <CreatePageLayout
+                title="Create Stock Transfer"
+                description="Prepare a branch-to-branch stock movement request with source, destination, notes, and requested quantities in a cleaner operational workflow."
+                backRoute="stock-transfers.index"
+                meta={[
+                    { label: "Module", value: "Inventory movement" },
+                    { label: "Items", value: `${rows.length} line item(s)` },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Transfer Best Practices"
+                        items={[
+                            {
+                                title: "Check source stock first",
+                                description:
+                                    "The available quantity shown here helps prevent unrealistic transfer requests.",
+                            },
+                            {
+                                title: "Explain unusual moves",
+                                description:
+                                    "Use notes for urgent replenishment, balancing, or special approval context.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <CreateSectionCard
+                        title="Transfer Overview"
+                        description="Choose the sending and receiving branches first, then add any notes that will help with approval and fulfillment."
+                    >
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Source branch
+                                    </legend>
+                                    <select
+                                        className="custom-input"
+                                        value={data.source_branch_id}
+                                        onChange={(e) =>
+                                            setData("source_branch_id", e.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="">Select source branch</option>
+                                        {sourceBranches.map((branch) => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                {errors.source_branch_id ? (
+                                    <p className="field-error">{errors.source_branch_id}</p>
+                                ) : null}
+                            </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label className="required-label">Source Branch</label>
-                            <select
-                                className="custom-input"
-                                value={data.source_branch_id}
-                                onChange={(e) => setData("source_branch_id", e.target.value)}
-                                required
-                            >
-                                <option value="">Select source branch</option>
-                                {sourceBranches.map((branch) => (
-                                    <option key={branch.id} value={branch.id}>
-                                        {branch.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <small className="text-destructive">{errors.source_branch_id}</small>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Destination branch
+                                    </legend>
+                                    <select
+                                        className="custom-input"
+                                        value={data.destination_branch_id}
+                                        onChange={(e) =>
+                                            setData("destination_branch_id", e.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="">Select destination branch</option>
+                                        {filteredDestinations.map((branch) => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                {errors.destination_branch_id ? (
+                                    <p className="field-error">
+                                        {errors.destination_branch_id}
+                                    </p>
+                                ) : null}
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="required-label">Destination Branch</label>
-                            <select
-                                className="custom-input"
-                                value={data.destination_branch_id}
-                                onChange={(e) => setData("destination_branch_id", e.target.value)}
-                                required
-                            >
-                                <option value="">Select destination branch</option>
-                                {filteredDestinations.map((branch) => (
-                                    <option key={branch.id} value={branch.id}>
-                                        {branch.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <small className="text-destructive">{errors.destination_branch_id}</small>
+                        <div className="field-stack">
+                            <fieldset className="custom-fieldset">
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                    Transfer notes
+                                </legend>
+                                <textarea
+                                    className="custom-input resize-none"
+                                    rows={4}
+                                    value={data.notes}
+                                    onChange={(e) => setData("notes", e.target.value)}
+                                    placeholder="Explain urgency, balancing reason, or handling instructions"
+                                />
+                            </fieldset>
+                            {errors.notes ? <p className="field-error">{errors.notes}</p> : null}
                         </div>
-                    </div>
+                    </CreateSectionCard>
 
-                    <div>
-                        <label>Transfer Notes</label>
-                        <textarea
-                            className="custom-input resize-none"
-                            rows={3}
-                            value={data.notes}
-                            onChange={(e) => setData("notes", e.target.value)}
-                        />
-                        <small className="text-destructive">{errors.notes}</small>
-                    </div>
-
-                    <div className="rounded-lg border border-ring bg-background p-4 shadow-md">
-                        <div className="mb-3 flex items-center justify-between">
-                            <h4 className="text-lg font-semibold">Items</h4>
-                            <button type="button" onClick={addRow} className="create-button">
-                                Add Item
-                            </button>
-                        </div>
-
+                    <CreateSectionCard
+                        title="Requested Items"
+                        description="Add the products to move and the requested quantities. Source stock is shown for each product to support better decisions."
+                        footer={
+                            <div className="flex items-center justify-between gap-3">
+                                <button
+                                    type="button"
+                                    onClick={addRow}
+                                    className="secondary-button"
+                                >
+                                    Add item
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="create-button"
+                                >
+                                    {processing ? "Saving..." : "Create request"}
+                                </button>
+                            </div>
+                        }
+                    >
                         <div className="overflow-x-auto">
                             <table className="custom-table min-w-[760px]">
                                 <thead className="custom-thead">
                                     <tr>
                                         <th className="custom-th rounded-l-md">Product</th>
-                                        <th className="custom-th">Source Stock</th>
-                                        <th className="custom-th">Requested Qty</th>
+                                        <th className="custom-th">Source stock</th>
+                                        <th className="custom-th">Requested qty</th>
                                         <th className="custom-th rounded-r-md">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rows.map((row, index) => {
                                         const product = products.find(
-                                            (item) => String(item.id) === String(row.product_id)
+                                            (item) =>
+                                                String(item.id) === String(row.product_id)
                                         );
 
                                         return (
@@ -151,20 +216,32 @@ const Create = ({
                                                         className="custom-input"
                                                         value={row.product_id}
                                                         onChange={(e) =>
-                                                            updateRow(index, "product_id", e.target.value)
+                                                            updateRow(
+                                                                index,
+                                                                "product_id",
+                                                                e.target.value
+                                                            )
                                                         }
                                                         required
                                                     >
-                                                        <option value="">Select product</option>
+                                                        <option value="">
+                                                            Select product
+                                                        </option>
                                                         {products.map((item) => (
-                                                            <option key={item.id} value={item.id}>
+                                                            <option
+                                                                key={item.id}
+                                                                value={item.id}
+                                                            >
                                                                 {item.name}
                                                             </option>
                                                         ))}
                                                     </select>
                                                 </td>
                                                 <td className="custom-body-td">
-                                                    {branchStockForProduct(product || {}, data.source_branch_id)}
+                                                    {branchStockForProduct(
+                                                        product || {},
+                                                        data.source_branch_id
+                                                    )}
                                                 </td>
                                                 <td className="custom-body-td">
                                                     <input
@@ -173,7 +250,11 @@ const Create = ({
                                                         className="custom-input"
                                                         value={row.requested_quantity}
                                                         onChange={(e) =>
-                                                            updateRow(index, "requested_quantity", e.target.value)
+                                                            updateRow(
+                                                                index,
+                                                                "requested_quantity",
+                                                                e.target.value
+                                                            )
                                                         }
                                                         required
                                                     />
@@ -193,16 +274,10 @@ const Create = ({
                                 </tbody>
                             </table>
                         </div>
-                        <small className="text-destructive">{errors.items}</small>
-                    </div>
-
-                    <div className="flex justify-end">
-                        <button type="submit" disabled={processing} className="create-button">
-                            {processing ? "Saving..." : "Create Request"}
-                        </button>
-                    </div>
+                        {errors.items ? <p className="field-error">{errors.items}</p> : null}
+                    </CreateSectionCard>
                 </form>
-            </section>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

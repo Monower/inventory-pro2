@@ -7,6 +7,7 @@ import { EditIcon, Trash2Icon } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import ListPageLayout from "@/Components/List/ListPageLayout";
 
 const Index = ({ customers }) => {
     const { filters } = usePage().props;
@@ -52,17 +53,19 @@ const Index = ({ customers }) => {
 
     return (
         <AuthenticatedLayout title="Customers">
-            <section>
-                {/* Header */}
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="heading">Customers</h3>
-                    <Link
-                        href="/customer/create"
-                        className="create-button"
-                    >
+            <ListPageLayout
+                title="Customers"
+                description="Manage customer profiles, contact details, and relationship data in a cleaner directory built for search, editing, and repeat sales workflows."
+                actions={
+                    <Link href="/customer/create" className="create-button">
                         Create Customer
                     </Link>
-                </div>
+                }
+                stats={[
+                    { label: "Visible records", value: `${list.length}` },
+                    { label: "Total records", value: `${customers?.total || 0}` },
+                ]}
+            >
                 <IndexFilters
                     routeName="customers.index"
                     initialQuery={filters?.q || ""}
@@ -146,7 +149,7 @@ const Index = ({ customers }) => {
                     )}
                 </div>
                 <Pagination links={customers?.links} />
-            </section>
+            </ListPageLayout>
         </AuthenticatedLayout>
     );
 };

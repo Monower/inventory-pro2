@@ -1,9 +1,11 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage } from "@inertiajs/react";
-import BackButton from "@/Components/BackButton/BackButton";
 import { useState } from "react";
 import Alert from "@/Components/Alert/Alert";
 import { sanitizePhoneInput } from "@/lib/phone";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Create = () => {
     const { settings } = usePage().props;
@@ -19,36 +21,68 @@ const Create = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if(data?.phone?.trim() === "") {
+        if (data?.phone?.trim() === "") {
             setClientError("Customer phone is required.");
             return;
         }
+
         setClientError("");
         post(route("customer.store"));
     };
 
     return (
         <AuthenticatedLayout title="Create Customer">
-            <section>
-                {/* Header */}
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"customers.index"} />
-                    <h3 className="heading">Create Customer</h3>
-                </div>
-                {clientError && <Alert flash={{ error: clientError }} autoHideMs={3000} />}
+            <CreatePageLayout
+                title="Create Customer"
+                description="Capture clean customer information so orders, due tracking, communication, and repeat sales stay reliable from the start."
+                backRoute="customers.index"
+                meta={[
+                    { label: "Required", value: "Phone number" },
+                    { label: "Outcome", value: "Reusable customer profile" },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Customer Data Tips"
+                        items={[
+                            {
+                                title: "Phone first",
+                                description:
+                                    "A valid phone number makes repeat checkout and collections easier.",
+                            },
+                            {
+                                title: "Use optional details wisely",
+                                description:
+                                    "Email and address are helpful for invoices, delivery, and customer support.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                {clientError ? (
+                    <Alert flash={{ error: clientError }} autoHideMs={3000} />
+                ) : null}
 
-                {/* Form */}
-                <div>
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-
-                            {/* Phone */}
-                            <div>
+                <form onSubmit={handleSubmit}>
+                    <CreateSectionCard
+                        title="Customer Profile"
+                        description="Start with the contact details you need for daily operations. You can enrich the profile later as the relationship grows."
+                        footer={
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    className="create-button"
+                                    disabled={processing}
+                                >
+                                    {processing ? "Saving..." : "Create customer"}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="form-grid">
+                            <div className="field-stack">
                                 <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label className="required-label">
-                                            Phone
-                                        </label>
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Phone
                                     </legend>
                                     <input
                                         type="text"
@@ -67,98 +101,74 @@ const Create = () => {
                                         required
                                     />
                                 </fieldset>
-                                <div className="mt-1 text-right text-xs text-muted-foreground">
+                                <div className="text-right text-xs text-muted-foreground">
                                     {data.phone.length}/{phoneDigits}
                                 </div>
-                                <small className="text-destructive">
-                                    {errors.phone}
-                                </small>
+                                {errors.phone ? (
+                                    <p className="field-error">{errors.phone}</p>
+                                ) : null}
                             </div>
 
-                            {/* Name */}
-                            <div>
+                            <div className="field-stack">
                                 <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label>
-                                            Name
-                                        </label>
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Name
                                     </legend>
                                     <input
                                         type="text"
                                         name="name"
-                                        onChange={(e) =>
-                                            setData("name", e.target.value)
-                                        }
+                                        onChange={(e) => setData("name", e.target.value)}
                                         value={data.name}
                                         className="custom-input"
                                         placeholder="Enter customer name"
                                     />
                                 </fieldset>
-                                <small className="text-destructive">
-                                    {errors.name}
-                                </small>
+                                {errors.name ? (
+                                    <p className="field-error">{errors.name}</p>
+                                ) : null}
                             </div>
 
-                            
-
-                            {/* Email */}
-                            <div>
+                            <div className="field-stack">
                                 <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label>
-                                            Email
-                                        </label>
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Email
                                     </legend>
                                     <input
                                         type="email"
                                         name="email"
-                                        onChange={(e) =>
-                                            setData("email", e.target.value)
-                                        }
+                                        onChange={(e) => setData("email", e.target.value)}
                                         value={data.email}
                                         className="custom-input"
                                         placeholder="Enter customer email"
                                     />
                                 </fieldset>
-                                <small className="text-destructive">
-                                    {errors.email}
-                                </small>
+                                {errors.email ? (
+                                    <p className="field-error">{errors.email}</p>
+                                ) : null}
                             </div>
 
-                            {/* Address */}
-                            <div>
-                                <fieldset className="custom-fieldset lg:col-span-3">
-                                    <legend className="text-sm mx-2">
-                                        <label>Address</label>
+                            <div className="field-stack md:col-span-2 xl:col-span-3">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Address
                                     </legend>
                                     <textarea
                                         name="address"
-                                        onChange={(e) =>
-                                            setData("address", e.target.value)
-                                        }
+                                        onChange={(e) => setData("address", e.target.value)}
                                         value={data.address}
                                         className="custom-input resize-none"
                                         placeholder="Enter customer address"
-                                        rows={3}
-                                    ></textarea>
-                                    <small className="text-destructive">
-                                        {errors.address}
-                                    </small>
+                                        rows={4}
+                                    />
                                 </fieldset>
+                                {errors.address ? (
+                                    <p className="field-error">{errors.address}</p>
+                                ) : null}
                             </div>
                         </div>
-
-                        {/* Submit Button */}
-                        <div className="w-full flex justify-end">
-                            <button type="submit" className="create-button" disabled={processing}>
-                                {
-                                    processing ? "Saving..." : "Save"
-                                }
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
+                    </CreateSectionCard>
+                </form>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

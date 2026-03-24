@@ -1,7 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, Link, usePage } from "@inertiajs/react";
-import BackButton from "@/Components/BackButton/BackButton";
 import { sanitizePhoneInput } from "@/lib/phone";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Edit = ({ customer }) => {
     const { settings } = usePage().props;
@@ -27,24 +29,61 @@ const Edit = ({ customer }) => {
 
     return (
         <AuthenticatedLayout title="Edit Customer">
-            <section>
-                {/* Header */}
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"customers.index"} />
-                    <h1 className="heading">Edit Customer</h1>
-                </div>
-
-                {/* Form */}
-                <div>
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
+            <CreatePageLayout
+                title="Edit Customer"
+                description="Update customer information so sales, follow-up, and due collection continue to use accurate contact details."
+                backRoute="customers.index"
+                badge="Edit"
+                meta={[
+                    { label: "Customer ID", value: `${customer.id}` },
+                    { label: "Phone digits", value: `${phoneDigits}` },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Editing Guidance"
+                        items={[
+                            {
+                                title: "Keep the primary phone current",
+                                description:
+                                    "This record is often used during repeat checkout and collection follow-up.",
+                            },
+                            {
+                                title: "Use address only when useful",
+                                description:
+                                    "A clean profile is easier to search and maintain than one filled with outdated details.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={handleSubmit}>
+                    <CreateSectionCard
+                        title="Customer Profile"
+                        description="Refine the customer record without changing the overall relationship history attached to it."
+                        footer={
+                            <div className="flex justify-end gap-3">
+                                <Link
+                                    href={route("customers.index")}
+                                    className="secondary-button"
+                                >
+                                    Cancel
+                                </Link>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="create-button"
+                                >
+                                    {processing ? "Updating..." : "Update customer"}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="form-grid">
                             {/* Phone */}
-                            <div>
+                            <div className="field-stack">
                                 <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                            Phone
-                                        </label>
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Phone
                                     </legend>
                                     <input
                                         value={data.phone}
@@ -65,19 +104,15 @@ const Edit = ({ customer }) => {
                                 <div className="mt-1 text-right text-xs text-muted-foreground">
                                     {data.phone.length}/{phoneDigits}
                                 </div>
-                                <small className="text-destructive">
-                                    {errors.phone}
-                                </small>
+                                <small className="text-destructive">{errors.phone}</small>
                             </div>
 
 
                             {/* Name */}
-                            <div>
+                            <div className="field-stack">
                                 <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                            Name
-                                        </label>
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Name
                                     </legend>
                                     <input
                                         value={data.name}
@@ -90,20 +125,16 @@ const Edit = ({ customer }) => {
                                         placeholder="Enter customer name"
                                     />
                                 </fieldset>
-                                <small className="text-destructive">
-                                    {errors.name}
-                                </small>
+                                <small className="text-destructive">{errors.name}</small>
                             </div>
 
                             
 
                             {/* Email */}
-                            <div>
+                            <div className="field-stack">
                                 <fieldset className="custom-fieldset">
-                                    <legend className="text-sm mx-2">
-                                        <label>
-                                            Email
-                                        </label>
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Email
                                     </legend>
                                     <input
                                         value={data.email}
@@ -116,16 +147,14 @@ const Edit = ({ customer }) => {
                                         placeholder="Enter customer email"
                                     />
                                 </fieldset>
-                                <small className="text-destructive">
-                                    {errors.email}
-                                </small>
+                                <small className="text-destructive">{errors.email}</small>
                             </div>
 
                             {/* Address */}
-                            <div>
-                                <fieldset className="custom-fieldset lg:col-span-3">
-                                    <legend className="text-sm mx-2">
-                                        <label>Address</label>
+                            <div className="field-stack md:col-span-2 xl:col-span-3">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Address
                                     </legend>
                                     <textarea
                                         value={data.address}
@@ -138,33 +167,12 @@ const Edit = ({ customer }) => {
                                         rows={3}
                                     ></textarea>
                                 </fieldset>
-                                <small className="text-destructive">
-                                    {errors.address}
-                                </small>
+                                <small className="text-destructive">{errors.address}</small>
                             </div>
                         </div>
-
-                        {/* Submit Button */}
-                        <div className="w-full flex justify-end">
-                            <Link
-                                href={route("customers.index")}
-                                className="delete-button mr-2 text-center"
-                            >
-                                Cancel
-                            </Link>
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="create-button"
-                            >
-                                {
-                                    processing ? "Updating..." : "Update"
-                                }
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
+                    </CreateSectionCard>
+                </form>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

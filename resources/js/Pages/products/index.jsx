@@ -5,6 +5,7 @@ import { EditIcon, EyeIcon, Trash2Icon } from "lucide-react";
 import { dateTimeFormater } from "@/util/DateFormater";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import ListPageLayout from "@/Components/List/ListPageLayout";
 
 const Index = () => {
     const { products, filters } = usePage().props;
@@ -20,16 +21,22 @@ const Index = () => {
 
     return (
         <AuthenticatedLayout title="Products">
-            <section>
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="heading">Products</h3>
+            <ListPageLayout
+                title="Products"
+                description="Browse and manage your product catalog with quick access to pricing, stock, media, and product maintenance actions."
+                actions={
                     <Link
                         href={route("products.create")}
                         className="create-button"
                     >
                         Create Product
                     </Link>
-                </div>
+                }
+                stats={[
+                    { label: "Visible products", value: `${list.length}` },
+                    { label: "Total products", value: `${products?.total || 0}` },
+                ]}
+            >
                 <IndexFilters
                     routeName="products.index"
                     initialQuery={filters?.q || ""}
@@ -124,7 +131,7 @@ const Index = () => {
                     )}
                 </div>
                 <Pagination links={products?.links} />
-            </section>
+            </ListPageLayout>
         </AuthenticatedLayout>
     );
 };

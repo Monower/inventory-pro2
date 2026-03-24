@@ -1,11 +1,13 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
-import BackButton from "@/Components/BackButton/BackButton";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Create = ({ permissions }) => {
     const { data, setData, post, errors } = useForm({
         name: "",
-        permissions: [], // will store permission names
+        permissions: [],
     });
 
     const handleSubmit = (e) => {
@@ -13,7 +15,6 @@ const Create = ({ permissions }) => {
         post(route("role.store"));
     };
 
-    // Handle individual checkbox changes
     const handleCheckboxChange = (e) => {
         const value = e.target.value;
         if (e.target.checked) {
@@ -26,11 +27,9 @@ const Create = ({ permissions }) => {
         }
     };
 
-    // Handle "Select All" for a category
     const handleCategorySelectAll = (resource, perms) => {
-        const allSelected = perms.every(p => data.permissions.includes(p.name));
+        const allSelected = perms.every((p) => data.permissions.includes(p.name));
         if (allSelected) {
-            // Deselect all
             setData(
                 "permissions",
                 data.permissions.filter(
@@ -38,17 +37,17 @@ const Create = ({ permissions }) => {
                 )
             );
         } else {
-            // Select all
             const namesToAdd = perms.map((p) => p.name);
-            const newPermissions = Array.from(new Set([...data.permissions, ...namesToAdd]));
+            const newPermissions = Array.from(
+                new Set([...data.permissions, ...namesToAdd])
+            );
             setData("permissions", newPermissions);
         }
     };
 
-    // Group permissions by resource
     const groupedPermissions = permissions.reduce((groups, permission) => {
         const parts = permission.name.split(" ");
-        const resource = parts.slice(1).join(" "); // e.g. "customer", "dashboard"
+        const resource = parts.slice(1).join(" ");
         if (!groups[resource]) groups[resource] = [];
         groups[resource].push(permission);
         return groups;
@@ -56,96 +55,132 @@ const Create = ({ permissions }) => {
 
     return (
         <AuthenticatedLayout title="Create Role">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"roles.index"} />
-                    <h3 className="text-xl font-semibold">Create Role</h3>
-                </div>
-
-                <form onSubmit={handleSubmit}>
-                    {/* Role name */}
-                    <div className="mb-4">
-                        <fieldset className="custom-fieldset p-2 rounded">
-                            <legend className="text-sm mx-2">
-                                <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+            <CreatePageLayout
+                title="Create Role"
+                description="Create a role with a focused permission set so employees only see and perform the actions that match their responsibilities."
+                backRoute="roles.index"
+                meta={[
+                    { label: "Module", value: "Access control" },
+                    {
+                        label: "Strategy",
+                        value: "Least-privilege permissions",
+                    },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Permission Strategy"
+                        items={[
+                            {
+                                title: "Keep roles job-based",
+                                description:
+                                    "Create roles around real responsibilities like cashier, manager, or warehouse staff.",
+                            },
+                            {
+                                title: "Avoid over-granting",
+                                description:
+                                    "Fewer permissions reduce mistakes and make audits much easier later.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <CreateSectionCard
+                        title="Role Identity"
+                        description="Give the role a clear, recognizable name that maps cleanly to your team structure."
+                    >
+                        <div className="max-w-2xl field-stack">
+                            <fieldset className="custom-fieldset">
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
                                     Role name
-                                </label>
-                            </legend>
-                            <input
-                                type="text"
-                                name="name"
-                                value={data.name}
-                                onChange={(e) => setData("name", e.target.value)}
-                                className="custom-input p-0"
-                                placeholder="Enter role name"
-                            />
-                            {errors.name && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.name}
-                                </p>
-                            )}
-                        </fieldset>
-                    </div>
-
-                    <h3 className="text-lg font-semibold mb-2">Permissions:</h3>
-
-                    {/* Grouped permissions */}
-                    <div className="mb-4">
-                        {Object.entries(groupedPermissions).map(([resource, perms]) => (
-                            <fieldset
-                                key={resource}
-                                className="custom-fieldset p-2 rounded mb-3"
-                            >
-                                <legend className="text-sm font-semibold mx-2 capitalize">
-                                    {resource}
                                 </legend>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={data.name}
+                                    onChange={(e) => setData("name", e.target.value)}
+                                    className="custom-input"
+                                    placeholder="Enter role name"
+                                />
+                            </fieldset>
+                            {errors.name ? <p className="field-error">{errors.name}</p> : null}
+                        </div>
+                    </CreateSectionCard>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
-                                    {/* "Select All" checkbox */}
-                                    <label className="flex items-center space-x-2 font-semibold">
-                                        <input
-                                            type="checkbox"
-                                            checked={perms.every(p => data.permissions.includes(p.name))}
-                                            onChange={() => handleCategorySelectAll(resource, perms)}
-                                        />
-                                        <span>Select All</span>
-                                    </label>
+                    <CreateSectionCard
+                        title="Permissions"
+                        description="Choose only the permissions this role needs. You can bulk-select by module or fine-tune action by action."
+                        footer={
+                            <div className="flex justify-end">
+                                <button type="submit" className="create-button">
+                                    Save role
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="space-y-4">
+                            {Object.entries(groupedPermissions).map(([resource, perms]) => (
+                                <div
+                                    key={resource}
+                                    className="rounded-[20px] border border-border bg-background/70 p-4"
+                                >
+                                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <h3 className="text-base font-semibold capitalize text-foreground">
+                                                {resource}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                Manage who can access and operate this module.
+                                            </p>
+                                        </div>
 
-                                    {/* Individual permission checkboxes */}
-                                    {perms.map((permission) => (
-                                        <label
-                                            key={permission.id}
-                                            className="flex items-center space-x-2"
-                                        >
+                                        <label className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground">
                                             <input
                                                 type="checkbox"
-                                                value={permission.name}
-                                                checked={data.permissions.includes(permission.name)}
-                                                onChange={handleCheckboxChange}
+                                                checked={perms.every((p) =>
+                                                    data.permissions.includes(p.name)
+                                                )}
+                                                onChange={() =>
+                                                    handleCategorySelectAll(
+                                                        resource,
+                                                        perms
+                                                    )
+                                                }
                                             />
-                                            <span className="capitalize">{permission.name}</span>
+                                            Select all
                                         </label>
-                                    ))}
-                                </div>
-                            </fieldset>
-                        ))}
-                        {errors.permissions && (
-                            <p className="text-red-500 text-sm mt-1">
-                                {errors.permissions}
-                            </p>
-                        )}
-                    </div>
+                                    </div>
 
-                    <div>
-                        <button
-                            type="submit"
-                            className="create-button"
-                        >
-                            Save
-                        </button>
-                    </div>
+                                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                        {perms.map((permission) => (
+                                            <label
+                                                key={permission.id}
+                                                className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    value={permission.name}
+                                                    checked={data.permissions.includes(
+                                                        permission.name
+                                                    )}
+                                                    onChange={handleCheckboxChange}
+                                                />
+                                                <span className="capitalize">
+                                                    {permission.name}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {errors.permissions ? (
+                                <p className="field-error">{errors.permissions}</p>
+                            ) : null}
+                        </div>
+                    </CreateSectionCard>
                 </form>
-            </section>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

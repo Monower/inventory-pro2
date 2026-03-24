@@ -1,6 +1,8 @@
 import { useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import BackButton from "@/Components/BackButton/BackButton";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 export default function SalaryCreate({ staff }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -17,106 +19,125 @@ export default function SalaryCreate({ staff }) {
 
     return (
         <AuthenticatedLayout title="Create Salary">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"salaries.index"} />
-                    <h3 className="heading">Create Salary</h3>
-                </div>
-
-                <div>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">Employee</label>
-                                </legend>
-
-                                <select
-                                    value={data.staff_id}
-                                    onChange={(e) =>
-                                        setData("staff_id", e.target.value)
-                                    }
-                                    className="custom-input"
+            <CreatePageLayout
+                title="Create Salary"
+                description="Generate a salary entry for a team member with any bonus or deduction adjustments applied before final processing."
+                backRoute="salaries.index"
+                meta={[
+                    { label: "Module", value: "Payroll" },
+                    { label: "Cycle format", value: "YYYY-MM" },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Payroll Reminders"
+                        items={[
+                            {
+                                title: "Use one cycle per employee",
+                                description:
+                                    "A consistent month format prevents duplicate or confusing salary records.",
+                            },
+                            {
+                                title: "Track adjustments separately",
+                                description:
+                                    "Bonuses and deductions should reflect clear business reasons for future review.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={handleSubmit}>
+                    <CreateSectionCard
+                        title="Salary Entry"
+                        description="Choose the employee and payroll month first, then add any financial adjustments that affect the final payout."
+                        footer={
+                            <div className="flex justify-end">
+                                <button
+                                    className="create-button"
+                                    type="submit"
+                                    disabled={processing}
                                 >
-                                    <option value="">Select employee</option>
-                                    {staff.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.staff_id && (
-                                    <p className="text-red-600">
-                                        {errors.staff_id}
-                                    </p>
-                                )}
-                            </fieldset>
+                                    {processing ? "Saving..." : "Generate salary"}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="form-grid">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Employee
+                                    </legend>
+                                    <select
+                                        value={data.staff_id}
+                                        onChange={(e) => setData("staff_id", e.target.value)}
+                                        className="custom-input"
+                                    >
+                                        <option value="">Select employee</option>
+                                        {staff.map((s) => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                {errors.staff_id ? (
+                                    <p className="field-error">{errors.staff_id}</p>
+                                ) : null}
+                            </div>
 
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Month
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        value={data.month}
+                                        onChange={(e) => setData("month", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="2026-03"
+                                    />
+                                </fieldset>
+                                {errors.month ? (
+                                    <p className="field-error">{errors.month}</p>
+                                ) : null}
+                            </div>
 
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label>Month (YYYY-MM)</label>
-                                </legend>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Bonus
+                                    </legend>
+                                    <input
+                                        type="number"
+                                        value={data.bonus}
+                                        onChange={(e) => setData("bonus", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Optional bonus amount"
+                                    />
+                                </fieldset>
+                            </div>
 
-                                <input
-                                    type="text"
-                                    value={data.month}
-                                    onChange={(e) =>
-                                        setData("month", e.target.value)
-                                    }
-                                    className="custom-input"
-                                />
-                                {errors.month && (
-                                    <p className="text-red-600">
-                                        {errors.month}
-                                    </p>
-                                )}
-                            </fieldset>
-
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label>Bonus</label>
-                                </legend>
-
-                                <input
-                                    type="number"
-                                    value={data.bonus}
-                                    onChange={(e) =>
-                                        setData("bonus", e.target.value)
-                                    }
-                                    className="custom-input"
-                                />
-                            </fieldset>
-
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label>Deductions</label>
-                                </legend>
-
-                                <input
-                                    type="number"
-                                    value={data.deductions}
-                                    onChange={(e) =>
-                                        setData("deductions", e.target.value)
-                                    }
-                                    className="custom-input"
-                                />
-                            </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Deductions
+                                    </legend>
+                                    <input
+                                        type="number"
+                                        value={data.deductions}
+                                        onChange={(e) =>
+                                            setData("deductions", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Optional deductions"
+                                    />
+                                </fieldset>
+                            </div>
                         </div>
-
-                        <div className="w-full flex justify-end">
-                            <button
-                                className="create-button"
-                                type="submit"
-                                disabled={processing}
-                            >
-                                {processing ? "Saving..." : "Generate"}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
+                    </CreateSectionCard>
+                </form>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 }

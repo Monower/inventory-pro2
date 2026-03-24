@@ -6,6 +6,7 @@ import { dateTimeFormater } from "@/util/DateFormater";
 import { usePage } from "@inertiajs/react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import ListPageLayout from "@/Components/List/ListPageLayout";
 
 const Index = ({ orders, customers = [], staffs = [] }) => {
     const { filters, auth } = usePage().props;
@@ -125,17 +126,23 @@ const Index = ({ orders, customers = [], staffs = [] }) => {
 
     return (
         <AuthenticatedLayout title="Orders">
-            <section>
-                {/* Header */}
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">{pageTitle}</h3>
+            <ListPageLayout
+                title={pageTitle}
+                description="Track sales orders with stronger filtering, cleaner status visibility, and faster access to viewing, editing, and follow-up actions."
+                actions={
                     <Link
                         href={route("orders.create")}
                         className="create-button"
                     >
                         Create Order
                     </Link>
-                </div>
+                }
+                stats={[
+                    { label: "Visible orders", value: `${list.length}` },
+                    { label: "Total orders", value: `${orders?.total || 0}` },
+                    { label: "View mode", value: currentView },
+                ]}
+            >
                 <IndexFilters
                     routeName="orders.index"
                     initialQuery={filters?.q || ""}
@@ -396,7 +403,7 @@ const Index = ({ orders, customers = [], staffs = [] }) => {
                     )}
                 />
                 <Pagination links={orders?.links} />
-            </section>
+            </ListPageLayout>
         </AuthenticatedLayout>
     );
 };

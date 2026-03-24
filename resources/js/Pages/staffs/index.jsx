@@ -4,6 +4,7 @@ import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, Trash2Icon } from "lucide-react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import ListPageLayout from "@/Components/List/ListPageLayout";
 
 const Index = ({ staffs }) => {
     const { auth, filters } = usePage().props;
@@ -26,16 +27,21 @@ const Index = ({ staffs }) => {
 
     return (
         <AuthenticatedLayout title="Employees">
-            <section>
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="heading">Employees</h3>
-
-                    {canCreateStaff && (
+            <ListPageLayout
+                title="Employees"
+                description="Manage employee records, branch alignment, role visibility, and payroll context from one cleaner team directory."
+                actions={
+                    canCreateStaff ? (
                         <Link href="/employee/create" className="create-button">
                             Create Employee
                         </Link>
-                    )}
-                </div>
+                    ) : null
+                }
+                stats={[
+                    { label: "Visible employees", value: `${list.length}` },
+                    { label: "Total employees", value: `${staffs?.total || 0}` },
+                ]}
+            >
                 <IndexFilters
                     routeName="employees.index"
                     initialQuery={filters?.q || ""}
@@ -98,7 +104,7 @@ const Index = ({ staffs }) => {
                     )}
                 </div>
                 <Pagination links={staffs?.links} />
-            </section>
+            </ListPageLayout>
         </AuthenticatedLayout>
     );
 };

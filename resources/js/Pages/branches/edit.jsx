@@ -1,6 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm } from "@inertiajs/react";
-import BackButton from "@/Components/BackButton/BackButton";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Edit = ({ branch }) => {
     const { data, setData, put, processing, errors, transform } = useForm({
@@ -23,19 +25,53 @@ const Edit = ({ branch }) => {
 
     return (
         <AuthenticatedLayout title="Edit Branch">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"branches.index"} />
-                    <h3 className="heading">Edit Branch</h3>
-                </div>
+            <CreatePageLayout
+                title="Edit Branch"
+                description="Update branch identity, status, and contact details so multi-branch operations keep using accurate location data."
+                backRoute="branches.index"
+                badge="Edit"
+                meta={[
+                    { label: "Branch ID", value: `${branch.id}` },
+                    { label: "Code", value: data.code || "Not set" },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Branch Maintenance"
+                        items={[
+                            {
+                                title: "Protect the branch code",
+                                description:
+                                    "Consistent codes make branch switching, reporting, and stock transfer references easier to trust.",
+                            },
+                            {
+                                title: "Use inactive instead of delete when possible",
+                                description:
+                                    "Preserving branch records helps avoid confusion in historical reports.",
+                            },
+                        ]}
+                    />
+                }
+            >
 
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-4 grid grid-cols-1 gap-2 lg:grid-cols-3">
-                        <div>
+                    <CreateSectionCard
+                        title="Branch Profile"
+                        description="Refine how this branch appears across operational workflows and reports."
+                        footer={
+                            <div className="flex justify-end gap-3">
+                                <Link href={route("branches.index")} className="secondary-button">
+                                    Cancel
+                                </Link>
+                                <button type="submit" disabled={processing} className="create-button">
+                                    {processing ? "Updating..." : "Update branch"}
+                                </button>
+                            </div>
+                        }
+                    >
+                    <div className="form-grid">
+                        <div className="field-stack">
                             <fieldset className="custom-fieldset">
-                                <legend className="mx-2 text-sm">
-                                    <label className="required-label">Name</label>
-                                </legend>
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">Name</legend>
                                 <input
                                     type="text"
                                     value={data.name}
@@ -45,11 +81,9 @@ const Edit = ({ branch }) => {
                             </fieldset>
                             <small className="text-destructive">{errors.name}</small>
                         </div>
-                        <div>
+                        <div className="field-stack">
                             <fieldset className="custom-fieldset">
-                                <legend className="mx-2 text-sm">
-                                    <label className="required-label">Code</label>
-                                </legend>
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">Code</legend>
                                 <input
                                     type="text"
                                     value={data.code}
@@ -59,11 +93,9 @@ const Edit = ({ branch }) => {
                             </fieldset>
                             <small className="text-destructive">{errors.code}</small>
                         </div>
-                        <div>
+                        <div className="field-stack">
                             <fieldset className="custom-fieldset">
-                                <legend className="mx-2 text-sm">
-                                    <label>Phone</label>
-                                </legend>
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">Phone</legend>
                                 <input
                                     type="text"
                                     value={data.phone}
@@ -73,11 +105,9 @@ const Edit = ({ branch }) => {
                             </fieldset>
                             <small className="text-destructive">{errors.phone}</small>
                         </div>
-                        <div>
+                        <div className="field-stack">
                             <fieldset className="custom-fieldset">
-                                <legend className="mx-2 text-sm">
-                                    <label>Email</label>
-                                </legend>
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">Email</legend>
                                 <input
                                     type="email"
                                     value={data.email}
@@ -87,11 +117,9 @@ const Edit = ({ branch }) => {
                             </fieldset>
                             <small className="text-destructive">{errors.email}</small>
                         </div>
-                        <div>
+                        <div className="field-stack">
                             <fieldset className="custom-fieldset">
-                                <legend className="mx-2 text-sm">
-                                    <label>Status</label>
-                                </legend>
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">Status</legend>
                                 <select
                                     value={data.is_active ? "1" : "0"}
                                     onChange={(e) => setData("is_active", e.target.value === "1")}
@@ -103,11 +131,9 @@ const Edit = ({ branch }) => {
                             </fieldset>
                             <small className="text-destructive">{errors.is_active}</small>
                         </div>
-                        <div className="lg:col-span-3">
+                        <div className="field-stack md:col-span-2 xl:col-span-3">
                             <fieldset className="custom-fieldset">
-                                <legend className="mx-2 text-sm">
-                                    <label>Address</label>
-                                </legend>
+                                <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">Address</legend>
                                 <textarea
                                     value={data.address}
                                     onChange={(e) => setData("address", e.target.value)}
@@ -118,17 +144,9 @@ const Edit = ({ branch }) => {
                             <small className="text-destructive">{errors.address}</small>
                         </div>
                     </div>
-
-                    <div className="flex justify-end gap-2">
-                        <Link href={route("branches.index")} className="delete-button">
-                            Cancel
-                        </Link>
-                        <button type="submit" disabled={processing} className="create-button">
-                            {processing ? "Updating..." : "Update"}
-                        </button>
-                    </div>
+                    </CreateSectionCard>
                 </form>
-            </section>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

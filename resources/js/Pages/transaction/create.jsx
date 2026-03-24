@@ -1,11 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage } from "@inertiajs/react";
-import BackButton from "@/Components/BackButton/BackButton";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Create = () => {
     const { url } = usePage();
-    const searchParams = new URLSearchParams(new URL(url, window.location.origin).search);
-    const { data, setData, post, errors } = useForm({
+    const searchParams = new URLSearchParams(
+        new URL(url, window.location.origin).search
+    );
+    const { data, setData, post, errors, processing } = useForm({
         name: "",
         paymentMethod: "cash",
         transaction_type: searchParams.get("type") || "",
@@ -20,106 +24,129 @@ const Create = () => {
 
     return (
         <AuthenticatedLayout title="Create Transaction">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"transactions.index"} />
-                    <h3 className="text-xl font-semibold">Create Transaction</h3>
-                </div>
-
-                <div>
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
-                            <fieldset className="custom-fieldset p-2">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+            <CreatePageLayout
+                title="Create Transaction"
+                description="Log a financial transaction with a clear payment method, source, and amount so your income and expense records remain trustworthy."
+                backRoute="transactions.index"
+                meta={[
+                    {
+                        label: "Transaction type",
+                        value: data.transaction_type || "Manual selection",
+                    },
+                    { label: "Module", value: "Cash flow tracking" },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Entry Guidance"
+                        items={[
+                            {
+                                title: "Use a descriptive name",
+                                description:
+                                    "Names like rent, courier income, or office expense make reports easier to understand.",
+                            },
+                            {
+                                title: "Match the real payment channel",
+                                description:
+                                    "Choosing the correct payment method helps reconcile cash, bank, and mobile balances later.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={handleSubmit}>
+                    <CreateSectionCard
+                        title="Transaction Details"
+                        description="Capture the operational context for this transaction so it stays useful in reporting, reconciliation, and audits."
+                        footer={
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    className="create-button"
+                                    disabled={processing}
+                                >
+                                    {processing ? "Saving..." : "Create transaction"}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="form-grid">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
                                         Name
-                                    </label>
-                                </legend>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    onChange={(e) =>
-                                        setData("name", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter transaction name"
-                                />
-                            </fieldset>
-                            <fieldset className="custom-fieldset p-2">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Payment method
-                                    </label>
-                                </legend>
-                                <select name="paymentMethod" onChange={(e) => setData("paymentMethod", e.target.value)} className="custom-input">
-                                    <option value="cash">Cash</option>
-                                    <option value="bank">Bank</option>
-                                    <option value="mobileBanking">Mobile banking</option>
-                                </select>
-                                {/* <input
-                                    type="text"
-                                    name="paymentMethod"
-                                    onChange={(e) =>
-                                        setData("paymentMethod", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter payment method"
-                                /> */}
-                            </fieldset>
-                            {/* <fieldset className="border border-gray-300 bg-white">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Transaction type
-                                    </label>
-                                </legend>
-                                <input
-                                    type="text"
-                                    name="transaction_type"
-                                    onChange={(e) =>
-                                        setData("transaction_type", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter transaction type"
-                                />
-                            </fieldset> */}
-                            <fieldset className="custom-fieldset p-2">
-                                <legend className="text-sm mx-2">
-                                    <label>Source</label>
-                                </legend>
-                                <input
-                                    type="text"
-                                    name="source"
-                                    onChange={(e) =>
-                                        setData("source", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter source name"
-                                />
-                            </fieldset>
-                            <fieldset className="custom-fieldset p-2">
-                                <legend className="text-sm mx-2">
-                                    <label>Amount</label>
-                                </legend>
-                                <input
-                                    type="number"
-                                    name="amount"
-                                    onChange={(e) =>
-                                        setData("amount", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter amount"
-                                />
-                            </fieldset>
-                        </div>
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={data.name}
+                                        onChange={(e) => setData("name", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter transaction name"
+                                    />
+                                </fieldset>
+                                {errors.name ? <p className="field-error">{errors.name}</p> : null}
+                            </div>
 
-                        <div>
-                            <button className="create-button">
-                                Save
-                            </button>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Payment method
+                                    </legend>
+                                    <select
+                                        name="paymentMethod"
+                                        value={data.paymentMethod}
+                                        onChange={(e) =>
+                                            setData("paymentMethod", e.target.value)
+                                        }
+                                        className="custom-input"
+                                    >
+                                        <option value="cash">Cash</option>
+                                        <option value="bank">Bank</option>
+                                        <option value="mobileBanking">
+                                            Mobile banking
+                                        </option>
+                                    </select>
+                                </fieldset>
+                            </div>
+
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Source
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        name="source"
+                                        value={data.source}
+                                        onChange={(e) => setData("source", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter source name"
+                                    />
+                                </fieldset>
+                            </div>
+
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Amount
+                                    </legend>
+                                    <input
+                                        type="number"
+                                        name="amount"
+                                        value={data.amount}
+                                        onChange={(e) => setData("amount", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter amount"
+                                    />
+                                </fieldset>
+                                {errors.amount ? (
+                                    <p className="field-error">{errors.amount}</p>
+                                ) : null}
+                            </div>
                         </div>
-                    </form>
-                </div>
-            </section>
+                    </CreateSectionCard>
+                </form>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

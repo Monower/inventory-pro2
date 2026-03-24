@@ -118,7 +118,7 @@
   }
 
   .heading {
-    @apply text-xl font-semibold;
+    @apply text-xl font-semibold tracking-tight text-foreground;
   }
 
   .menu-sublink {
@@ -126,27 +126,27 @@
   }
 
   .show-button {
-    @apply bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] px-3 py-1 rounded-md hover:opacity-90 transition-colors duration-300 ease-in-out;
+    @apply inline-flex items-center justify-center rounded-xl border border-border bg-[hsl(var(--secondary))] px-3 py-2 text-sm font-medium text-[hsl(var(--secondary-foreground))] hover:opacity-90 transition-colors duration-300 ease-in-out;
   }
 
   .create-button {
-    @apply bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] px-3 py-1 rounded-md hover:opacity-90 transition-colors duration-300 ease-in-out;
+    @apply inline-flex items-center justify-center rounded-xl bg-[hsl(var(--primary))] px-4 py-2.5 text-sm font-semibold text-[hsl(var(--primary-foreground))] shadow-sm transition-all duration-300 ease-in-out hover:opacity-90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .edit-button {
-    @apply bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] py-1 px-3 rounded-md hover:opacity-90 transition-colors duration-300 ease-in-out;
+    @apply inline-flex items-center justify-center rounded-xl bg-[hsl(var(--accent))] px-4 py-2.5 text-sm font-medium text-[hsl(var(--accent-foreground))] transition-colors duration-300 ease-in-out hover:opacity-90;
   }
 
   .delete-button {
-    @apply bg-[hsl(var(--destructive))] text-[hsl(var(--destructive-foreground))] py-1 px-3 rounded-md hover:opacity-90 transition-colors duration-300 ease-in-out;
+    @apply inline-flex items-center justify-center rounded-xl bg-[hsl(var(--destructive))] px-3 py-2 text-sm font-medium text-[hsl(var(--destructive-foreground))] hover:opacity-90 transition-colors duration-300 ease-in-out;
   }
 
   .table-div {
-    @apply p-4 rounded-md bg-[hsl(var(--card))] border border-[hsl(var(--border))] overflow-x-auto;
+    @apply overflow-x-auto rounded-[24px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[0_18px_48px_-32px_rgba(15,23,42,0.45)];
   }
 
   .custom-table {
-    @apply w-full border-separate border-spacing-y-2
+    @apply w-full border-separate border-spacing-y-3
   }
 
   .custom-thead {
@@ -154,27 +154,43 @@
   }
 
   .custom-th {
-    @apply py-2 px-3 text-left
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.18em]
   }
 
   .custom-body-tr {
-    @apply text-[hsl(var(--foreground))] bg-[hsl(var(--background))] hover:bg-[hsl(var(--muted))] transition rounded-md
+    @apply rounded-2xl bg-[hsl(var(--background))] text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted))]
   }
 
   .custom-body-td {
-    @apply py-2 px-3 border-t border-[hsl(var(--border))] text-sm
+    @apply border-t border-[hsl(var(--border))] px-4 py-3 text-sm align-middle
   }
 
   .custom-fieldset {
-    @apply border border-[hsl(var(--border))] bg-[hsl(var(--card))] rounded-md
+    @apply rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm
   }
 
   .custom-input {
-    @apply w-full border-none bg-transparent text-[hsl(var(--foreground))] focus:outline-none focus:ring-0 placeholder:text-[hsl(var(--muted-foreground))] text-sm placeholder:text-sm p-2
+    @apply w-full border-none bg-transparent px-3 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-sm placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:ring-0
   }
   
   .modal-input {
     @apply w-full bg-transparent text-[hsl(var(--foreground))] focus:outline-none focus:ring-0 placeholder:text-[hsl(var(--muted-foreground))] text-sm placeholder:text-sm p-2
+  }
+
+  .form-grid {
+    @apply grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .field-stack {
+    @apply space-y-2;
+  }
+
+  .field-error {
+    @apply text-sm text-destructive;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted;
   }
 }
 

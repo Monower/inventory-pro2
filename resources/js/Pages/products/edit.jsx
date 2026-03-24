@@ -1,7 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
-import BackButton from "@/Components/BackButton/BackButton";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Edit = ({ product, categories, attributes, productUnits = [] }) => {
     const { settings } = usePage().props;
@@ -140,19 +142,55 @@ const Edit = ({ product, categories, attributes, productUnits = [] }) => {
 
     return (
         <AuthenticatedLayout title="Edit Product">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"products.index"} />
-                    <h3 className="text-xl font-semibold">Edit Product</h3>
-                </div>
+            <CreatePageLayout
+                title="Edit Product"
+                description="Update catalog, pricing, stock, media, and attribute details without losing the product's place in your existing workflows."
+                backRoute="products.index"
+                badge="Edit"
+                meta={[
+                    { label: "Product ID", value: `${product.id}` },
+                    { label: "Currency", value: currencySymbol },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Editing Guidance"
+                        items={[
+                            {
+                                title: "Protect catalog consistency",
+                                description:
+                                    "Only change category or attribute structure when it genuinely improves how the product is used.",
+                            },
+                            {
+                                title: "Review image and pricing together",
+                                description:
+                                    "Updated visuals and accurate pricing improve sales confidence and reduce catalog confusion.",
+                            },
+                        ]}
+                    />
+                }
+            >
                 {clientError && (
                     <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
                         {clientError}
                     </p>
                 )}
 
-                <div>
-                    <form onSubmit={handleSubmit} encType="multipart/form-data">
+                <form onSubmit={handleSubmit} encType="multipart/form-data">
+                    <CreateSectionCard
+                        title="Product Details"
+                        description="Refine the product record while keeping pricing, stock, media, and attribute data aligned."
+                        footer={
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="create-button"
+                                >
+                                    Update product
+                                </button>
+                            </div>
+                        }
+                    >
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                             {/* Product Name */}
                             <fieldset className="custom-fieldset">
@@ -461,17 +499,9 @@ const Edit = ({ product, categories, attributes, productUnits = [] }) => {
                                 )}
                             </fieldset>
                         </div>
-
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="create-button mt-2 float-right"
-                        >
-                            Update
-                        </button>
-                    </form>
-                </div>
-            </section>
+                    </CreateSectionCard>
+                </form>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

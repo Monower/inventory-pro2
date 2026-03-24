@@ -4,6 +4,7 @@ import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import { EditIcon, EyeIcon, Trash2Icon } from "lucide-react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import ListPageLayout from "@/Components/List/ListPageLayout";
 
 const Index = ({ suppliers }) => {
     const { filters } = usePage().props;
@@ -18,13 +19,19 @@ const Index = ({ suppliers }) => {
 
     return (
         <AuthenticatedLayout title="Suppliers">
-            <section>
-                <div className="mb-4 flex items-center justify-between">
-                    <h3 className="heading">Suppliers</h3>
+            <ListPageLayout
+                title="Suppliers"
+                description="Keep supplier records organized with faster access to contacts, purchasing context, and vendor maintenance actions."
+                actions={
                     <Link href={route("suppliers.create")} className="create-button">
                         Create Supplier
                     </Link>
-                </div>
+                }
+                stats={[
+                    { label: "Visible suppliers", value: `${list.length}` },
+                    { label: "Total suppliers", value: `${suppliers?.total || 0}` },
+                ]}
+            >
 
                 <IndexFilters
                     routeName="suppliers.index"
@@ -81,7 +88,7 @@ const Index = ({ suppliers }) => {
                 </div>
 
                 <Pagination links={suppliers?.links} />
-            </section>
+            </ListPageLayout>
         </AuthenticatedLayout>
     );
 };

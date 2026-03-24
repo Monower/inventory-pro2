@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import BackButton from "@/Components/BackButton/BackButton";
 import Alert from "@/Components/Alert/Alert";
 import { useState, useEffect } from "react";
 import { useForm, Link } from "@inertiajs/react";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const calculateCouponDiscount = (coupon, subtotalAfterManualDiscount) => {
     if (!coupon || subtotalAfterManualDiscount <= 0) {
@@ -206,18 +208,33 @@ const Edit = ({ order, customers, products, banks, staffs, coupons = [], branche
 
     return (
         <AuthenticatedLayout title="Edit Order">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"orders.index"} />
-                    <div>
-                        <h3 className="heading">
-                            Edit Order: {order.order_number}
-                        </h3>
-                        <p className="text-gray-500">
-                            Manage products, customers and checkout below.
-                        </p>
-                    </div>
-                </div>
+            <CreatePageLayout
+                title={`Edit Order: ${order.order_number}`}
+                description="Refine products, pricing, checkout, delivery, and payment details while preserving the order lifecycle."
+                backRoute="orders.index"
+                badge="Edit"
+                meta={[
+                    { label: "Order number", value: order.order_number },
+                    { label: "Grand total", value: grandTotal.toFixed(2) },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Order Editing Guidance"
+                        items={[
+                            {
+                                title: "Review payment before saving",
+                                description:
+                                    "The order editor blocks overpayment, but it's still worth checking the due amount after changes.",
+                            },
+                            {
+                                title: "Watch stock and fulfillment together",
+                                description:
+                                    "Branch selection affects stock visibility, while fulfillment controls the delivery workflow.",
+                            },
+                        ]}
+                    />
+                }
+            >
 
                 {/* Errors */}
                 {allErrors.length > 0 && (
@@ -240,8 +257,10 @@ const Edit = ({ order, customers, products, banks, staffs, coupons = [], branche
                 {/* Products & Cart */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     {/* Products */}
-                    <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                        <h3 className="heading">Products list</h3>
+                    <CreateSectionCard
+                        title="Products"
+                        description="Available products update against the selected branch so the order stays realistic."
+                    >
                         <div className="overflow-x-auto">
                             <table className="custom-table min-w-[640px]">
                                 <thead className="custom-thead">
@@ -292,14 +311,16 @@ const Edit = ({ order, customers, products, banks, staffs, coupons = [], branche
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </CreateSectionCard>
 
                     {/* Cart */}
-                    <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                        <h3 className="heading">Cart</h3>
+                    <CreateSectionCard
+                        title="Cart"
+                        description="Adjust existing line items before saving the revised order."
+                    >
 
                         {cart.length === 0 ? (
-                            <p className="text-gray-500">No items</p>
+                            <p className="text-muted-foreground">No items</p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="custom-table min-w-[640px]">
@@ -360,13 +381,14 @@ const Edit = ({ order, customers, products, banks, staffs, coupons = [], branche
                                 </table>
                             </div>
                         )}
-                    </div>
+                    </CreateSectionCard>
                 </div>
 
                 {/* Checkout */}
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-background border border-ring shadow-md rounded-lg p-4"
+                <form onSubmit={handleSubmit}>
+                <CreateSectionCard
+                    title="Checkout"
+                    description="Update commercial, fulfillment, and payment details before saving the order."
                 >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -686,20 +708,21 @@ const Edit = ({ order, customers, products, banks, staffs, coupons = [], branche
                         <button
                             type="submit"
                             disabled={processing}
-                            className="bg-green-600 text-white px-4 py-1 rounded-lg"
+                            className="create-button"
                         >
                             {processing ? "Updating..." : "Save Order"}
                         </button>
 
                         <Link
                             href={route("orders.index")}
-                            className="delete-button"
+                            className="secondary-button"
                         >
                             Cancel
                         </Link>
                     </div>
+                </CreateSectionCard>
                 </form>
-            </section>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

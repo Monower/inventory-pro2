@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import BackButton from "@/Components/BackButton/BackButton";
 import { useForm, usePage } from "@inertiajs/react";
 import { useEffect, useRef, useState } from "react";
 import { sanitizePhoneInput } from "@/lib/phone";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Create = ({ roles = [], branches = [] }) => {
     const { settings } = usePage().props;
@@ -51,187 +53,254 @@ const Create = ({ roles = [], branches = [] }) => {
 
     return (
         <AuthenticatedLayout title="Create Employee">
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"employees.index"} />
-                    <h3 className="heading">Create Employee</h3>
-                </div>
-
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label className="required-label">Name</label>
-                            </legend>
-                            <input
-                                type="text"
-                                value={data.name}
-                                onChange={(e) => setData("name", e.target.value)}
-                                className="custom-input"
-                                placeholder="Enter employee name"
-                            />
-                            <small className="text-destructive">{errors.name}</small>
-                        </fieldset>
-
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label className="required-label">Phone</label>
-                            </legend>
-                            <input
-                                type="text"
-                                value={data.phone}
-                                onChange={(e) =>
-                                    setData(
-                                        "phone",
-                                        sanitizePhoneInput(e.target.value, phoneDigits)
-                                    )
-                                }
-                                className="custom-input"
-                                placeholder="Enter employee phone"
-                                inputMode="numeric"
-                                maxLength={phoneDigits}
-                            />
-                            <div className="mt-1 text-right text-xs text-muted-foreground">
-                                {data.phone.length}/{phoneDigits}
+            <CreatePageLayout
+                title="Create Employee"
+                description="Add a team member with the right identity, role, branch scope, and payroll details so operations and permissions stay clean from the start."
+                backRoute="employees.index"
+                meta={[
+                    { label: "Module", value: "Staff management" },
+                    { label: "Includes", value: "Role and branch assignment" },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Staff Setup Guidance"
+                        items={[
+                            {
+                                title: "Assign role carefully",
+                                description:
+                                    "Permissions come from the chosen role, so pick the closest operational match.",
+                            },
+                            {
+                                title: "Use branch scope intentionally",
+                                description:
+                                    "Leave branch empty for cross-branch or head-office access when appropriate.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <CreateSectionCard
+                        title="Employee Details"
+                        description="Capture the core profile information used across authentication, payroll, and branch operations."
+                    >
+                        <div className="form-grid">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Name
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        value={data.name}
+                                        onChange={(e) => setData("name", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter employee name"
+                                    />
+                                </fieldset>
+                                {errors.name ? <p className="field-error">{errors.name}</p> : null}
                             </div>
-                            <small className="text-destructive">{errors.phone}</small>
-                        </fieldset>
 
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label>Email</label>
-                            </legend>
-                            <input
-                                type="email"
-                                value={data.email}
-                                onChange={(e) => setData("email", e.target.value)}
-                                className="custom-input"
-                                placeholder="Enter employee email"
-                            />
-                            <small className="text-destructive">{errors.email}</small>
-                        </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Phone
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        value={data.phone}
+                                        onChange={(e) =>
+                                            setData(
+                                                "phone",
+                                                sanitizePhoneInput(e.target.value, phoneDigits)
+                                            )
+                                        }
+                                        className="custom-input"
+                                        placeholder="Enter employee phone"
+                                        inputMode="numeric"
+                                        maxLength={phoneDigits}
+                                    />
+                                </fieldset>
+                                <div className="text-right text-xs text-muted-foreground">
+                                    {data.phone.length}/{phoneDigits}
+                                </div>
+                                {errors.phone ? (
+                                    <p className="field-error">{errors.phone}</p>
+                                ) : null}
+                            </div>
 
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label className="required-label">Password</label>
-                            </legend>
-                            <input
-                                type="password"
-                                value={data.password}
-                                onChange={(e) => setData("password", e.target.value)}
-                                className="custom-input"
-                                placeholder="Enter employee password"
-                            />
-                            <small className="text-destructive">{errors.password}</small>
-                        </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Email
+                                    </legend>
+                                    <input
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) => setData("email", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter employee email"
+                                    />
+                                </fieldset>
+                                {errors.email ? <p className="field-error">{errors.email}</p> : null}
+                            </div>
 
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label className="required-label">Role</label>
-                            </legend>
-                            <select
-                                value={data.role}
-                                onChange={(e) => setData("role", e.target.value)}
-                                className="custom-input"
-                            >
-                                <option value="">Select role</option>
-                                {roles.map((role) => (
-                                    <option key={role.id} value={role.name}>
-                                        {role.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <small className="text-destructive">{errors.role}</small>
-                        </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Password
+                                    </legend>
+                                    <input
+                                        type="password"
+                                        value={data.password}
+                                        onChange={(e) => setData("password", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter employee password"
+                                    />
+                                </fieldset>
+                                {errors.password ? (
+                                    <p className="field-error">{errors.password}</p>
+                                ) : null}
+                            </div>
 
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label>Branch</label>
-                            </legend>
-                            <select
-                                value={data.branch_id}
-                                onChange={(e) => setData("branch_id", e.target.value)}
-                                className="custom-input"
-                            >
-                                <option value="">All branches / Head office</option>
-                                {branches.map((branch) => (
-                                    <option key={branch.id} value={branch.id}>
-                                        {branch.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <small className="text-destructive">{errors.branch_id}</small>
-                        </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Role
+                                    </legend>
+                                    <select
+                                        value={data.role}
+                                        onChange={(e) => setData("role", e.target.value)}
+                                        className="custom-input"
+                                    >
+                                        <option value="">Select role</option>
+                                        {roles.map((role) => (
+                                            <option key={role.id} value={role.name}>
+                                                {role.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                {errors.role ? <p className="field-error">{errors.role}</p> : null}
+                            </div>
 
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label>Salary</label>
-                            </legend>
-                            <input
-                                type="number"
-                                value={data.salary}
-                                onChange={(e) => setData("salary", e.target.value)}
-                                className="custom-input"
-                                placeholder="Enter employee salary"
-                            />
-                            <small className="text-destructive">{errors.salary}</small>
-                        </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Branch
+                                    </legend>
+                                    <select
+                                        value={data.branch_id}
+                                        onChange={(e) => setData("branch_id", e.target.value)}
+                                        className="custom-input"
+                                    >
+                                        <option value="">
+                                            All branches / Head office
+                                        </option>
+                                        {branches.map((branch) => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                {errors.branch_id ? (
+                                    <p className="field-error">{errors.branch_id}</p>
+                                ) : null}
+                            </div>
 
-                        <fieldset className="custom-fieldset p-2 sm:col-span-2">
-                            <legend className="text-sm mx-2">
-                                <label>Address</label>
-                            </legend>
-                            <textarea
-                                value={data.address}
-                                onChange={(e) => setData("address", e.target.value)}
-                                className="custom-input"
-                                placeholder="Enter employee address"
-                                rows="1"
-                            />
-                            <small className="text-destructive">{errors.address}</small>
-                        </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Salary
+                                    </legend>
+                                    <input
+                                        type="number"
+                                        value={data.salary}
+                                        onChange={(e) => setData("salary", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter employee salary"
+                                    />
+                                </fieldset>
+                                {errors.salary ? (
+                                    <p className="field-error">{errors.salary}</p>
+                                ) : null}
+                            </div>
 
-                        <fieldset className="custom-fieldset p-2">
-                            <legend className="text-sm mx-2">
-                                <label>Image</label>
-                            </legend>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setData("image", e.target.files[0])}
-                                className="custom-input ml-2 file:mr-4 file:rounded-full file:border file:border-input file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-secondary-foreground hover:file:opacity-90"
-                            />
-                            <small className="text-destructive">{errors.image}</small>
-                        </fieldset>
-                    </div>
-
-                    {preview && (
-                        <div className="mb-4 flex justify-end">
-                            <div className="relative inline-block">
-                                <img
-                                    src={preview}
-                                    alt="Preview"
-                                    className="h-24 w-24 rounded border object-cover"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={removeImage}
-                                    className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
-                                >
-                                    x
-                                </button>
+                            <div className="field-stack md:col-span-2 xl:col-span-2">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Address
+                                    </legend>
+                                    <textarea
+                                        value={data.address}
+                                        onChange={(e) => setData("address", e.target.value)}
+                                        className="custom-input resize-none"
+                                        placeholder="Enter employee address"
+                                        rows={4}
+                                    />
+                                </fieldset>
+                                {errors.address ? (
+                                    <p className="field-error">{errors.address}</p>
+                                ) : null}
                             </div>
                         </div>
-                    )}
+                    </CreateSectionCard>
 
-                    <div className="flex justify-end">
-                        <button type="submit" className="create-button" disabled={processing}>
-                            {processing ? "Saving..." : "Save"}
-                        </button>
-                    </div>
+                    <CreateSectionCard
+                        title="Profile Image"
+                        description="Optional, but useful for larger teams where staff recognition matters during operations."
+                        footer={
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    className="create-button"
+                                    disabled={processing}
+                                >
+                                    {processing ? "Saving..." : "Create employee"}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_180px] lg:items-start">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Image
+                                    </legend>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => setData("image", e.target.files[0])}
+                                        className="custom-input file:mr-4 file:rounded-full file:border file:border-input file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-secondary-foreground hover:file:opacity-90"
+                                    />
+                                </fieldset>
+                                {errors.image ? <p className="field-error">{errors.image}</p> : null}
+                            </div>
+
+                            {preview ? (
+                                <div className="flex justify-start lg:justify-end">
+                                    <div className="relative inline-block rounded-[20px] border border-border bg-background p-3 shadow-sm">
+                                        <img
+                                            src={preview}
+                                            alt="Preview"
+                                            className="h-28 w-28 rounded-2xl object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
+                                        >
+                                            x
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : null}
+                        </div>
+                    </CreateSectionCard>
                 </form>
-            </section>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

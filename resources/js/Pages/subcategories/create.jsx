@@ -1,5 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm } from "@inertiajs/react";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const Create = ({ categories }) => {
     const { data, setData, post, processing, errors } = useForm({
@@ -14,59 +17,96 @@ const Create = ({ categories }) => {
 
     return (
         <AuthenticatedLayout title="Create Subcategory">
-            <div className="w-full h-[50vh] flex justify-center items-center">
-                <div className="bg-card text-card-foreground p-4 rounded border border-border">
-                    <h1 className="text-md font-bold">Create Subcategory</h1>
-
-                    <div>
-                        <form onSubmit={submit}>
-                            <fieldset className="flex flex-col gap-2">
-                                <label>Category Name</label>
-                                <select
-                                    onChange={(e) =>
-                                        setData("category_id", e.target.value)
-                                    }
-                                    className="w-full"
-                                >
-                                    <option value="">Select Category</option>
-                                    {categories?.map((category) => (
-                                        <option
-                                            key={category.id}
-                                            value={category.id}
-                                        >
-                                            {category.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </fieldset>
-
-                            <fieldset className="flex flex-col gap-2">
-                                <label>Subcategory Name</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={data.name}
-                                    onChange={(e) =>
-                                        setData("name", e.target.value)
-                                    }
-                                    className="w-full"
-                                    placeholder="Enter subcategory name"
-                                />
-                            </fieldset>
-
-                            <div className="w-full flex justify-end">
+            <CreatePageLayout
+                title="Create Subcategory"
+                description="Add a more specific product grouping beneath an existing category to improve catalog navigation and reporting detail."
+                backRoute="subcategories.index"
+                meta={[
+                    { label: "Depends on", value: "Existing category" },
+                    { label: "Use case", value: "Catalog refinement" },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Structure Tips"
+                        items={[
+                            {
+                                title: "Keep hierarchy simple",
+                                description:
+                                    "Subcategories should clarify browsing, not create unnecessary depth.",
+                            },
+                            {
+                                title: "Name with intent",
+                                description:
+                                    "Choose labels that help staff quickly understand where a product belongs.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={submit}>
+                    <CreateSectionCard
+                        title="Subcategory Details"
+                        description="Connect the new subcategory to its parent category and choose a name that fits your product structure."
+                        footer={
+                            <div className="flex justify-end">
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-blue-500 text-white p-1 px-2 rounded"
+                                    className="create-button"
                                 >
-                                    Save
+                                    {processing ? "Saving..." : "Create subcategory"}
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+                        }
+                    >
+                        <div className="form-grid">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Parent category
+                                    </legend>
+                                    <select
+                                        value={data.category_id}
+                                        onChange={(e) =>
+                                            setData("category_id", e.target.value)
+                                        }
+                                        className="custom-input"
+                                    >
+                                        <option value="">Select category</option>
+                                        {categories?.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                {errors.category_id ? (
+                                    <p className="field-error">{errors.category_id}</p>
+                                ) : null}
+                            </div>
+
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Subcategory name
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={data.name}
+                                        onChange={(e) => setData("name", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Example: Smartphones"
+                                    />
+                                </fieldset>
+                                {errors.name ? (
+                                    <p className="field-error">{errors.name}</p>
+                                ) : null}
+                            </div>
+                        </div>
+                    </CreateSectionCard>
+                </form>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 };

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import BackButton from "@/Components/BackButton/BackButton";
 import { formatCurrency } from "@/lib/currency";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 const branchStockForProduct = (product, branchId) => {
     if (!branchId) {
@@ -41,18 +43,15 @@ export default function Create({
         items: rows,
     });
 
-    // keep items synced
     useEffect(() => {
         setData("items", rows);
     }, [rows]);
 
-    // total amount
     const totalAmount = rows.reduce(
         (sum, row) => sum + row.quantity * row.buying_price,
         0
     );
 
-    // auto manage paid amount
     useEffect(() => {
         if (data.payment_status === "paid") {
             setData("paid_amount", totalAmount);
@@ -63,21 +62,14 @@ export default function Create({
         }
     }, [data.payment_status, totalAmount]);
 
-    // prevent partial overpay
     useEffect(() => {
-        if (
-            data.payment_status === "partial" &&
-            data.paid_amount > totalAmount
-        ) {
+        if (data.payment_status === "partial" && data.paid_amount > totalAmount) {
             setData("paid_amount", totalAmount);
         }
     }, [data.paid_amount, totalAmount]);
 
     const addRow = () => {
-        setRows([
-            ...rows,
-            { product_id: "", quantity: 1, buying_price: 0 },
-        ]);
+        setRows([...rows, { product_id: "", quantity: 1, buying_price: 0 }]);
     };
 
     const removeRow = (i) => {
@@ -88,9 +80,7 @@ export default function Create({
     const handleChange = (i, field, value) => {
         const updated = [...rows];
         updated[i][field] =
-            field === "quantity" || field === "buying_price"
-                ? Number(value)
-                : value;
+            field === "quantity" || field === "buying_price" ? Number(value) : value;
         setRows(updated);
     };
 
@@ -101,275 +91,356 @@ export default function Create({
 
     return (
         <AuthenticatedLayout title="Create Purchase">
-
-            <div>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"purchases.index"} />
-                    <h3 className="text-xl font-semibold">New Purchase</h3>
-                </div>
-
-                <form onSubmit={submit} className="space-y-4">
-                    {/* Supplier & Date */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label>Supplier</label>
-                            <select
-                                className="w-full"
-                                value={data.supplier_id}
-                                onChange={(e) => setData("supplier_id", e.target.value)}
-                                required
-                            >
-                                <option value="">Select supplier</option>
-                                {suppliers.map((supplier) => (
-                                    <option key={supplier.id} value={supplier.id}>
-                                        {supplier.name} {supplier.phone ? `- ${supplier.phone}` : ""}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label>Branch</label>
-                            <select
-                                className="w-full"
-                                value={data.branch_id}
-                                onChange={(e) => setData("branch_id", e.target.value)}
-                                required
-                            >
-                                <option value="">Select branch</option>
-                                {branches.map((branch) => (
-                                    <option key={branch.id} value={branch.id}>
-                                        {branch.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label>Purchase Date</label>
-                            <input
-                                type="date"
-                                className="w-full"
-                                value={data.purchase_date}
-                                onChange={(e) =>
-                                    setData("purchase_date", e.target.value)
-                                }
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* Payment Status */}
-                    <div>
-                        <label>Payment Status</label>
-                        <select
-                            className="w-full"
-                            value={data.payment_status}
-                            onChange={(e) =>
-                                setData("payment_status", e.target.value)
-                            }
-                        >
-                            <option value="paid">Paid</option>
-                            <option value="unpaid">Unpaid</option>
-                            <option value="partial">Partial</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label>Payment Method</label>
-                        <select
-                            className="w-full"
-                            value={data.payment_method}
-                            onChange={(e) => setData("payment_method", e.target.value)}
-                        >
-                            <option value="cash">Cash</option>
-                            <option value="bank">Bank</option>
-                            <option value="mobile">Mobile Banking</option>
-                        </select>
-                    </div>
-
-                    {data.payment_method === "bank" && (
-                        <div>
-                            <label>Bank</label>
-                            <select
-                                className="w-full"
-                                value={data.bank_id}
-                                onChange={(e) => setData("bank_id", e.target.value)}
-                            >
-                                <option value="">Select bank</option>
-                                {banks.map((bank) => (
-                                    <option key={bank.id} value={bank.id}>
-                                        {bank.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
-                    {data.payment_method === "mobile" && (
-                        <div>
-                            <label>Mobile Service</label>
-                            <select
-                                className="w-full"
-                                value={data.mfs}
-                                onChange={(e) => setData("mfs", e.target.value)}
-                            >
-                                <option value="">Select service</option>
-                                <option value="bkash">bKash</option>
-                                <option value="nagad">Nagad</option>
-                                <option value="rocket">Rocket</option>
-                            </select>
-                        </div>
-                    )}
-
-                    {/* Products */}
-                    <h2 className="font-semibold mt-6">Products</h2>
-
-                    <div className="overflow-x-auto">
-                        <table className="w-full border mt-2 min-w-[700px]">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="border p-2">Product</th>
-                                    <th className="border p-2">Current Branch Stock</th>
-                                    <th className="border p-2">Quantity</th>
-                                    <th className="border p-2">Buying Price</th>
-                                    <th className="border p-2">Total</th>
-                                    <th className="border p-2"></th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {rows.map((row, i) => (
-                                    <tr key={i}>
-                                        <td className="border p-2">
-                                            <select
-                                                className="w-full py-1"
-                                                value={row.product_id}
-                                                onChange={(e) =>
-                                                    handleChange(
-                                                        i,
-                                                        "product_id",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                required
-                                            >
-                                                <option value="">Select</option>
-                                                {products.map((p) => (
-                                                    <option key={p.id} value={p.id}>
-                                                        {p.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </td>
-
-                                        <td className="border p-2">
-                                            {row.product_id
-                                                ? branchStockForProduct(
-                                                      products.find(
-                                                          (product) =>
-                                                              String(product.id) === String(row.product_id)
-                                                      ) || {},
-                                                      data.branch_id
-                                                  )
-                                                : 0}
-                                        </td>
-
-                                        <td className="border p-2">
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                className="w-full py-1"
-                                                value={row.quantity}
-                                                onChange={(e) =>
-                                                    handleChange(
-                                                        i,
-                                                        "quantity",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </td>
-
-                                        <td className="border p-2">
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                className="w-full py-1"
-                                                value={row.buying_price}
-                                                onChange={(e) =>
-                                                    handleChange(
-                                                        i,
-                                                        "buying_price",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </td>
-
-                                        <td className="border p-2">
-                                            {formatCurrency(row.quantity * row.buying_price, currencySymbol)}
-                                        </td>
-
-                                        <td className="border p-2 text-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => removeRow(i)}
-                                                className="text-red-600"
-                                            >
-                                                ✕
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={addRow}
-                        className="mt-2 bg-green-600 text-white px-3 py-1 rounded"
+            <CreatePageLayout
+                title="Create Purchase"
+                description="Record incoming stock with supplier, branch, payment, and line-item details in one guided workflow designed for operational accuracy."
+                backRoute="purchases.index"
+                meta={[
+                    { label: "Module", value: "Procurement" },
+                    {
+                        label: "Current total",
+                        value: formatCurrency(totalAmount, currencySymbol),
+                    },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Purchase Entry Tips"
+                        items={[
+                            {
+                                title: "Choose the correct branch",
+                                description:
+                                    "Purchases update branch inventory, so the receiving branch should be accurate before saving.",
+                            },
+                            {
+                                title: "Review quantities and prices",
+                                description:
+                                    "Clean input here keeps stock valuation and supplier dues trustworthy later.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={submit} className="space-y-6">
+                    <CreateSectionCard
+                        title="Purchase Overview"
+                        description="Start with the supplier, receiving branch, and payment setup before adding individual products."
                     >
-                        + Add Row
-                    </button>
+                        <div className="form-grid">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Supplier
+                                    </legend>
+                                    <select
+                                        className="custom-input"
+                                        value={data.supplier_id}
+                                        onChange={(e) =>
+                                            setData("supplier_id", e.target.value)
+                                        }
+                                        required
+                                    >
+                                        <option value="">Select supplier</option>
+                                        {suppliers.map((supplier) => (
+                                            <option key={supplier.id} value={supplier.id}>
+                                                {supplier.name}
+                                                {supplier.phone
+                                                    ? ` - ${supplier.phone}`
+                                                    : ""}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                            </div>
 
-                    {/* Total & Paid Amount */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                        <div className="text-lg font-semibold flex items-end">
-                            Total Amount: {formatCurrency(totalAmount, currencySymbol)}
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Branch
+                                    </legend>
+                                    <select
+                                        className="custom-input"
+                                        value={data.branch_id}
+                                        onChange={(e) => setData("branch_id", e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select branch</option>
+                                        {branches.map((branch) => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                            </div>
+
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Purchase date
+                                    </legend>
+                                    <input
+                                        type="date"
+                                        className="custom-input"
+                                        value={data.purchase_date}
+                                        onChange={(e) =>
+                                            setData("purchase_date", e.target.value)
+                                        }
+                                        required
+                                    />
+                                </fieldset>
+                            </div>
+
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Payment status
+                                    </legend>
+                                    <select
+                                        className="custom-input"
+                                        value={data.payment_status}
+                                        onChange={(e) =>
+                                            setData("payment_status", e.target.value)
+                                        }
+                                    >
+                                        <option value="paid">Paid</option>
+                                        <option value="unpaid">Unpaid</option>
+                                        <option value="partial">Partial</option>
+                                    </select>
+                                </fieldset>
+                            </div>
+
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Payment method
+                                    </legend>
+                                    <select
+                                        className="custom-input"
+                                        value={data.payment_method}
+                                        onChange={(e) =>
+                                            setData("payment_method", e.target.value)
+                                        }
+                                    >
+                                        <option value="cash">Cash</option>
+                                        <option value="bank">Bank</option>
+                                        <option value="mobile">Mobile Banking</option>
+                                    </select>
+                                </fieldset>
+                            </div>
+
+                            {data.payment_method === "bank" ? (
+                                <div className="field-stack">
+                                    <fieldset className="custom-fieldset">
+                                        <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                            Bank
+                                        </legend>
+                                        <select
+                                            className="custom-input"
+                                            value={data.bank_id}
+                                            onChange={(e) =>
+                                                setData("bank_id", e.target.value)
+                                            }
+                                        >
+                                            <option value="">Select bank</option>
+                                            {banks.map((bank) => (
+                                                <option key={bank.id} value={bank.id}>
+                                                    {bank.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </fieldset>
+                                </div>
+                            ) : null}
+
+                            {data.payment_method === "mobile" ? (
+                                <div className="field-stack">
+                                    <fieldset className="custom-fieldset">
+                                        <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                            Mobile service
+                                        </legend>
+                                        <select
+                                            className="custom-input"
+                                            value={data.mfs}
+                                            onChange={(e) => setData("mfs", e.target.value)}
+                                        >
+                                            <option value="">Select service</option>
+                                            <option value="bkash">bKash</option>
+                                            <option value="nagad">Nagad</option>
+                                            <option value="rocket">Rocket</option>
+                                        </select>
+                                    </fieldset>
+                                </div>
+                            ) : null}
+                        </div>
+                    </CreateSectionCard>
+
+                    <CreateSectionCard
+                        title="Products"
+                        description="Add all purchased items with quantity and buying price. Branch stock is shown for context before the new stock is received."
+                    >
+                        <div className="overflow-x-auto">
+                            <table className="custom-table min-w-[880px]">
+                                <thead className="custom-thead">
+                                    <tr>
+                                        <th className="custom-th rounded-l-md">Product</th>
+                                        <th className="custom-th">Current Branch Stock</th>
+                                        <th className="custom-th">Quantity</th>
+                                        <th className="custom-th">Buying Price</th>
+                                        <th className="custom-th">Total</th>
+                                        <th className="custom-th rounded-r-md text-center">
+                                            Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows.map((row, i) => (
+                                        <tr key={i} className="custom-body-tr">
+                                            <td className="custom-body-td">
+                                                <select
+                                                    className="custom-input"
+                                                    value={row.product_id}
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            i,
+                                                            "product_id",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    required
+                                                >
+                                                    <option value="">Select</option>
+                                                    {products.map((p) => (
+                                                        <option key={p.id} value={p.id}>
+                                                            {p.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </td>
+
+                                            <td className="custom-body-td">
+                                                {row.product_id
+                                                    ? branchStockForProduct(
+                                                          products.find(
+                                                              (product) =>
+                                                                  String(product.id) ===
+                                                                  String(row.product_id)
+                                                          ) || {},
+                                                          data.branch_id
+                                                      )
+                                                    : 0}
+                                            </td>
+
+                                            <td className="custom-body-td">
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    className="custom-input"
+                                                    value={row.quantity}
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            i,
+                                                            "quantity",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+                                            </td>
+
+                                            <td className="custom-body-td">
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    className="custom-input"
+                                                    value={row.buying_price}
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            i,
+                                                            "buying_price",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                />
+                                            </td>
+
+                                            <td className="custom-body-td">
+                                                {formatCurrency(
+                                                    row.quantity * row.buying_price,
+                                                    currencySymbol
+                                                )}
+                                            </td>
+
+                                            <td className="custom-body-td text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeRow(i)}
+                                                    className="delete-button"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
 
-                        <div>
-                            <label>Paid Amount</label>
-                            <input
-                                type="number"
-                                min="0"
-                                className="w-full"
-                                value={data.paid_amount}
-                                onChange={(e) =>
-                                    setData(
-                                        "paid_amount",
-                                        Number(e.target.value)
-                                    )
-                                }
-                                disabled={data.payment_status !== "partial"}
-                            />
+                        <div className="flex justify-start">
+                            <button
+                                type="button"
+                                onClick={addRow}
+                                className="secondary-button"
+                            >
+                                Add product row
+                            </button>
                         </div>
-                    </div>
+                    </CreateSectionCard>
 
-                    {/* Submit */}
-                    <div className="mt-6 flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="bg-blue-600 text-white px-4 py-2 rounded"
-                        >
-                            Save Purchase
-                        </button>
-                    </div>
+                    <CreateSectionCard
+                        title="Payment Summary"
+                        description="The total updates automatically as you edit the purchase lines and payment status."
+                        footer={
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="create-button"
+                                >
+                                    {processing ? "Saving..." : "Save purchase"}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+                            <div className="rounded-[20px] border border-border bg-background/80 p-4">
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    Total amount
+                                </p>
+                                <p className="mt-2 text-2xl font-semibold text-foreground">
+                                    {formatCurrency(totalAmount, currencySymbol)}
+                                </p>
+                            </div>
+
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Paid amount
+                                    </legend>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        className="custom-input"
+                                        value={data.paid_amount}
+                                        onChange={(e) =>
+                                            setData("paid_amount", Number(e.target.value))
+                                        }
+                                        disabled={data.payment_status !== "partial"}
+                                    />
+                                </fieldset>
+                            </div>
+                        </div>
+                    </CreateSectionCard>
                 </form>
-            </div>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 }

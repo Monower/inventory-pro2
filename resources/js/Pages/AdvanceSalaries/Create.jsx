@@ -1,7 +1,9 @@
 import React from "react";
 import { useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import BackButton from "@/Components/BackButton/BackButton";
+import CreateInfoPanel from "@/Components/Form/CreateInfoPanel";
+import CreatePageLayout from "@/Components/Form/CreatePageLayout";
+import CreateSectionCard from "@/Components/Form/CreateSectionCard";
 
 export default function AdvanceCreate({ staff }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -18,127 +20,133 @@ export default function AdvanceCreate({ staff }) {
 
     return (
         <AuthenticatedLayout title="Create Advance Salary">
-            <section>
-                {/* Header */}
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"advance-salaries.index"} />
-                    <h3 className="heading">Create Advance Salary</h3>
-                </div>
-
-                <div>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Staff
-                                    </label>
-                                </legend>
-
-                                <select
-                                    value={data.staff_id}
-                                    onChange={(e) =>
-                                        setData("staff_id", e.target.value)
-                                    }
-                                    className="custom-input"
+            <CreatePageLayout
+                title="Create Advance Salary"
+                description="Record an advance salary arrangement with a clear repayment schedule so employee dues remain traceable and predictable."
+                backRoute="advance-salaries.index"
+                meta={[
+                    { label: "Module", value: "Payroll advances" },
+                    { label: "Cycle format", value: "YYYY-MM" },
+                ]}
+                aside={
+                    <CreateInfoPanel
+                        title="Advance Planning"
+                        items={[
+                            {
+                                title: "Set realistic installments",
+                                description:
+                                    "A manageable repayment schedule reduces payroll friction later.",
+                            },
+                            {
+                                title: "Choose the correct start month",
+                                description:
+                                    "Repayment timing should match your payroll cycle exactly.",
+                            },
+                        ]}
+                    />
+                }
+            >
+                <form onSubmit={handleSubmit}>
+                    <CreateSectionCard
+                        title="Advance Details"
+                        description="Choose the staff member, set the amount, and define how the advance will be recovered over time."
+                        footer={
+                            <div className="flex justify-end">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="create-button"
                                 >
-                                    <option value="">Select staff</option>
-                                    {staff.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.staff_id && (
-                                    <p className="text-red-600">
-                                        {errors.staff_id}
-                                    </p>
-                                )}
-                            </fieldset>
+                                    {processing ? "Saving..." : "Create advance"}
+                                </button>
+                            </div>
+                        }
+                    >
+                        <div className="form-grid">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Staff
+                                    </legend>
+                                    <select
+                                        value={data.staff_id}
+                                        onChange={(e) => setData("staff_id", e.target.value)}
+                                        className="custom-input"
+                                    >
+                                        <option value="">Select staff</option>
+                                        {staff.map((s) => (
+                                            <option key={s.id} value={s.id}>
+                                                {s.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </fieldset>
+                                {errors.staff_id ? (
+                                    <p className="field-error">{errors.staff_id}</p>
+                                ) : null}
+                            </div>
 
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
                                         Amount
-                                    </label>
-                                </legend>
+                                    </legend>
+                                    <input
+                                        type="number"
+                                        value={data.amount}
+                                        onChange={(e) => setData("amount", e.target.value)}
+                                        className="custom-input"
+                                        placeholder="Enter amount"
+                                    />
+                                </fieldset>
+                                {errors.amount ? (
+                                    <p className="field-error">{errors.amount}</p>
+                                ) : null}
+                            </div>
 
-                                <input
-                                    type="number"
-                                    value={data.amount}
-                                    onChange={(e) =>
-                                        setData("amount", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter amount"
-                                />
-                                {errors.amount && (
-                                    <p className="text-red-600">
-                                        {errors.amount}
-                                    </p>
-                                )}
-                            </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Installments
+                                    </legend>
+                                    <input
+                                        type="number"
+                                        value={data.installments}
+                                        onChange={(e) =>
+                                            setData("installments", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="Number of months"
+                                    />
+                                </fieldset>
+                                {errors.installments ? (
+                                    <p className="field-error">{errors.installments}</p>
+                                ) : null}
+                            </div>
 
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Installments (months)
-                                    </label>
-                                </legend>
-
-                                <input
-                                    type="number"
-                                    value={data.installments}
-                                    onChange={(e) =>
-                                        setData("installments", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter number of installments"
-                                />
-                                {errors.installments && (
-                                    <p className="text-red-600">
-                                        {errors.installments}
-                                    </p>
-                                )}
-                            </fieldset>
-
-                            <fieldset className="custom-fieldset">
-                                <legend className="text-sm mx-2">
-                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Start Month (YYYY-MM)
-                                    </label>
-                                </legend>
-
-                                <input
-                                    type="text"
-                                    value={data.start_month}
-                                    onChange={(e) =>
-                                        setData("start_month", e.target.value)
-                                    }
-                                    className="custom-input"
-                                    placeholder="Enter start month"
-                                />
-                                {errors.start_month && (
-                                    <p className="text-red-600">
-                                        {errors.start_month}
-                                    </p>
-                                )}
-                            </fieldset>
+                            <div className="field-stack">
+                                <fieldset className="custom-fieldset">
+                                    <legend className="mx-3 px-1 text-sm font-medium text-muted-foreground">
+                                        Start month
+                                    </legend>
+                                    <input
+                                        type="text"
+                                        value={data.start_month}
+                                        onChange={(e) =>
+                                            setData("start_month", e.target.value)
+                                        }
+                                        className="custom-input"
+                                        placeholder="2026-03"
+                                    />
+                                </fieldset>
+                                {errors.start_month ? (
+                                    <p className="field-error">{errors.start_month}</p>
+                                ) : null}
+                            </div>
                         </div>
-
-                        {/* Submit Button */}
-                        <div className="w-full flex justify-end">
-                            <button
-                                type="submit"
-                                disabled={processing}
-                                className="create-button"
-                            >
-                                {processing ? "Saving..." : "Save"}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </section>
+                    </CreateSectionCard>
+                </form>
+            </CreatePageLayout>
         </AuthenticatedLayout>
     );
 }
