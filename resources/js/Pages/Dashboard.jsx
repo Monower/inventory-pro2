@@ -1,8 +1,321 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { usePage } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import DashboardCard from "../Components/DasboardCard/DashboardCard";
 import { formatCurrency } from "@/lib/currency";
+
+function getNotificationLabel(item = {}, fallback = "Alert") {
+    return (
+        item.title ||
+        item.name ||
+        item.label ||
+        item.reference ||
+        item.order_number ||
+        item.invoice_no ||
+        item.customer_name ||
+        item.supplier_name ||
+        fallback
+    );
+}
+
+function getNotificationAmount(item = {}, currencySymbol = "TK") {
+    const amount =
+        item.value ??
+        item.amount ??
+        item.due_amount ??
+        item.total_due_amount ??
+        item.outstanding_amount ??
+        item.balance ??
+        item.total_amount;
+
+    if (amount === null || amount === undefined || amount === "") {
+        return null;
+    }
+
+    const numericAmount = Number(amount);
+
+    if (Number.isNaN(numericAmount)) {
+        return null;
+    }
+
+    return formatCurrency(numericAmount, currencySymbol);
+}
+
+function getNotificationHref(entity = {}) {
+    if (entity.href || entity.url || entity.link) {
+        return entity.href || entity.url || entity.link;
+    }
+
+    if ((entity.route || entity.routeName) && typeof route === "function") {
+        try {
+            const params = {
+                ...(entity.params || entity.routeParams || entity.routeParameters || {}),
+            };
+
+            if (entity.query) {
+                params._query = entity.query;
+            }
+
+            return route(
+                entity.route || entity.routeName,
+                params
+            );
+        } catch {
+            return null;
+        }
+    }
+
+    return null;
+}
+
+function NotificationSection({
+    section = {},
+    title,
+    description,
+    items = [],
+    tone = "slate",
+    currencySymbol = "TK",
+}) {
+    const toneClasses = {
+        amber: {
+            shell: "border-amber-500/20 bg-amber-500/10",
+            badge: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+            dot: "bg-amber-500",
+        },
+        rose: {
+            shell: "border-rose-500/20 bg-rose-500/10",
+            badge: "bg-rose-500/15 text-rose-700 dark:text-rose-300",
+            dot: "bg-rose-500",
+        },
+        sky: {
+            shell: "border-sky-500/20 bg-sky-500/10",
+            badge: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
+            dot: "bg-sky-500",
+        },
+        violet: {
+            shell: "border-violet-500/20 bg-violet-500/10",
+            badge: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
+            dot: "bg-violet-500",
+        },
+        emerald: {
+            shell: "border-emerald-500/20 bg-emerald-500/10",
+            badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+            dot: "bg-emerald-500",
+        },
+        slate: {
+            shell: "border-border bg-background/80",
+            badge: "bg-muted text-muted-foreground",
+            dot: "bg-muted-foreground",
+        },
+    };
+
+    const styles = toneClasses[tone] || toneClasses.slate;
+    const actionHref = getNotificationHref(section.action);
+
+    return (
+        <div className={`rounded-3xl border p-5 shadow-sm ${styles.shell}`}>
+            <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                    <div className="flex items-center gap-2">
+                        <span className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
+                        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    {section?.action?.label && actionHref ? (
+                        <Link
+                            href={actionHref}
+                            className="rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-foreground transition hover:border-foreground/20"
+                        >
+                            {section.action.label}
+                        </Link>
+                    ) : null}
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${styles.badge}`}>
+                        {section.count ?? items.length}
+                    </span>
+                </div>
+            </div>
+
+            {items.length ? (
+                <div className="space-y-3">
+                    {items.slice(0, 5).map((item, index) => {
+                        const href = getNotificationHref(item);
+                        const label = getNotificationLabel(item, `${title} item`);
+                        const amount = getNotificationAmount(item, currencySymbol);
+                        const meta = item.meta || item.subtitle || item.description || item.note || item.reason;
+                        const status = item.status || item.workflow_status || item.payment_status || item.fulfillment_status;
+                        const createdAt = item.created_at || item.createdAt || item.date;
+                        const content = (
+                            <>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0">
+                                        <p className="truncate font-medium text-foreground">{label}</p>
+                                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                            {status ? (
+                                                <span className="rounded-full bg-background/80 px-2 py-1 font-medium text-foreground">
+                                                    {status}
+                                                </span>
+                                            ) : null}
+                                            {createdAt ? <span>{createdAt}</span> : null}
+                                        </div>
+                                    </div>
+                                    {amount ? (
+                                        <span className="shrink-0 rounded-full bg-background/80 px-3 py-1 text-xs font-semibold text-foreground">
+                                            {amount}
+                                        </span>
+                                    ) : null}
+                                </div>
+                                {meta ? (
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        {meta}
+                                    </p>
+                                ) : null}
+                            </>
+                        );
+
+                        return href ? (
+                            <Link
+                                key={`${title}-${item.id || label}-${index}`}
+                                href={href}
+                                className="block rounded-2xl border border-border/70 bg-background/90 p-4 transition hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md"
+                            >
+                                {content}
+                            </Link>
+                        ) : (
+                            <div
+                                key={`${title}-${item.id || label}-${index}`}
+                                className="rounded-2xl border border-border/70 bg-background/90 p-4"
+                            >
+                                {content}
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="rounded-2xl border border-dashed border-border/70 bg-background/70 p-4">
+                    <p className="text-sm text-muted-foreground">
+                        No active alerts in this category.
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function NotificationCenter({ notifications = {}, currencySymbol = "TK" }) {
+    const sections = Array.isArray(notifications?.sections)
+        ? notifications.sections
+        : [];
+    const summary = notifications.summary || {};
+    const totalAlerts = Number(summary.total || 0);
+    const visibleSections = sections.filter(
+        (section) => (section?.count ?? section?.items?.length ?? 0) > 0
+    );
+    const toneBySeverity = {
+        critical: "amber",
+        warning: "rose",
+        info: "sky",
+    };
+
+    return (
+        <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                        Notification center
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+                        Operational alerts at a glance
+                    </h2>
+                    <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+                        Monitor the issues that need attention now, including inventory pressure,
+                        refund approvals, overdue receivables and payables, and deliveries still in motion.
+                    </p>
+                </div>
+                <div className="inline-flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3">
+                    <span className="h-3 w-3 rounded-full bg-rose-500 animate-pulse" />
+                    <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                            Total alerts
+                        </p>
+                        <p className="text-xl font-semibold text-foreground">{totalAlerts}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+                {[
+                    { label: "Critical", value: Number(summary.critical || 0), tone: "amber" },
+                    { label: "Warning", value: Number(summary.warning || 0), tone: "rose" },
+                    { label: "Info", value: Number(summary.info || 0), tone: "sky" },
+                    {
+                        label: "Low stock threshold",
+                        value: Number(summary.low_stock_threshold || 0),
+                        tone: "violet",
+                    },
+                    {
+                        label: "Overdue after days",
+                        value: Number(summary.overdue_after_days || 0),
+                        tone: "emerald",
+                    },
+                ].map((item) => {
+                    const toneStyles = {
+                        amber: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+                        rose: "border-rose-500/20 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+                        sky: "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+                        violet: "border-violet-500/20 bg-violet-500/10 text-violet-700 dark:text-violet-300",
+                        emerald: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+                    };
+
+                    return (
+                        <div
+                            key={item.label}
+                            className={`rounded-2xl border p-4 ${toneStyles[item.tone]}`}
+                        >
+                            <p className="text-xs font-medium uppercase tracking-[0.18em] opacity-80">
+                                {item.label}
+                            </p>
+                            <p className="mt-2 text-2xl font-semibold text-foreground">
+                                {item.value}
+                            </p>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {visibleSections.length ? (
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    {visibleSections.map((section) => (
+                        <div
+                            key={section.key || section.title}
+                            className={
+                                section.key === "pending_deliveries"
+                                    ? "xl:col-span-2"
+                                    : ""
+                            }
+                        >
+                            <NotificationSection
+                                section={section}
+                                title={section.title}
+                                description={section.description}
+                                items={Array.isArray(section.items) ? section.items : []}
+                                tone={toneBySeverity[section.severity] || "slate"}
+                                currencySymbol={currencySymbol}
+                            />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="rounded-2xl border border-dashed border-border/70 bg-background/70 p-6">
+                    <p className="text-sm text-muted-foreground">
+                        No operational alerts are active right now.
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+}
 
 function EarningsChart({ data }) {
     const { settings } = usePage().props;
@@ -134,6 +447,7 @@ export default function Dashboard({
     businessStatistics = [],
     earningStatistics = {},
     salesAnalytics = {},
+    notifications = {},
 }) {
     const { settings } = usePage().props;
     const currencySymbol = settings?.currency_symbol || "TK";
@@ -195,6 +509,11 @@ export default function Dashboard({
                         />
                     ))}
                 </div>
+
+                <NotificationCenter
+                    notifications={notifications}
+                    currencySymbol={currencySymbol}
+                />
 
                 <EarningsChart data={activeChart} />
 
