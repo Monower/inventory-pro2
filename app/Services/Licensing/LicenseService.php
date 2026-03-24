@@ -247,6 +247,11 @@ class LicenseService
                     'price_label' => $plan['price_label'] ?? null,
                     'rank' => $plan['rank'] ?? 0,
                     'payment_method' => 'bKash',
+                    'inherits_from' => collect(config('license.plans', []))
+                        ->keys()
+                        ->filter(fn (string $candidatePlan) => $this->planRank($candidatePlan) < $this->planRank($planKey))
+                        ->values()
+                        ->all(),
                     'highlights' => count($exclusiveFeatures) ? $exclusiveFeatures : $includedFeatures,
                     'included_features' => $includedFeatures,
                 ];

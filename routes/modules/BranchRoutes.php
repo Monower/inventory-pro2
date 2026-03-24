@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/branches', [BranchController::class, 'index'])->name('branches.index')->middleware('permission:view branch');
+    Route::get('/branches/workspace', [BranchController::class, 'workspace'])->name('branches.workspace');
     Route::patch('/branches/switch', [BranchController::class, 'switch'])->name('branches.switch')->middleware('license.feature:branch_switching');
     Route::get('/branch/create', [BranchController::class, 'create'])->name('branch.create')->middleware('permission:create branch');
     Route::post('/branch/create', [BranchController::class, 'store'])->name('branch.store')->middleware(['permission:create branch', 'license.feature:branches']);

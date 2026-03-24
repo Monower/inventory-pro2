@@ -10,6 +10,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [SettingController::class, 'index'])
             ->name('index')
             ->middleware('permission:view settings');
+        Route::get('/licensing', [SettingController::class, 'licensing'])
+            ->name('licensing')
+            ->middleware('permission:view settings');
         // Update without parameter
         Route::post('/', [SettingController::class, 'update'])
             ->name('update')

@@ -37,6 +37,12 @@ class SettingController extends Controller
                     ? Storage::url($settings['favicon']->value)
                     : null,
             ],
+        ]);
+    }
+
+    public function licensing()
+    {
+        return Inertia::render('settings/licensing', [
             'license' => $this->licenseService->frontendState(),
             'planCatalog' => $this->licenseService->planCatalog(),
         ]);

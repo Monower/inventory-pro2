@@ -30,7 +30,7 @@ class EnsureFeatureAccess
         }
 
         if ($request->isMethod('get')) {
-            return redirect()->route('settings.index')->with('error', $access['message']);
+            return redirect()->route('settings.licensing')->with('error', $access['message']);
         }
 
         return back()->withInput()->with('error', $access['message']);

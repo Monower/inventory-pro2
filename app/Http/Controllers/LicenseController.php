@@ -28,7 +28,7 @@ class LicenseController extends Controller
             return back()->withInput()->with('error', $exception->getMessage());
         }
 
-        return to_route('settings.index')->with(
+        return to_route('settings.licensing')->with(
             'success',
             sprintf('%s plan activated successfully.', $this->licenseService->planLabel($license->plan))
         );
@@ -53,6 +53,6 @@ class LicenseController extends Controller
     {
         $this->licenseService->deactivate();
 
-        return to_route('settings.index')->with('success', 'License removed from this installation.');
+        return to_route('settings.licensing')->with('success', 'License removed from this installation.');
     }
 }

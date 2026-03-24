@@ -32,7 +32,7 @@ class EnsureLicenseIsActive
         }
 
         if ($request->isMethod('get')) {
-            return redirect()->route('settings.index')->with('error', $message);
+            return redirect()->route('settings.licensing')->with('error', $message);
         }
 
         return back()->withInput()->with('error', $message);

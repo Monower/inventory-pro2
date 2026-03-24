@@ -1,7 +1,7 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link, useForm, usePage, Head } from "@inertiajs/react";
+import { Link, usePage, Head } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 import Sidebar from "./Sidebar";
 import Menu from "@/Components/Menu/Menu";
@@ -15,14 +15,9 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
     const {
         settings,
         flash,
-        activeBranch,
-        accessibleBranches = [],
         license,
     } = usePage().props;
     const { url } = usePage();
-    const { data, setData, patch, processing } = useForm({
-        branch_id: activeBranch?.id || "",
-    });
     const faviconUrl = settings?.favicon_url ?? "/favicon.ico";
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
@@ -39,18 +34,6 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
     useEffect(() => {
         applyTheme(theme);
     }, [theme]);
-
-    useEffect(() => {
-        setData("branch_id", activeBranch?.id || "");
-    }, [activeBranch?.id]);
-
-    const handleBranchSwitch = (branchId) => {
-        setData("branch_id", branchId);
-        patch(route("branches.switch"), {
-            preserveScroll: true,
-            onSuccess: () => setShowingNavigationDropdown(false),
-        });
-    };
 
     const planChipClasses = {
         Basic: {
@@ -92,7 +75,7 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                                     </p>
                                 </div>
                                 <Link
-                                    href={route("settings.index")}
+                                    href={route("settings.licensing")}
                                     className="inline-flex items-center rounded-md border border-amber-400 px-3 py-2 font-medium text-amber-900 transition hover:bg-amber-100"
                                 >
                                     Activate Plan
@@ -112,7 +95,7 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                                     </p>
                                 </div>
                                 <Link
-                                    href={route("settings.index")}
+                                    href={route("settings.licensing")}
                                     className="inline-flex items-center rounded-md border border-rose-400 px-3 py-2 font-medium text-rose-900 transition hover:bg-rose-100"
                                 >
                                     Manage License
@@ -150,34 +133,13 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         <div className="hidden lg:ms-6 lg:flex lg:items-center">
                             {license?.is_active ? (
                                 <Link
-                                    href={route("settings.index")}
+                                    href={route("settings.licensing")}
                                     className={`mr-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] transition ${activePlanChip.shell}`}
                                 >
                                     <span className={`h-2 w-2 rounded-full ${activePlanChip.dot}`} />
                                     <span>{license.plan_label}</span>
                                 </Link>
                             ) : null}
-
-                            <div className="mr-3">
-                                {accessibleBranches.length > 1 ? (
-                                    <select
-                                        value={data.branch_id}
-                                        onChange={(e) => handleBranchSwitch(e.target.value)}
-                                        className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-                                        disabled={processing}
-                                    >
-                                        {accessibleBranches.map((branch) => (
-                                            <option key={branch.id} value={branch.id}>
-                                                {branch.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <div className="rounded-md border border-border bg-secondary px-3 py-2 text-sm text-primary">
-                                        {activeBranch?.name || user.branch?.name || "No branch"}
-                                    </div>
-                                )}
-                            </div>
                             {/* 🌙 Theme Toggle Button */}
                             <button
                                 type="button"
@@ -327,7 +289,7 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                             {license?.is_active ? (
                                 <div className="px-4">
                                     <Link
-                                        href={route("settings.index")}
+                                        href={route("settings.licensing")}
                                         className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${activePlanChip.shell}`}
                                     >
                                         <span className={`h-2 w-2 rounded-full ${activePlanChip.dot}`} />
@@ -335,27 +297,6 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                                     </Link>
                                 </div>
                             ) : null}
-
-                            <div className="px-4 py-2">
-                                {accessibleBranches.length > 1 ? (
-                                    <select
-                                        value={data.branch_id}
-                                        onChange={(e) => handleBranchSwitch(e.target.value)}
-                                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-                                        disabled={processing}
-                                    >
-                                        {accessibleBranches.map((branch) => (
-                                            <option key={branch.id} value={branch.id}>
-                                                {branch.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <div className="rounded-md border border-border bg-secondary px-3 py-2 text-sm text-primary">
-                                        {activeBranch?.name || user.branch?.name || "No branch"}
-                                    </div>
-                                )}
-                            </div>
                             <ResponsiveNavLink href={route("profile.edit")}>
                                 Profile
                             </ResponsiveNavLink>

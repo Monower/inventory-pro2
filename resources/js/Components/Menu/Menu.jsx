@@ -33,7 +33,7 @@ const PlanBadge = ({ label }) => (
 );
 
 const Menu = ({ url }) => {
-    const { auth, planCatalog = [] } = usePage().props;
+    const { auth, license, planCatalog = [] } = usePage().props;
     const permissions = auth.user?.permissions || [];
     const currentQueryString = url.includes("?") ? url.split("?")[1] : "";
     const currentQuery = new URLSearchParams(currentQueryString);
@@ -76,7 +76,8 @@ const Menu = ({ url }) => {
         isPathPrefix("/employee") ||
         isPathPrefix("/salaries") ||
         isPathPrefix("/advance-salaries");
-    const branchActive = isPathPrefix("/branches") || isPathPrefix("/branch");
+    const branchActive =
+        isPathPrefix("/branches") || isPathPrefix("/branch");
     const customerActive =
         isPathPrefix("/customers") || isPathPrefix("/customer");
     const posActive = isPath("/orders/create");
@@ -109,8 +110,10 @@ const Menu = ({ url }) => {
         permissions.includes("view staff") ||
         permissions.includes("view salary") ||
         permissions.includes("view advance salary");
+    const canManageBranchNavigation =
+        permissions.includes("view branch") || Boolean(auth.user);
     const canViewAdministration =
-        permissions.includes("view branch") ||
+        canManageBranchNavigation ||
         permissions.includes("view role") ||
         permissions.includes("view settings") ||
         permissions.includes("edit profile");
@@ -128,6 +131,24 @@ const Menu = ({ url }) => {
 
         return carry;
     }, {});
+    const planRankByLabel = planCatalog.reduce((carry, plan) => {
+        carry[plan.label] = plan.rank || 0;
+        return carry;
+    }, {});
+    const currentPlanRank = license?.is_active
+        ? (planRankByLabel[license?.plan_label] || 0)
+        : 0;
+    const shouldShowUpgradeBadge = (planLabel) => {
+        if (!license?.is_active || !planLabel) {
+            return false;
+        }
+
+        const requiredRank = planRankByLabel[planLabel] || 0;
+
+        return requiredRank > currentPlanRank;
+    };
+    const renderUpgradeBadge = (planLabel) =>
+        shouldShowUpgradeBadge(planLabel) ? <PlanBadge label={planLabel} /> : null;
 
     return (
         <div className="space-y-3">
@@ -332,7 +353,7 @@ const Menu = ({ url }) => {
                                     <ClipboardList size={18} />
                                     <span className="flex w-full items-center justify-between gap-2">
                                         <span>Stock Ledger</span>
-                                        <PlanBadge label={minimumPlanByFeature.stock_ledger?.label || "Advance"} />
+                                        {renderUpgradeBadge(minimumPlanByFeature.stock_ledger?.label || "Advance")}
                                     </span>
                                 </Link>
                             )}
@@ -344,7 +365,7 @@ const Menu = ({ url }) => {
                                     <ArrowRightLeft size={18} />
                                     <span className="flex w-full items-center justify-between gap-2">
                                         <span>Stock Transfers</span>
-                                        <PlanBadge label={minimumPlanByFeature.stock_transfers?.label || "Premium"} />
+                                        {renderUpgradeBadge(minimumPlanByFeature.stock_transfers?.label || "Premium")}
                                     </span>
                                 </Link>
                             )}
@@ -381,7 +402,7 @@ const Menu = ({ url }) => {
                             <TicketPercent size={18} />
                             <span className="flex w-full items-center justify-between gap-2">
                                 <span>Coupons</span>
-                                <PlanBadge label={minimumPlanByFeature.coupons?.label || "Advance"} />
+                                {renderUpgradeBadge(minimumPlanByFeature.coupons?.label || "Advance")}
                             </span>
                         </Link>
                     )}
@@ -407,7 +428,7 @@ const Menu = ({ url }) => {
                                 >
                                     <span className="flex items-center justify-between gap-2">
                                         <span>Employees</span>
-                                        <PlanBadge label={minimumPlanByFeature.staff_management?.label || "Advance"} />
+                                        {renderUpgradeBadge(minimumPlanByFeature.staff_management?.label || "Advance")}
                                     </span>
                                 </Link>
                             )}
@@ -420,7 +441,7 @@ const Menu = ({ url }) => {
                                 >
                                     <span className="flex items-center justify-between gap-2">
                                         <span>Salaries</span>
-                                        <PlanBadge label={minimumPlanByFeature.salary_management?.label || "Advance"} />
+                                        {renderUpgradeBadge(minimumPlanByFeature.salary_management?.label || "Advance")}
                                     </span>
                                 </Link>
                             )}
@@ -433,7 +454,7 @@ const Menu = ({ url }) => {
                                 >
                                     <span className="flex items-center justify-between gap-2">
                                         <span>Advance Salaries</span>
-                                        <PlanBadge label={minimumPlanByFeature.advance_salary_management?.label || "Advance"} />
+                                        {renderUpgradeBadge(minimumPlanByFeature.advance_salary_management?.label || "Advance")}
                                     </span>
                                 </Link>
                             )}
@@ -444,17 +465,40 @@ const Menu = ({ url }) => {
 
             {canViewAdministration && (
                 <MenuSection title="Administration">
-                    {permissions.includes("view branch") && (
-                        <Link
-                            href="/branches"
-                            className={linkClass(branchActive)}
+                    {canManageBranchNavigation && (
+                        <SidebarDropdown
+                            title="Branches"
+                            icon={<BriefcaseBusiness size={18} />}
+                            active={branchActive}
+                            defaultOpen={branchActive}
                         >
-                            <BriefcaseBusiness size={18} />
-                            <span className="flex w-full items-center justify-between gap-2">
-                                <span>Branches</span>
-                                <PlanBadge label={minimumPlanByFeature.branches?.label || "Premium"} />
-                            </span>
-                        </Link>
+                            <div className="mt-2 flex flex-col space-y-2">
+                                <Link
+                                    href="/branches/workspace"
+                                    className={subLinkClass(
+                                        isPath("/branches/workspace")
+                                    )}
+                                >
+                                    <span className="flex items-center justify-between gap-2">
+                                        <span>Branch Workspace</span>
+                                        {renderUpgradeBadge(minimumPlanByFeature.branch_switching?.label || "Premium")}
+                                    </span>
+                                </Link>
+                                {permissions.includes("view branch") && (
+                                    <Link
+                                        href="/branches"
+                                        className={subLinkClass(
+                                            isPath("/branches")
+                                        )}
+                                        >
+                                            <span className="flex items-center justify-between gap-2">
+                                                <span>Branch Directory</span>
+                                                {renderUpgradeBadge(minimumPlanByFeature.branches?.label || "Premium")}
+                                            </span>
+                                        </Link>
+                                    )}
+                            </div>
+                        </SidebarDropdown>
                     )}
                     {permissions.includes("view role") && (
                         <SidebarDropdown
@@ -473,7 +517,7 @@ const Menu = ({ url }) => {
                                     >
                                         <span className="flex items-center justify-between gap-2">
                                             <span>Roles</span>
-                                            <PlanBadge label={minimumPlanByFeature.role_management?.label || "Advance"} />
+                                            {renderUpgradeBadge(minimumPlanByFeature.role_management?.label || "Advance")}
                                         </span>
                                     </Link>
                                 )}
@@ -509,10 +553,20 @@ const Menu = ({ url }) => {
                                     <Link
                                         href="/settings"
                                         className={subLinkClass(
-                                            isPathPrefix("/settings")
+                                            isPath("/settings")
                                         )}
                                     >
                                         General Settings
+                                    </Link>
+                                )}
+                                {permissions.includes("view settings") && (
+                                    <Link
+                                        href="/settings/licensing"
+                                        className={subLinkClass(
+                                            isPath("/settings/licensing")
+                                        )}
+                                    >
+                                        Plans & Licensing
                                     </Link>
                                 )}
                             </div>

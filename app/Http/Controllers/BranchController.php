@@ -40,6 +40,40 @@ class BranchController extends Controller
         return Inertia::render('branches/create');
     }
 
+    public function workspace(Request $request)
+    {
+        $user = $request->user()->loadMissing('branch');
+        $accessibleBranches = $user->branch_id
+            ? Branch::query()->whereKey($user->branch_id)->get()
+            : Branch::query()->where('is_active', true)->orderBy('name')->get();
+
+        $activeBranch = $accessibleBranches->firstWhere('id', $request->session()->get('active_branch_id'))
+            ?? $user->branch
+            ?? $accessibleBranches->first();
+
+        return Inertia::render('branches/Workspace', [
+            'assignedBranch' => $user->branch ? [
+                'id' => $user->branch->id,
+                'name' => $user->branch->name,
+                'code' => $user->branch->code,
+            ] : null,
+            'activeBranch' => $activeBranch ? [
+                'id' => $activeBranch->id,
+                'name' => $activeBranch->name,
+                'code' => $activeBranch->code,
+            ] : null,
+            'branchOptions' => $accessibleBranches->map(fn ($branch) => [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'code' => $branch->code,
+                'phone' => $branch->phone,
+                'email' => $branch->email,
+                'address' => $branch->address,
+                'is_active' => (bool) $branch->is_active,
+            ])->values(),
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $this->validateBranch($request);
