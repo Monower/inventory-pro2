@@ -19,7 +19,7 @@ Route::middleware(['auth'])->group(function () {
 
             Route::post('/', [PurchaseController::class, 'store'])
                 ->name('store')
-                ->middleware('permission:create purchase');
+                ->middleware(['permission:create purchase', 'license.feature:purchases']);
 
             Route::get('/{purchase}', [PurchaseController::class, 'show'])
                 ->name('show')
@@ -31,7 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
             Route::put('/{purchase}', [PurchaseController::class, 'update'])
                 ->name('update')
-                ->middleware('permission:edit purchase');
+                ->middleware(['permission:edit purchase', 'license.feature:purchases']);
 
             Route::get('/{purchase}/payments/create', [PurchaseController::class, 'createPayment'])
                 ->name('payments.create')
@@ -39,10 +39,10 @@ Route::middleware(['auth'])->group(function () {
 
             Route::post('/{purchase}/payments', [PurchaseController::class, 'storePayment'])
                 ->name('payments.store')
-                ->middleware('permission:pay supplier due');
+                ->middleware(['permission:pay supplier due', 'license.feature:supplier_payments']);
 
             Route::delete('/{purchase}', [PurchaseController::class, 'destroy'])
                 ->name('destroy')
-                ->middleware('permission:delete purchase');
+                ->middleware(['permission:delete purchase', 'license.feature:purchases']);
         });
 });

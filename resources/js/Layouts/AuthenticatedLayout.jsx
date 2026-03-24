@@ -12,7 +12,13 @@ import { applyTheme, resolveTheme } from "@/lib/theme";
 
 export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
-    const { settings, flash, activeBranch, accessibleBranches = [] } = usePage().props;
+    const {
+        settings,
+        flash,
+        activeBranch,
+        accessibleBranches = [],
+        license,
+    } = usePage().props;
     const { url } = usePage();
     const { data, setData, patch, processing } = useForm({
         branch_id: activeBranch?.id || "",
@@ -46,6 +52,23 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
         });
     };
 
+    const planChipClasses = {
+        Basic: {
+            shell: "border-slate-300 bg-slate-50 text-slate-700 hover:border-slate-400 hover:bg-slate-100",
+            dot: "bg-slate-500",
+        },
+        Advance: {
+            shell: "border-sky-300 bg-sky-50 text-sky-700 hover:border-sky-400 hover:bg-sky-100",
+            dot: "bg-sky-500",
+        },
+        Premium: {
+            shell: "border-amber-300 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 text-amber-800 shadow-[0_8px_24px_rgba(245,158,11,0.18)] hover:border-amber-400 hover:from-amber-100 hover:via-yellow-50 hover:to-orange-100",
+            dot: "bg-gradient-to-r from-amber-500 to-orange-500",
+        },
+    };
+    const activePlanChip =
+        planChipClasses[license?.plan_label] || planChipClasses.Basic;
+
     return (
         <div className="min-h-screen bg-background">
             <Head title={title}>
@@ -58,6 +81,46 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
             </Head>
             <nav className="bg-background">
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                    {license?.requires_activation ? (
+                        <div className="mb-3 mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <p className="font-semibold">Plan activation required</p>
+                                    <p className="text-amber-800">
+                                        Protected actions will prompt for activation until a
+                                        valid plan key is added from Settings.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={route("settings.index")}
+                                    className="inline-flex items-center rounded-md border border-amber-400 px-3 py-2 font-medium text-amber-900 transition hover:bg-amber-100"
+                                >
+                                    Activate Plan
+                                </Link>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {!license?.requires_activation && !license?.is_active ? (
+                        <div className="mb-3 mt-4 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+                            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <p className="font-semibold">License needs attention</p>
+                                    <p className="text-rose-800">
+                                        Current status: {license?.status_label}. Refresh or
+                                        reactivate the plan key to continue.
+                                    </p>
+                                </div>
+                                <Link
+                                    href={route("settings.index")}
+                                    className="inline-flex items-center rounded-md border border-rose-400 px-3 py-2 font-medium text-rose-900 transition hover:bg-rose-100"
+                                >
+                                    Manage License
+                                </Link>
+                            </div>
+                        </div>
+                    ) : null}
+
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
@@ -85,6 +148,16 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         </div>
 
                         <div className="hidden lg:ms-6 lg:flex lg:items-center">
+                            {license?.is_active ? (
+                                <Link
+                                    href={route("settings.index")}
+                                    className={`mr-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] transition ${activePlanChip.shell}`}
+                                >
+                                    <span className={`h-2 w-2 rounded-full ${activePlanChip.dot}`} />
+                                    <span>{license.plan_label}</span>
+                                </Link>
+                            ) : null}
+
                             <div className="mr-3">
                                 {accessibleBranches.length > 1 ? (
                                     <select
@@ -130,9 +203,9 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                                         <span className="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-secondary px-3 py-2 text-sm font-medium leading-4 text-primary transition duration-150 ease-in-out hover:text-foreground focus:outline-none"
+                                                className="relative inline-flex items-center rounded-2xl border border-border/70 bg-secondary px-4 py-2.5 text-sm font-medium leading-4 text-primary shadow-sm transition duration-150 ease-in-out hover:border-foreground/15 hover:text-foreground focus:outline-none"
                                             >
-                                                {user.name}
+                                                <span className="pr-2">{user.name}</span>
 
                                                 <svg
                                                     className="-me-0.5 ms-2 h-4 w-4"
@@ -251,6 +324,18 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
+                            {license?.is_active ? (
+                                <div className="px-4">
+                                    <Link
+                                        href={route("settings.index")}
+                                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${activePlanChip.shell}`}
+                                    >
+                                        <span className={`h-2 w-2 rounded-full ${activePlanChip.dot}`} />
+                                        <span>{license.plan_label}</span>
+                                    </Link>
+                                </div>
+                            ) : null}
+
                             <div className="px-4 py-2">
                                 {accessibleBranches.length > 1 ? (
                                     <select

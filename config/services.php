@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'license' => [
+        'base_url' => env('LICENSE_SERVER_URL'),
+        'app_id' => env('LICENSE_APP_ID'),
+        'app_key' => env('LICENSE_APP_KEY'),
+        'public_key' => env('LICENSE_PUBLIC_KEY'),
+    ],
+
 ];

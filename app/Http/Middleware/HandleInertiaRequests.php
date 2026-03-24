@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Branch;
 use App\Models\Setting;
+use App\Services\Licensing\LicenseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
@@ -32,6 +33,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $licenseService = app(LicenseService::class);
         $settings = Setting::whereIn('name', ['company_name', 'logo', 'favicon', 'phone_digits', 'currency_symbol', 'currency_code', 'product_units'])->get()->keyBy('name');
         $companyName = $settings['company_name']->value ?? 'Default Company Name';
         $phoneDigits = max((int) ($settings['phone_digits']->value ?? 11), 1);
@@ -103,6 +105,8 @@ class HandleInertiaRequests extends Middleware
                     ? Storage::url($settings['favicon']->value)
                     : null,
             ],
+            'license' => $licenseService->frontendState(),
+            'planCatalog' => $licenseService->planCatalog(),
             'company_name' => $companyName,
         ]);
     }

@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 
@@ -74,3 +75,5 @@ Artisan::command('orders:rollout-check', function () {
         $this->line(($exists ? '[OK] ' : '[MISSING] ') . "permission: {$permissionName}");
     }
 })->purpose('Validate the Phase 1-4 order rollout schema and permission surface');
+
+Schedule::command('license:sync')->hourly();

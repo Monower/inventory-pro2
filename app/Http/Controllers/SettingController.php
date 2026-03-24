@@ -3,12 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Services\Licensing\LicenseService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
+    public function __construct(
+        protected LicenseService $licenseService
+    ) {
+    }
+
     /**
      * Display the settings page.
      */
@@ -31,6 +37,8 @@ class SettingController extends Controller
                     ? Storage::url($settings['favicon']->value)
                     : null,
             ],
+            'license' => $this->licenseService->frontendState(),
+            'planCatalog' => $this->licenseService->planCatalog(),
         ]);
     }
 

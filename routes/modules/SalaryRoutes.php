@@ -15,7 +15,7 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:create salary');
         Route::post('/salaries', [SalaryController::class, 'store'])
             ->name('salaries.store')
-            ->middleware('permission:create salary');
+            ->middleware(['permission:create salary', 'license.feature:salary_management']);
 
         Route::get('/advance-salaries', [AdvanceSalaryController::class, 'index'])
             ->name('advance-salaries.index')
@@ -25,10 +25,10 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:create advance salary');
         Route::post('/advance-salaries', [AdvanceSalaryController::class, 'store'])
             ->name('advance-salaries.store')
-            ->middleware('permission:create advance salary');
+            ->middleware(['permission:create advance salary', 'license.feature:advance_salary_management']);
     });
 
     Route::put('/salaries/{salary}/mark-paid', [SalaryController::class, 'markPaid'])
         ->name('salaries.markPaid')
-        ->middleware(['auth', 'permission:edit salary']);
+        ->middleware(['auth', 'permission:edit salary', 'license.feature:salary_management']);
 });

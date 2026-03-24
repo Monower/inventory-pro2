@@ -26,8 +26,14 @@ const MenuSection = ({ title, children }) => (
     </div>
 );
 
+const PlanBadge = ({ label }) => (
+    <span className="rounded-full border border-border/70 bg-background/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        {label}
+    </span>
+);
+
 const Menu = ({ url }) => {
-    const { auth } = usePage().props;
+    const { auth, planCatalog = [] } = usePage().props;
     const permissions = auth.user?.permissions || [];
     const currentQueryString = url.includes("?") ? url.split("?")[1] : "";
     const currentQuery = new URLSearchParams(currentQueryString);
@@ -108,6 +114,20 @@ const Menu = ({ url }) => {
         permissions.includes("view role") ||
         permissions.includes("view settings") ||
         permissions.includes("edit profile");
+    const minimumPlanByFeature = planCatalog.reduce((carry, plan) => {
+        (plan.included_features || []).forEach((feature) => {
+            const current = carry[feature.key];
+
+            if (!current || (plan.rank || 0) < (current.rank || 0)) {
+                carry[feature.key] = {
+                    label: plan.label,
+                    rank: plan.rank,
+                };
+            }
+        });
+
+        return carry;
+    }, {});
 
     return (
         <div className="space-y-3">
@@ -310,7 +330,10 @@ const Menu = ({ url }) => {
                                     className={linkClass(isPathPrefix("/stock-ledgers"))}
                                 >
                                     <ClipboardList size={18} />
-                                    <span>Stock Ledger</span>
+                                    <span className="flex w-full items-center justify-between gap-2">
+                                        <span>Stock Ledger</span>
+                                        <PlanBadge label={minimumPlanByFeature.stock_ledger?.label || "Advance"} />
+                                    </span>
                                 </Link>
                             )}
                             {permissions.includes("view stock transfer") && (
@@ -319,7 +342,10 @@ const Menu = ({ url }) => {
                                     className={linkClass(isPathPrefix("/stock-transfers"))}
                                 >
                                     <ArrowRightLeft size={18} />
-                                    <span>Stock Transfers</span>
+                                    <span className="flex w-full items-center justify-between gap-2">
+                                        <span>Stock Transfers</span>
+                                        <PlanBadge label={minimumPlanByFeature.stock_transfers?.label || "Premium"} />
+                                    </span>
                                 </Link>
                             )}
                         </div>
@@ -353,7 +379,10 @@ const Menu = ({ url }) => {
                             className={linkClass(isPathPrefix("/coupons"))}
                         >
                             <TicketPercent size={18} />
-                            <span>Coupons</span>
+                            <span className="flex w-full items-center justify-between gap-2">
+                                <span>Coupons</span>
+                                <PlanBadge label={minimumPlanByFeature.coupons?.label || "Advance"} />
+                            </span>
                         </Link>
                     )}
                 </MenuSection>
@@ -376,7 +405,10 @@ const Menu = ({ url }) => {
                                             isPathPrefix("/employee")
                                     )}
                                 >
-                                    Employees
+                                    <span className="flex items-center justify-between gap-2">
+                                        <span>Employees</span>
+                                        <PlanBadge label={minimumPlanByFeature.staff_management?.label || "Advance"} />
+                                    </span>
                                 </Link>
                             )}
                             {permissions.includes("view salary") && (
@@ -386,7 +418,10 @@ const Menu = ({ url }) => {
                                         isPathPrefix("/salaries")
                                     )}
                                 >
-                                    Salaries
+                                    <span className="flex items-center justify-between gap-2">
+                                        <span>Salaries</span>
+                                        <PlanBadge label={minimumPlanByFeature.salary_management?.label || "Advance"} />
+                                    </span>
                                 </Link>
                             )}
                             {permissions.includes("view advance salary") && (
@@ -396,7 +431,10 @@ const Menu = ({ url }) => {
                                         isPathPrefix("/advance-salaries")
                                     )}
                                 >
-                                    Advance Salaries
+                                    <span className="flex items-center justify-between gap-2">
+                                        <span>Advance Salaries</span>
+                                        <PlanBadge label={minimumPlanByFeature.advance_salary_management?.label || "Advance"} />
+                                    </span>
                                 </Link>
                             )}
                         </div>
@@ -412,7 +450,10 @@ const Menu = ({ url }) => {
                             className={linkClass(branchActive)}
                         >
                             <BriefcaseBusiness size={18} />
-                            <span>Branches</span>
+                            <span className="flex w-full items-center justify-between gap-2">
+                                <span>Branches</span>
+                                <PlanBadge label={minimumPlanByFeature.branches?.label || "Premium"} />
+                            </span>
                         </Link>
                     )}
                     {permissions.includes("view role") && (
@@ -430,7 +471,10 @@ const Menu = ({ url }) => {
                                             isPathPrefix("/roles")
                                         )}
                                     >
-                                        Roles
+                                        <span className="flex items-center justify-between gap-2">
+                                            <span>Roles</span>
+                                            <PlanBadge label={minimumPlanByFeature.role_management?.label || "Advance"} />
+                                        </span>
                                     </Link>
                                 )}
                             </div>
