@@ -3,8 +3,7 @@ import { useForm, usePage, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ transaction }) => {
-    const { url, company_name } = usePage();
-    const searchParams = new URLSearchParams(new URL(url, window.location.origin).search);
+    const { company_name } = usePage();
     const { data, setData, post, errors, put } = useForm({
         name: transaction.name,
         paymentMethod: transaction.payment_method,
@@ -22,13 +21,22 @@ const Edit = ({ transaction }) => {
     return (
         <AuthenticatedLayout>
             <Head title={`Edit Transaction - ${company_name}`} />
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"transactions.index"} />
-                    <h3 className="text-xl font-semibold">Update transaction</h3>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"transactions.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Update transaction
+                            </h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                Adjust the transaction details while preserving the recorded type and payment context.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                             <fieldset className="custom-fieldset p-2">
@@ -117,7 +125,7 @@ const Edit = ({ transaction }) => {
                             </fieldset>
                         </div>
 
-                        <div>
+                        <div className="flex justify-end">
                             <button className="edit-button">
                                 Update
                             </button>

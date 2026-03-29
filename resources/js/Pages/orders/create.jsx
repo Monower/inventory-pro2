@@ -1,11 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import { useState, useEffect } from "react";
-import { useForm, Head } from "@inertiajs/react";
+import { useForm } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 
 const Create = ({ customers, products, banks }) => {
-    console.log("props: ", customers, products, banks);
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
 
@@ -80,15 +79,42 @@ const Create = ({ customers, products, banks }) => {
 
     return (
         <AuthenticatedLayout title="Create order">
-            {/* <Head title={`Create order - ${company_name}`} /> */}
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"orders.index"} />
-                    <div>
-                        <h3 className="heading">Create new order</h3>
-                        <p className="text-gray-500">
-                            Manage products, customers and checkout below.
-                        </p>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="flex items-start gap-4">
+                            <BackButton url={"orders.index"} />
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-700 dark:text-amber-300">
+                                    Create Order
+                                </p>
+                                <h3 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                    Build a new customer order
+                                </h3>
+                                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                    Manage products, customers and checkout below.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Products
+                                </p>
+                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                    {products?.length ?? 0}
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Customers
+                                </p>
+                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                    {customers?.length ?? 0}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -113,8 +139,15 @@ const Create = ({ customers, products, banks }) => {
                     {/* Products & Cart */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Products */}
-                        <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">Products list</h3>
+                        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                            <div className="mb-4">
+                                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                                    Products list
+                                </h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Add available products to the current order.
+                                </p>
+                            </div>
                             <div className="overflow-x-auto">
                                 <table className="custom-table">
                                     <thead className="custom-thead">
@@ -182,10 +215,22 @@ const Create = ({ customers, products, banks }) => {
                         </div>
 
                         {/* Cart */}
-                        <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                            <h3 className="heading">Cart list</h3>
+                        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                            <div className="mb-4 flex items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                                        Cart list
+                                    </h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                                        Review quantity and remove items before checkout.
+                                    </p>
+                                </div>
+                                <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                                    {cart.length} items
+                                </span>
+                            </div>
                             {cart.length === 0 ? (
-                                <p className="text-gray-500">
+                                <p className="text-slate-500 dark:text-slate-400">
                                     No items in cart
                                 </p>
                             ) : (
@@ -251,7 +296,7 @@ const Create = ({ customers, products, banks }) => {
                                                                     item.id
                                                                 )
                                                             }
-                                                            className="bg-destructive text-white px-3 py-1 rounded-md hover:bg-red-700 ease-in-out duration-300"
+                                                            className="rounded-lg bg-red-600 px-3 py-1 text-white transition hover:bg-red-700"
                                                         >
                                                             Remove from cart
                                                         </button>
@@ -266,23 +311,40 @@ const Create = ({ customers, products, banks }) => {
                     </div>
 
                     {/* Checkout */}
-                    <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                        <h3 className="heading">Checkout</h3>
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                        <div className="mb-5">
+                            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                                Checkout
+                            </h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Confirm totals, select customer details, and complete payment information.
+                            </p>
+                        </div>
                         <div className="grid gap-6">
                             {/* Summary */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-background* border border-ring shadow-md py-50 p-4 rounded-lg">
-                                <div>
-                                    <p className="text-primary">Total price</p>
-                                    <h3 className="text-xl font-bold text-primary">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Total price</p>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                                         {totalPrice}
                                     </h3>
                                 </div>
-                                <div>
-                                    <p className="text-primary">
-                                        Total quantity
-                                    </p>
-                                    <h3 className="text-xl font-bold text-primary">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Total quantity</p>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                                         {totalQuantity}
+                                    </h3>
+                                </div>
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Customers</p>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                                        {customers?.length ?? 0}
+                                    </h3>
+                                </div>
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Payment mode</p>
+                                    <h3 className="text-2xl font-bold capitalize text-slate-900 dark:text-slate-100">
+                                        {data.payment_method}
                                     </h3>
                                 </div>
                             </div>
@@ -326,7 +388,11 @@ const Create = ({ customers, products, banks }) => {
                                         (method) => (
                                             <label
                                                 key={method}
-                                                className="flex items-center gap-2"
+                                                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
+                                                    data.payment_method === method
+                                                        ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
+                                                        : "border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                                }`}
                                             >
                                                 <input
                                                     type="radio"
@@ -364,7 +430,7 @@ const Create = ({ customers, products, banks }) => {
                             {/* Bank */}
                             {data?.payment_method === "bank" && (
                                 <div>
-                                    <label className="block text-sm font-medium text-primary mb-1">
+                                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                                         Select bank
                                     </label>
                                     <select
@@ -397,7 +463,7 @@ const Create = ({ customers, products, banks }) => {
                             {/* Mobile */}
                             {data.payment_method === "mobile" && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
                                         Select mobile financial service
                                     </label>
                                     <select
@@ -447,11 +513,11 @@ const Create = ({ customers, products, banks }) => {
                             </div>
 
                             {/* Submit */}
-                            <div>
+                            <div className="flex justify-end">
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="bg-green-600 text-white w-full md:w-auto px-6 py-2 rounded-lg font-semibold hover:bg-green-700"
+                                    className="create-button w-full md:w-auto px-6 py-2.5"
                                 >
                                     {processing
                                         ? "Creating..."

@@ -8,6 +8,12 @@ const Edit = ({ product, categories, attributes }) => {
     const existingImagePath = product.product_image
         ? `/storage/app/public/${product.product_image}`
         : null;
+    const initialAttributeId = product.attribute_value?.attribute_id
+        ? String(product.attribute_value.attribute_id)
+        : "";
+    const initialAttributeValueIds = product.attribute_value_id
+        ? [String(product.attribute_value_id)]
+        : [];
 
     const { data, setData, put, errors, processing } = useForm({
         name: product.name || "",
@@ -16,24 +22,18 @@ const Edit = ({ product, categories, attributes }) => {
         buying_price: product.buying_price || "",
         stock: product.stock || "",
         unit: product.unit || "",
-        category: product.subCategory?.category_id || categories[0]?.id || "",
+        category: product.sub_category?.category_id || categories[0]?.id || "",
         sub_category_id:
             product.sub_category_id ||
             categories[0]?.sub_categories[0]?.id ||
             "",
         product_image: null,
-        attribute_id: product.attributeValue?.attribute_id || "",
-        attribute_value_ids: product.attribute_value_id
-            ? [product.attribute_value_id]
-            : [],
+        attribute_id: initialAttributeId,
+        attribute_value_ids: initialAttributeValueIds,
     });
 
-    const [selectedAttribute, setSelectedAttribute] = useState(
-        data.attribute_id
-    );
-    const [selectedValues, setSelectedValues] = useState(
-        data.attribute_value_ids
-    );
+    const [selectedAttribute, setSelectedAttribute] = useState(initialAttributeId);
+    const [selectedValues, setSelectedValues] = useState(initialAttributeValueIds);
     const [dropdownValues, setDropdownValues] = useState([]);
     const [currentDropdownValue, setCurrentDropdownValue] = useState("");
     const [imagePreview, setImagePreview] = useState(existingImagePath);
@@ -49,17 +49,27 @@ const Edit = ({ product, categories, attributes }) => {
         setData("attribute_value_ids", selectedValues || []);
     }, [selectedValues]);
 
+    // Seed edit form state from the saved product attribute/value.
+    useEffect(() => {
+        setSelectedAttribute(initialAttributeId);
+        setSelectedValues(initialAttributeValueIds);
+        setData("attribute_id", initialAttributeId);
+        setData("attribute_value_ids", initialAttributeValueIds);
+    }, [initialAttributeId, product.id]);
+
     // When selectedAttribute changes, adjust dropdownValues and selectedValues accordingly
     useEffect(() => {
         if (selectedAttribute) {
             const attr = attributes.find((a) => a.id == selectedAttribute);
-            const validValueIds = (attr?.values || []).map((v) => v.id);
+            const validValueIds = (attr?.values || []).map((v) => String(v.id));
             const filteredSelected = selectedValues.filter((v) =>
                 validValueIds.includes(v)
             );
             setSelectedValues(filteredSelected);
             setDropdownValues(
-                attr?.values.filter((v) => !filteredSelected.includes(v.id)) ||
+                attr?.values.filter(
+                    (v) => !filteredSelected.includes(String(v.id))
+                ) ||
                     []
             );
         } else {
@@ -67,7 +77,7 @@ const Edit = ({ product, categories, attributes }) => {
             setDropdownValues([]);
         }
         setCurrentDropdownValue("");
-    }, [selectedAttribute]);
+    }, [selectedAttribute, attributes]);
 
     // Image change handler with preview
     const handleImageChange = (e) => {
@@ -97,7 +107,7 @@ const Edit = ({ product, categories, attributes }) => {
         if (selectedAttribute) {
             const attr = attributes.find((a) => a.id == selectedAttribute);
             const remaining = (attr?.values || []).filter(
-                (v) => !newSelected.includes(v.id)
+                (v) => !newSelected.includes(String(v.id))
             );
             setDropdownValues(remaining);
         }
@@ -112,7 +122,7 @@ const Edit = ({ product, categories, attributes }) => {
         if (selectedAttribute) {
             const attr = attributes.find((a) => a.id == selectedAttribute);
             const remaining = (attr?.values || []).filter(
-                (v) => !newSelected.includes(v.id)
+                (v) => !newSelected.includes(String(v.id))
             );
             setDropdownValues(remaining);
         }
@@ -129,7 +139,7 @@ const Edit = ({ product, categories, attributes }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!data.attribute_value_ids.length) {
+        if (data.attribute_id && !data.attribute_value_ids.length) {
             setClientError("Please select at least one attribute value.");
             return;
         }
@@ -139,11 +149,15 @@ const Edit = ({ product, categories, attributes }) => {
 
     return (
         <AuthenticatedLayout title="Edit Product">
-            {/* <Head title={`Edit Product - ${company_name}`} /> */}
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"products.index"} />
-                    <h3 className="text-xl font-semibold">Edit Product</h3>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"products.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Edit Product</h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Update the existing product details without losing its current setup.</p>
+                        </div>
+                    </div>
                 </div>
                 {clientError && (
                     <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
@@ -151,7 +165,7 @@ const Edit = ({ product, categories, attributes }) => {
                     </p>
                 )}
 
-                <div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form onSubmit={handleSubmit} encType="multipart/form-data">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                             {/* Product Name */}
@@ -388,7 +402,7 @@ const Edit = ({ product, categories, attributes }) => {
                                 >
                                     <option value="">Select Attribute</option>
                                     {attributes.map((a) => (
-                                        <option key={a.id} value={a.id}>
+                                        <option key={a.id} value={String(a.id)}>
                                             {a.name}
                                         </option>
                                     ))}
@@ -424,11 +438,13 @@ const Edit = ({ product, categories, attributes }) => {
                                                 const valObj = attributes
                                                     .find(
                                                         (a) =>
-                                                            a.id ==
+                                                            String(a.id) ===
                                                             selectedAttribute
                                                     )
                                                     ?.values.find(
-                                                        (v) => v.id == valId
+                                                        (v) =>
+                                                            String(v.id) ===
+                                                            String(valId)
                                                     );
                                                 return (
                                                     <span

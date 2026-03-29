@@ -1,9 +1,10 @@
 import React from "react";
-import { useForm, Head } from "@inertiajs/react";
+import { useForm, Head, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
 export default function AdvanceCreate({ staff }) {
+    const { company_name } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
         staff_id: "",
         amount: "",
@@ -18,15 +19,24 @@ export default function AdvanceCreate({ staff }) {
 
     return (
         <AuthenticatedLayout>
-            <Head title="Add Advance Salary" />
-            <section>
-                {/* Header */}
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"advance-salaries.index"} />
-                    <h3 className="heading">Add Advance Salary</h3>
+            <Head title={`Add Advance Salary - ${company_name}`} />
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"advance-salaries.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Add advance salary
+                            </h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                Record a staff advance with amount, repayment
+                                plan, and starting month details.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
                             <fieldset className="custom-fieldset">
@@ -106,18 +116,18 @@ export default function AdvanceCreate({ staff }) {
                             <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
                                     <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
-                                        Start Month (YYYY-MM)
+                                        Start Month
                                     </label>
                                 </legend>
 
                                 <input
-                                    type="text"
-                                    value={data.start_month}
+                                    type="date"
+                                    value={data.start_month ? `${data.start_month}-01` : ""}
                                     onChange={(e) =>
-                                        setData("start_month", e.target.value)
+                                        setData("start_month", e.target.value.slice(0, 7))
                                     }
                                     className="custom-input"
-                                    placeholder="Enter start month"
+                                    required
                                 />
                                 {errors.start_month && (
                                     <p className="text-red-600">

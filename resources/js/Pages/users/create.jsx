@@ -45,13 +45,23 @@ const Create = ({ roles }) => {
     return (
         <AuthenticatedLayout>
             <Head title={`Create User - ${company_name}`} />
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"users.index"} />
-                    <h3 className="heading">Add new user</h3>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"users.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Add new user
+                            </h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                Create a user account, assign a role, and upload
+                                an optional profile image.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                             {/* Name */}
@@ -220,7 +230,7 @@ const Create = ({ roles }) => {
                             </div>
                         )}
 
-                        <div>
+                        <div className="flex justify-end">
                             <button
                                 type="submit"
                                 className="create-button"

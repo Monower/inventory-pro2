@@ -128,7 +128,7 @@ export default function UpdateProfileInformation({
                     <input
                         id="avatar"
                         type="file"
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border file:border-slate-300 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200 dark:text-slate-300 dark:file:border-slate-600 dark:file:bg-slate-800 dark:file:text-slate-100 dark:hover:file:bg-slate-700"
                         accept="image/*"
                         onChange={handleAvatarChange}
                     />
@@ -145,19 +145,19 @@ export default function UpdateProfileInformation({
                 {/* Email Verification */}
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
-                        <p className="mt-2 text-sm text-gray-800">
+                        <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
                             Your email address is unverified.
                             <Link
                                 href={route("verification.send")}
                                 method="post"
                                 as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                className="rounded-md text-sm text-slate-600 underline hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-slate-300 dark:hover:text-slate-100 dark:focus:ring-offset-slate-900"
                             >
                                 Click here to re-send the verification email.
                             </Link>
                         </p>
                         {status === "verification-link-sent" && (
-                            <div className="mt-2 text-sm font-medium text-green-600">
+                            <div className="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
                                 A new verification link has been sent to your
                                 email address.
                             </div>
@@ -175,7 +175,7 @@ export default function UpdateProfileInformation({
                         leave="transition ease-in-out"
                         leaveTo="opacity-0"
                     >
-                        <p className="text-sm text-gray-600">Saved.</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">Saved.</p>
                     </Transition>
                 </div>
             </form>

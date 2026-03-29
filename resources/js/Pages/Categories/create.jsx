@@ -14,10 +14,13 @@ const Create = () => {
     return (
         <AuthenticatedLayout>
             <Head title={`Create Category - ${company_name}`} />
-            <div className="w-full h-[50vh] flex justify-center items-center">
-                <div className="bg-card text-card-foreground p-4 rounded border border-border">
-                    <h1 className="text-md font-bold">Create Category</h1>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <h1 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Create Category</h1>
+                    <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Add a new top-level category to keep products organized.</p>
+                </div>
 
+                <div className="mx-auto max-w-xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form
                         onSubmit={submit}
                         className="flex flex-col items-center gap-2"
@@ -35,7 +38,7 @@ const Create = () => {
                         </div>
                     </form>
                 </div>
-            </div>
+            </section>
         </AuthenticatedLayout>
     );
 };

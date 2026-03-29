@@ -98,4 +98,11 @@ class SalaryController extends Controller
 
         return redirect()->route('salaries.index')->with('success', 'Salary marked as paid successfully!');
     }
+
+    public function destroy(Salary $salary)
+    {
+        $salary->delete();
+
+        return redirect()->route('salaries.index')->with('success', 'Salary deleted successfully!');
+    }
 }

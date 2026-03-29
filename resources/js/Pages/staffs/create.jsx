@@ -32,14 +32,24 @@ const Create = () => {
     return (
         <AuthenticatedLayout>
             <Head title={`Add Employee - ${company_name}`} />
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"staffs.index"} />
-                    <h3 className="heading">Add employee</h3>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"staffs.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Add employee
+                            </h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                Create a staff profile with contact details and
+                                the employee's base salary.
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 {clientError && <Alert flash={{ error: clientError }} autoHideMs={3000} />}
 
-                <div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
                             <div>

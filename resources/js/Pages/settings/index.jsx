@@ -52,18 +52,35 @@ const Index = ({ settings }) => {
         <AuthenticatedLayout title="Settings">
             <Head title={`Settings - ${company_name}`} />
 
-            <section className="mx-auto w-full max-w-4xl space-y-6">
-                <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-                    <h1 className="text-2xl font-semibold text-foreground">General Settings</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Configure your workspace branding shown across dashboard, login,
-                        and documents.
-                    </p>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-2xl">
+                            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-700 dark:text-amber-300">
+                                Settings Module
+                            </p>
+                            <h1 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Configure workspace branding
+                            </h1>
+                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                Update the company name and logo used across the
+                                dashboard, login screens, and printed documents.
+                            </p>
+                        </div>
+                        <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Current brand
+                            </p>
+                            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                                {data.company_name || "Not set"}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <form
                     onSubmit={handleSubmit}
-                    className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                    className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
                 >
                     <div className="grid gap-6 md:grid-cols-[1fr_220px]">
                         <div className="space-y-4">
@@ -96,7 +113,7 @@ const Index = ({ settings }) => {
                                 <div className="mt-2 flex items-center gap-3">
                                     <label
                                         htmlFor="logo"
-                                        className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-secondary px-4 py-2 text-sm text-secondary-foreground hover:opacity-90"
+                                        className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                                     >
                                         <Upload className="h-4 w-4" />
                                         Upload logo
@@ -105,7 +122,7 @@ const Index = ({ settings }) => {
                                         <button
                                             type="button"
                                             onClick={removeLogo}
-                                            className="inline-flex items-center gap-1 text-sm text-destructive"
+                                            className="inline-flex items-center gap-1 text-sm text-red-600 dark:text-red-400"
                                         >
                                             <X className="h-4 w-4" />
                                             Remove selected
@@ -124,16 +141,16 @@ const Index = ({ settings }) => {
                             </div>
                         </div>
 
-                        <div className="rounded-lg border border-dashed border-border p-4">
-                            <p className="mb-2 text-sm font-medium text-foreground">Logo Preview</p>
+                        <div className="rounded-2xl border border-dashed border-slate-300 p-4 dark:border-slate-600">
+                            <p className="mb-2 text-sm font-medium text-slate-900 dark:text-slate-100">Logo Preview</p>
                             {logoPreview ? (
                                 <img
                                     src={logoPreview}
                                     alt="Company logo preview"
-                                    className="h-36 w-full rounded-md object-contain"
+                                    className="h-36 w-full rounded-xl object-contain"
                                 />
                             ) : (
-                                <div className="flex h-36 items-center justify-center rounded-md bg-muted text-sm text-muted-foreground">
+                                <div className="flex h-36 items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                                     No logo selected
                                 </div>
                             )}

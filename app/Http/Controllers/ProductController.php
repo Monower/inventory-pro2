@@ -109,7 +109,7 @@ class ProductController extends Controller
         $attributes = Attribute::with('values')->get();
 
         return Inertia::render('products/edit', [
-            'product' => $product->load('attributeValue'),
+            'product' => $product->load(['subCategory.category', 'attributeValue.attribute']),
             'categories' => $categories,
             'attributes' => $attributes,
         ]);
@@ -140,6 +140,10 @@ class ProductController extends Controller
             $validated['product_image'] = $path;
         }
 
+        $attributeValueId = !empty($validated['attribute_value_ids'])
+            ? $validated['attribute_value_ids'][0]
+            : $product->attribute_value_id;
+
         $product->update([
             'name' => $validated['name'],
             'selling_price' => $validated['selling_price'],
@@ -149,7 +153,7 @@ class ProductController extends Controller
             'description' => $validated['description'] ?? null,
             'product_image' => $validated['product_image'] ?? $product->product_image,
             'sub_category_id' => $validated['sub_category_id'],
-            'attribute_value_id' => $validated['attribute_value_ids'][0] ?? null,
+            'attribute_value_id' => $attributeValueId,
         ]);
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');

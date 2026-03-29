@@ -13,6 +13,7 @@ class Purchase extends Model
         'invoice_no',
         'purchase_date',
         'supplier_name',
+        'notes',
         'total_amount',
         'payment_status',
         'paid_amount',

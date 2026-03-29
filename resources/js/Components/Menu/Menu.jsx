@@ -19,15 +19,15 @@ const Menu = ({ url }) => {
     const isPathPrefix = (prefix) =>
         currentPath === prefix || currentPath.startsWith(`${prefix}/`);
     const linkClass = (active) =>
-        "flex items-center px-4 py-3 rounded-md gap-2 border transition-colors duration-200 " +
+        "group flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition-all duration-200 " +
         (active
-            ? "text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 border-violet-200 dark:border-violet-700/60"
-            : "text-primary border-transparent hover:bg-muted");
+            ? "border-amber-200 bg-amber-50 text-amber-700 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+            : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900");
     const subLinkClass = (active) =>
-        "menu-sublink block rounded-md px-2 py-1.5 transition-colors duration-200 " +
+        "menu-sublink block rounded-xl px-3 py-2 text-sm transition-colors duration-200 " +
         (active
-            ? "text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 font-medium"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted");
+            ? "bg-amber-50 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+            : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100");
 
     const dashboardActive = isPath("/dashboard");
     const orderActive = isPathPrefix("/orders") || isPathPrefix("/banks");
@@ -50,10 +50,12 @@ const Menu = ({ url }) => {
         isPathPrefix("/profile") || isPathPrefix("/settings");
 
     return (
-        <>
+        <div className="space-y-2">
             {permissions.includes("view dashboard") && (
                 <Link href="/dashboard" className={linkClass(dashboardActive)}>
-                    <MdOutlineDashboard />
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                        <MdOutlineDashboard />
+                    </span>
                     <span>Dashboard</span>
                 </Link>
             )}
@@ -61,7 +63,11 @@ const Menu = ({ url }) => {
             {permissions.includes("view order") && (
                 <SidebarDropdown
                     title="Order"
-                    icon={<AiOutlineBorderlessTable />}
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <AiOutlineBorderlessTable />
+                        </span>
+                    }
                     active={orderActive}
                     defaultOpen={orderActive}
                 >
@@ -96,7 +102,11 @@ const Menu = ({ url }) => {
                 permissions.includes("view attribute value")) && (
                 <SidebarDropdown
                     title="Product"
-                    icon={<BsBoxes />}
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <BsBoxes />
+                        </span>
+                    }
                     active={productActive}
                     defaultOpen={productActive}
                 >
@@ -164,7 +174,9 @@ const Menu = ({ url }) => {
 
             {permissions.includes("view customer") && (
                 <Link href="/customers" className={linkClass(customerActive)}>
-                    <FaUsers />
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                        <FaUsers />
+                    </span>
                     <span>Customer</span>
                 </Link>
             )}
@@ -173,7 +185,11 @@ const Menu = ({ url }) => {
                 permissions.includes("view staff")) && (
                 <SidebarDropdown
                     title="Employee management"
-                    icon={<FaUserTie />}
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <FaUserTie />
+                        </span>
+                    }
                     active={employeeActive}
                     defaultOpen={employeeActive}
                 >
@@ -228,7 +244,11 @@ const Menu = ({ url }) => {
                 permissions.includes("view user")) && (
                 <SidebarDropdown
                     title="User management"
-                    icon={<BsPersonBoundingBox />}
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <BsPersonBoundingBox />
+                        </span>
+                    }
                     active={userManagementActive}
                     defaultOpen={userManagementActive}
                 >
@@ -255,7 +275,9 @@ const Menu = ({ url }) => {
 
             {permissions.includes("view transaction") && (
                 <Link href="/transactions" className={linkClass(transactionActive)}>
-                    <CiDollar />
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                        <CiDollar />
+                    </span>
                     <span>Transaction tracker</span>
                 </Link>
             )}
@@ -264,7 +286,11 @@ const Menu = ({ url }) => {
                 permissions.includes("view profile")) && (
                 <SidebarDropdown
                     title="Settings"
-                    icon={<PiGearSixLight />}
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <PiGearSixLight />
+                        </span>
+                    }
                     active={settingsActive}
                     defaultOpen={settingsActive}
                 >
@@ -284,7 +310,7 @@ const Menu = ({ url }) => {
                     </div>
                 </SidebarDropdown>
             )}
-        </>
+        </div>
     );
 };
 

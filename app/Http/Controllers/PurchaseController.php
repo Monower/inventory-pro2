@@ -54,6 +54,7 @@ class PurchaseController extends Controller
 
         $validated = $request->validate([
             'supplier_name' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:255',
             'purchase_date' => 'required|date',
             'payment_status' => 'required|string',
             'paid_amount' => 'required|numeric|min:0',
@@ -69,6 +70,7 @@ class PurchaseController extends Controller
             $purchase = Purchase::create([
                 'invoice_no' => $invoice,
                 'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
+                'notes' => $validated['notes'] ?? null,
                 'purchase_date' => $validated['purchase_date'],
                 'payment_status' => $validated['payment_status'],
                 'total_amount' => 0,
@@ -125,10 +127,18 @@ class PurchaseController extends Controller
         ]);
     }
 
+    public function show(Purchase $purchase)
+    {
+        return Inertia::render('Purchase/Show', [
+            'purchase' => $purchase->load('items.product'),
+        ]);
+    }
+
     public function update(Request $request, Purchase $purchase)
     {
         $validated = $request->validate([
             'supplier_name' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:255',
             'purchase_date' => 'required|date',
             'payment_status' => 'required|string',
             'paid_amount' => 'required|numeric|min:0', // this is the new payment entered
@@ -175,6 +185,7 @@ class PurchaseController extends Controller
             // Update purchase
             $purchase->update([
                 'supplier_name' => $validated['supplier_name'] ?? 'Unknown',
+                'notes' => $validated['notes'] ?? null,
                 'purchase_date' => $validated['purchase_date'],
                 'payment_status' => $paymentStatus,
                 // 'payment_status' => $validated['payment_status'],

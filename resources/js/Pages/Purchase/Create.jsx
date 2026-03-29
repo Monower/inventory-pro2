@@ -7,14 +7,15 @@ export default function Create({ products }) {
     const { company_name } = usePage().props;
 
     const [rows, setRows] = useState([
-        { product_id: "", quantity: 1, buying_price: 0 },
+        { product_id: "", quantity: 1, buying_price: "" },
     ]);
 
     const { data, setData, post, processing } = useForm({
         supplier_name: "",
+        notes: "",
         purchase_date: "",
         payment_status: "paid",
-        paid_amount: 0,
+        paid_amount: "0",
         items: rows,
     });
 
@@ -25,18 +26,18 @@ export default function Create({ products }) {
 
     // total amount
     const totalAmount = rows.reduce(
-        (sum, row) => sum + row.quantity * row.buying_price,
+        (sum, row) => sum + Number(row.quantity) * Number(row.buying_price || 0),
         0
     );
 
     // auto manage paid amount
     useEffect(() => {
         if (data.payment_status === "paid") {
-            setData("paid_amount", totalAmount);
+            setData("paid_amount", String(totalAmount));
         }
 
         if (data.payment_status === "unpaid") {
-            setData("paid_amount", 0);
+            setData("paid_amount", "0");
         }
     }, [data.payment_status, totalAmount]);
 
@@ -44,16 +45,16 @@ export default function Create({ products }) {
     useEffect(() => {
         if (
             data.payment_status === "partial" &&
-            data.paid_amount > totalAmount
+            Number(data.paid_amount) > totalAmount
         ) {
-            setData("paid_amount", totalAmount);
+            setData("paid_amount", String(totalAmount));
         }
     }, [data.paid_amount, totalAmount]);
 
     const addRow = () => {
         setRows([
             ...rows,
-            { product_id: "", quantity: 1, buying_price: 0 },
+            { product_id: "", quantity: 1, buying_price: "" },
         ]);
     };
 
@@ -65,9 +66,11 @@ export default function Create({ products }) {
     const handleChange = (i, field, value) => {
         const updated = [...rows];
         updated[i][field] =
-            field === "quantity" || field === "buying_price"
+            field === "quantity"
                 ? Number(value)
-                : value;
+                : field === "buying_price"
+                  ? value
+                  : value;
         setRows(updated);
     };
 
@@ -80,13 +83,18 @@ export default function Create({ products }) {
         <AuthenticatedLayout>
             <Head title={`Create Purchase - ${company_name}`} />
 
-            <div>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"purchases.index"} />
-                    <h3 className="text-xl font-semibold">New Purchase</h3>
+            <div className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"purchases.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">New Purchase</h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Record supplier purchases, line items, and payment progress in one form.</p>
+                        </div>
+                    </div>
                 </div>
 
-                <form onSubmit={submit} className="space-y-4">
+                <form onSubmit={submit} className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     {/* Supplier & Date */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -115,6 +123,8 @@ export default function Create({ products }) {
                         </div>
                     </div>
 
+                    
+
                     {/* Payment Status */}
                     <div>
                         <label>Payment Status</label>
@@ -129,6 +139,16 @@ export default function Create({ products }) {
                             <option value="unpaid">Unpaid</option>
                             <option value="partial">Partial</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label>Notes</label>
+                        <input
+                            type="text"
+                            className="w-full"
+                            value={data.notes}
+                            onChange={(e) => setData("notes", e.target.value)}
+                        />
                     </div>
 
                     {/* Products */}
@@ -204,7 +224,7 @@ export default function Create({ products }) {
                                         </td>
 
                                         <td className="border p-2">
-                                            ৳ {(row.quantity * row.buying_price).toFixed(2)}
+                                            ৳ {(Number(row.quantity) * Number(row.buying_price || 0)).toFixed(2)}
                                         </td>
 
                                         <td className="border p-2 text-center">
@@ -243,12 +263,21 @@ export default function Create({ products }) {
                                 min="0"
                                 className="w-full"
                                 value={data.paid_amount}
-                                onChange={(e) =>
+                                onChange={(e) => {
+                                    const { value } = e.target;
+
+                                    if (value === "") {
+                                        setData("paid_amount", "");
+                                        return;
+                                    }
+
                                     setData(
                                         "paid_amount",
-                                        Number(e.target.value)
-                                    )
-                                }
+                                        Number(value) > totalAmount
+                                            ? String(totalAmount)
+                                            : value
+                                    );
+                                }}
                                 disabled={data.payment_status !== "partial"}
                             />
                         </div>

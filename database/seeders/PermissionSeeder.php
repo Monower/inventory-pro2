@@ -81,6 +81,12 @@ class PermissionSeeder extends Seeder
             'create purchase',
             'edit purchase',
             'delete purchase',
+            'view salary',
+            'create salary',
+            'edit salary',
+            'delete salary',
+            'view advance salary',
+            'create advance salary',
         ];
 
         // Create permissions if they don't exist

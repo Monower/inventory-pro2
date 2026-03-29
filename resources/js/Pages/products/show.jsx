@@ -8,13 +8,15 @@ const Show = ({ product }) => {
 
     return (
         <AuthenticatedLayout title="View product">
-            {/* <Head title={`View product - ${company_name}`} /> */}
-
-            <section>
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-2">
                         <BackButton url={"products.index"} />
-                        <h3 className="heading">Product details: {product?.name}</h3>
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Product details: {product?.name}</h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Review category, pricing, stock, attributes, and media in one place.</p>
+                        </div>
                     </div>
 
                     <Link
@@ -23,9 +25,10 @@ const Show = ({ product }) => {
                     >
                         Edit product
                     </Link>
+                    </div>
                 </div>
 
-                <div className="bg-background border border-ring shadow-md rounded-lg p-4 mb-6">
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-1">
                             {product?.product_image ? (

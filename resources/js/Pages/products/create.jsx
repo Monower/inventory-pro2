@@ -25,9 +25,6 @@ const Create = ({ categories, attributes }) => {
     const [currentDropdownValue, setCurrentDropdownValue] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
 
-    console.log("current dropdown value: ", currentDropdownValue);
-    console.log("selected values: ", selectedValues);
-
     useEffect(() => {
         if (selectedAttribute) {
             const attr = attributes.find((a) => a.id == selectedAttribute);
@@ -98,14 +95,18 @@ const Create = ({ categories, attributes }) => {
 
     return (
         <AuthenticatedLayout title="Add Product">
-            {/* <Head title={`Add Product - ${company_name}`} /> */}
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"products.index"} />
-                    <h3 className="heading">Add new product</h3>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"products.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Add new product</h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Create a product with pricing, stock, category, image, and attribute data.</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form onSubmit={handleSubmit} encType="multipart/form-data">
                         <div className="grid  grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
                             {/* Product Name */}

@@ -52,12 +52,23 @@ const Edit = ({ user, roles }) => {
     return (
         <AuthenticatedLayout>
             <Head title={`Edit user - ${company_name}`} />
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"users.index"} />
-                    <h3 className="heading">Edit user</h3>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"users.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Edit user
+                            </h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                Update account details, change the assigned role,
+                                and manage the user's profile image.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
                         {/* Name */}
@@ -202,7 +213,7 @@ const Edit = ({ user, roles }) => {
                         </div>
                     )}
 
-                    <div>
+                    <div className="flex justify-end">
                         <button
                             type="submit"
                             className="edit-button"
@@ -211,6 +222,7 @@ const Edit = ({ user, roles }) => {
                         </button>
                     </div>
                 </form>
+                </div>
             </section>
         </AuthenticatedLayout>
     );

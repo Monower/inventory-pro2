@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import Alert from "@/Components/Alert/Alert";
 import { useState, useEffect } from "react";
-import { useForm, Head, usePage, Link } from "@inertiajs/react";
+import { useForm, usePage, Link } from "@inertiajs/react";
 
 const Edit = ({ order, customers, products, banks }) => {
     const { company_name } = usePage().props;
@@ -13,7 +13,10 @@ const Edit = ({ order, customers, products, banks }) => {
     ------------------------------ */
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id,
-        payment_amount: Number(order.paid_amount) || 0,
+        payment_amount:
+            order.paid_amount !== null && order.paid_amount !== undefined
+                ? String(order.paid_amount)
+                : "",
         payment_method: order.payment_method || "cash",
         bank_id: order.bank_id || "",
         mfs: order.mfs || "",
@@ -129,18 +132,42 @@ const Edit = ({ order, customers, products, banks }) => {
 
     return (
         <AuthenticatedLayout title="Edit order">
-            {/* <Head title={`Edit order - ${company_name}`} /> */}
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="flex items-start gap-4">
+                            <BackButton url={"orders.index"} />
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-700 dark:text-amber-300">
+                                    Edit Order
+                                </p>
+                                <h3 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                    Edit order: {order.order_number}
+                                </h3>
+                                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                    Manage products, customers and checkout below.
+                                </p>
+                            </div>
+                        </div>
 
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"orders.index"} />
-                    <div>
-                        <h3 className="heading">
-                            Edit order: {order.order_number}
-                        </h3>
-                        <p className="text-gray-500">
-                            Manage products, customers and checkout below.
-                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Current items
+                                </p>
+                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                    {cart.length}
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Paid now
+                                </p>
+                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                    {paidAmount}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -165,8 +192,15 @@ const Edit = ({ order, customers, products, banks }) => {
                 {/* Products & Cart */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     {/* Products */}
-                    <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                        <h3 className="heading">Products list</h3>
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                        <div className="mb-4">
+                            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                                Products list
+                            </h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Add more products that are not already in this order.
+                            </p>
+                        </div>
                         <div className="overflow-x-auto">
                             <table className="custom-table min-w-[640px]">
                                 <thead className="custom-thead">
@@ -213,11 +247,23 @@ const Edit = ({ order, customers, products, banks }) => {
                     </div>
 
                     {/* Cart */}
-                    <div className="bg-background border border-ring shadow-md rounded-lg p-4">
-                        <h3 className="heading">Cart</h3>
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                        <div className="mb-4 flex items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                                    Cart
+                                </h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Update quantities, review totals, and remove items if needed.
+                                </p>
+                            </div>
+                            <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                                {cart.length} items
+                            </span>
+                        </div>
 
                         {cart.length === 0 ? (
-                            <p className="text-gray-500">No items</p>
+                            <p className="text-slate-500 dark:text-slate-400">No items</p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="custom-table min-w-[640px]">
@@ -267,7 +313,7 @@ const Edit = ({ order, customers, products, banks }) => {
                                                                 item.id
                                                             )
                                                         }
-                                                        className="bg-destructive text-white px-3 py-1 rounded"
+                                                        className="rounded-lg bg-red-600 px-3 py-1 text-white transition hover:bg-red-700"
                                                     >
                                                         Remove
                                                     </button>
@@ -284,24 +330,33 @@ const Edit = ({ order, customers, products, banks }) => {
                 {/* Checkout */}
                 <form
                     onSubmit={handleSubmit}
-                    className="bg-background border border-ring shadow-md rounded-lg p-4"
+                    className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
                 >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p>Total</p>
-                            <strong>{totalPrice}</strong>
+                    <div className="mb-5">
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                            Checkout
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            Review the order summary, payment method, and final amount before updating.
+                        </p>
+                    </div>
+
+                    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Total</p>
+                            <strong className="text-2xl text-slate-900 dark:text-slate-100">{totalPrice}</strong>
                         </div>
-                        <div>
-                            <p>Quantity</p>
-                            <strong>{totalQuantity}</strong>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Quantity</p>
+                            <strong className="text-2xl text-slate-900 dark:text-slate-100">{totalQuantity}</strong>
                         </div>
-                        <div>
-                            <p>Paid</p>
-                            <strong>{paidAmount}</strong>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Paid</p>
+                            <strong className="text-2xl text-slate-900 dark:text-slate-100">{paidAmount}</strong>
                         </div>
-                        <div>
-                            <p>Due</p>
-                            <strong>{dueAmount}</strong>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Due</p>
+                            <strong className="text-2xl text-slate-900 dark:text-slate-100">{dueAmount}</strong>
                         </div>
                     </div>
 
@@ -333,7 +388,14 @@ const Edit = ({ order, customers, products, banks }) => {
                         </label>
                         <div className="flex flex-wrap gap-4 mb-4">
                             {["cash", "bank", "mobile"].map((m) => (
-                                <label key={m} className="flex gap-2">
+                                <label
+                                    key={m}
+                                    className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium capitalize transition ${
+                                        data.payment_method === m
+                                            ? "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
+                                            : "border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                    }`}
+                                >
                                     <input
                                         type="radio"
                                         value={m}
@@ -352,31 +414,41 @@ const Edit = ({ order, customers, products, banks }) => {
                     </div>
 
                     {data.payment_method === "bank" && (
-                        <select
-                            value={data.bank_id}
-                            onChange={(e) => setData("bank_id", e.target.value)}
-                            className="custom-input mb-4"
-                        >
-                            <option value="">-- Select Bank --</option>
-                            {banks.map((b) => (
-                                <option key={b.id} value={b.id}>
-                                    {b.name}
-                                </option>
-                            ))}
-                        </select>
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                                Select bank
+                            </label>
+                            <select
+                                value={data.bank_id}
+                                onChange={(e) => setData("bank_id", e.target.value)}
+                                className="custom-input mb-4"
+                            >
+                                <option value="">-- Select Bank --</option>
+                                {banks.map((b) => (
+                                    <option key={b.id} value={b.id}>
+                                        {b.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     )}
 
                     {data.payment_method === "mobile" && (
-                        <select
-                            value={data.mfs}
-                            onChange={(e) => setData("mfs", e.target.value)}
-                            className="custom-input mb-4"
-                        >
-                            <option value="">-- Select MFS --</option>
-                            <option value="bkash">Bkash</option>
-                            <option value="nagad">Nagad</option>
-                            <option value="rocket">Rocket</option>
-                        </select>
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                                Select mobile financial service
+                            </label>
+                            <select
+                                value={data.mfs}
+                                onChange={(e) => setData("mfs", e.target.value)}
+                                className="custom-input mb-4"
+                            >
+                                <option value="">-- Select MFS --</option>
+                                <option value="bkash">Bkash</option>
+                                <option value="nagad">Nagad</option>
+                                <option value="rocket">Rocket</option>
+                            </select>
+                        </div>
                     )}
 
                     {/* PAYMENT INPUT (CLAMPED) */}
@@ -390,10 +462,18 @@ const Edit = ({ order, customers, products, banks }) => {
                             max={totalPrice}
                             value={data.payment_amount}
                             onChange={(e) => {
-                                const value = Number(e.target.value);
+                                const { value } = e.target;
+
+                                if (value === "") {
+                                    setData("payment_amount", "");
+                                    return;
+                                }
+
                                 setData(
                                     "payment_amount",
-                                    value > totalPrice ? totalPrice : value
+                                    Number(value) > totalPrice
+                                        ? String(totalPrice)
+                                        : value
                                 );
                             }}
                             className="custom-input mb-4"
@@ -405,7 +485,7 @@ const Edit = ({ order, customers, products, banks }) => {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="bg-green-600 text-white px-4 py-1 rounded-lg"
+                            className="edit-button px-6 py-2.5"
                         >
                             {processing ? "Updating..." : "Update order"}
                         </button>

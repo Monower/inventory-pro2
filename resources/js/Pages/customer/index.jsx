@@ -53,16 +53,38 @@ const Index = ({ customers }) => {
     return (
         <AuthenticatedLayout>
             <Head title={`Customers - ${company_name}`} />
-            <section>
-                {/* Header */}
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="heading">Customers</h3>
-                    <Link
-                        href="/customer/create"
-                        className="create-button"
-                    >
-                        Create
-                    </Link>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-2xl">
+                            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-700 dark:text-amber-300">
+                                Customer Module
+                            </p>
+                            <h3 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Manage your customer directory
+                            </h3>
+                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                Search customer records, review contact details,
+                                and jump directly into edits from one place.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Visible customers
+                                </p>
+                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                    {list.length}
+                                </p>
+                            </div>
+                            <Link
+                                href="/customer/create"
+                                className="create-button"
+                            >
+                                Create
+                            </Link>
+                        </div>
+                    </div>
                 </div>
                 <IndexFilters
                     routeName="customers.index"
@@ -72,7 +94,7 @@ const Index = ({ customers }) => {
                 />
 
                 {/* Table */}
-                <div className="table-div">
+                <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     {list.length === 0 ? (
                         <NoDataFound />
                     ) : (

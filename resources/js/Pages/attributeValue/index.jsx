@@ -80,16 +80,35 @@ const Index = ({ values, attributes }) => {
 
     return (
         <AuthenticatedLayout>
-            <section>
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold">Attribute Values</h3>
-                    <button
-                        onClick={openCreateModal}
-                        className="bg-blue-500 text-white p-1 px-2 rounded"
-                        disabled={processing}
-                    >
-                        Create new
-                    </button>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-2xl">
+                            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-amber-700 dark:text-amber-300">
+                                Attribute Values
+                            </p>
+                            <h3 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Maintain selectable value options
+                            </h3>
+                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                Keep attribute values organized and editable in a
+                                single overview.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Visible values</p>
+                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{values.length}</p>
+                            </div>
+                            <button
+                                onClick={openCreateModal}
+                                className="create-button"
+                                disabled={processing}
+                            >
+                                Create new
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Modal for Create / Edit */}
@@ -192,7 +211,7 @@ const Index = ({ values, attributes }) => {
                     </form>
                 </Modal>
 
-                <div className="bg-white p-4 rounded shadow">
+                <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <table className="w-full text-left border-collapse border">
                         <thead className="border-b">
                             <tr className="[&>th]:border [&>th]:py-1 [&>th]:px-2">

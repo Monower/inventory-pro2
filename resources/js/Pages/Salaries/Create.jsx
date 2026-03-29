@@ -19,13 +19,23 @@ export default function SalaryCreate({ staff }) {
     return (
         <AuthenticatedLayout>
             <Head title={`Generate Salary - ${company_name}`} />
-            <section>
-                <div className="mb-4 flex items-center gap-4">
-                    <BackButton url={"salaries.index"} />
-                    <h3 className="heading">Generate Salary</h3>
+            <section className="space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+                    <div className="flex items-center gap-4">
+                        <BackButton url={"salaries.index"} />
+                        <div>
+                            <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+                                Generate salary
+                            </h3>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                Create a salary sheet for a selected employee,
+                                including bonus and deduction adjustments.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
 
@@ -58,16 +68,17 @@ export default function SalaryCreate({ staff }) {
 
                             <fieldset className="custom-fieldset">
                                 <legend className="text-sm mx-2">
-                                    <label>Month (YYYY-MM)</label>
+                                    <label>Month</label>
                                 </legend>
 
                                 <input
-                                    type="text"
-                                    value={data.month}
+                                    type="date"
+                                    value={data.month ? `${data.month}-01` : ""}
                                     onChange={(e) =>
-                                        setData("month", e.target.value)
+                                        setData("month", e.target.value.slice(0, 7))
                                     }
                                     className="custom-input"
+                                    required
                                 />
                                 {errors.month && (
                                     <p className="text-red-600">

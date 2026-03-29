@@ -23,13 +23,13 @@ export default function SidebarDropdown({
             <button
                 onClick={toggleDropdown}
                 className={
-                    "flex w-full items-center px-4 py-3 rounded-md text-left transition-colors duration-200 " +
+                    "flex w-full items-center rounded-2xl px-4 py-3 text-left text-sm font-medium transition-all duration-200 " +
                     (active
-                        ? "text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 border border-violet-200 dark:border-violet-700/60"
-                        : "text-primary hover:bg-muted")
+                        ? "border border-amber-200 bg-amber-50 text-amber-700 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                        : "border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900")
                 }
             >
-                {icon && <span className="mr-2">{icon}</span>}
+                {icon && <span className="mr-3">{icon}</span>}
                 <span className="sidebar-text flex-1">{title}</span>
                 <BiChevronDown
                     className={
@@ -39,7 +39,11 @@ export default function SidebarDropdown({
                 />
             </button>
 
-            {isOpen && <div className="ml-10 mt-2 space-y-2">{children}</div>}
+            {isOpen && (
+                <div className="ml-6 mt-2 border-l border-slate-200 pl-4 dark:border-slate-800">
+                    <div className="space-y-2">{children}</div>
+                </div>
+            )}
         </div>
     );
 }
