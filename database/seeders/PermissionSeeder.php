@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Plan;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -11,6 +12,15 @@ use Illuminate\Support\Str;
 
 class PermissionSeeder extends Seeder
 {
+    protected array $platformOnlyPermissions = [
+        'view tenant',
+        'edit tenant',
+        'view plan',
+        'create plan',
+        'edit plan',
+        'delete plan',
+    ];
+
     /**
      * Run the database seeds.
      */
@@ -22,6 +32,14 @@ class PermissionSeeder extends Seeder
         // Define your permissions here
         $permissions = [
             'view dashboard',
+            'view tenant',
+            'edit tenant',
+            'view plan',
+            'create plan',
+            'edit plan',
+            'delete plan',
+            'view billing',
+            'manage billing',
             'view customer',
             'create customer',
             'edit customer',
@@ -97,9 +115,21 @@ class PermissionSeeder extends Seeder
 
         // Create admin role
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
+        $userRole = Role::firstOrCreate(['name' => 'user']);
 
-        // Give all permissions to admin
-        $adminRole->syncPermissions(Permission::all());
+        $allPermissions = Permission::query()->get();
+        $tenantAdminPermissions = $allPermissions
+            ->whereNotIn('name', $this->platformOnlyPermissions)
+            ->values();
+        $userPermissions = $allPermissions
+            ->whereIn('name', ['view dashboard', 'can login'])
+            ->values();
+
+        // Platform owner keeps all permissions, tenant admin gets app-only permissions.
+        $superAdminRole->syncPermissions($allPermissions);
+        $adminRole->syncPermissions($tenantAdminPermissions);
+        $userRole->syncPermissions($userPermissions);
 
         // Check if there is at least one user
         $user = User::first();
@@ -131,5 +161,44 @@ class PermissionSeeder extends Seeder
         if (!$user->hasRole('admin')) {
             $user->assignRole($adminRole);
         }
+
+        if (!$user->hasRole('super-admin')) {
+            $user->assignRole($superAdminRole);
+        }
+
+        $plans = [
+            [
+                'name' => 'Starter',
+                'slug' => 'starter',
+                'description' => 'For small teams beginning with inventory, orders, and billing.',
+                'monthly_price' => 990,
+                'yearly_price' => 9900,
+                'trial_days' => 14,
+                'sort_order' => 1,
+            ],
+            [
+                'name' => 'Growth',
+                'slug' => 'growth',
+                'description' => 'For growing operations that need more room and longer billing commitments.',
+                'monthly_price' => 1990,
+                'yearly_price' => 19900,
+                'trial_days' => 14,
+                'sort_order' => 2,
+            ],
+            [
+                'name' => 'Scale',
+                'slug' => 'scale',
+                'description' => 'For established businesses standardizing their full workflow in one workspace.',
+                'monthly_price' => 3490,
+                'yearly_price' => 34900,
+                'trial_days' => 14,
+                'sort_order' => 3,
+            ],
+        ];
+
+        foreach ($plans as $planData) {
+            Plan::updateOrCreate(['slug' => $planData['slug']], $planData + ['is_active' => true]);
+        }
+
     }
 }

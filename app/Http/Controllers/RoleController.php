@@ -16,8 +16,12 @@ class RoleController extends Controller
     public function index()
     {
         $q = trim((string) request()->query('q', ''));
+        $authUser = request()->user();
 
         $roles = Role::with('permissions')
+            ->when(!$authUser->isSuperAdmin(), function ($query) {
+                $query->where('name', '!=', 'super-admin');
+            })
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
                     $subQuery->where('name', 'like', "%{$q}%")
@@ -43,7 +47,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $permissions = Permission::all();
+        $permissions = $this->availablePermissions(request()->user());
         return Inertia::render('role/create', compact('permissions'));
     }
 
@@ -52,15 +56,21 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+        $permissionNames = $this->availablePermissions($request->user())->pluck('name');
+
         $validated = $request->validate([
             'name' => 'required',
             'permissions' => 'required',
         ]);
 
+        if (!$request->user()->isSuperAdmin() && $validated['name'] === 'super-admin') {
+            abort(403);
+        }
 
         $role = Role::create(['name' => $validated['name']]);
-        $role->syncPermissions($validated['permissions'] ?? []);
+        $role->syncPermissions(
+            collect($validated['permissions'] ?? [])->intersect($permissionNames)->values()
+        );
 
 
         return to_route('roles.index');
@@ -80,7 +90,11 @@ class RoleController extends Controller
     public function edit($role_id)
     {
         $role = Role::find($role_id)->load('permissions');
-        $permissions = Permission::all();
+        if (!$role || (!request()->user()->isSuperAdmin() && $role->name === 'super-admin')) {
+            abort(403);
+        }
+
+        $permissions = $this->availablePermissions(request()->user());
         return Inertia::render('role/edit', compact('role', 'permissions'));
     }
 
@@ -89,15 +103,22 @@ class RoleController extends Controller
      */
     public function update(Request $request, $role_id)
     {
+        $role = Role::find($role_id);
+        if (!$role || (!request()->user()->isSuperAdmin() && $role->name === 'super-admin')) {
+            abort(403);
+        }
+
+        $permissionNames = $this->availablePermissions($request->user())->pluck('name');
+
         $validated = $request->validate([
             'name' => 'required',
             'permissions' => 'required',
         ]);
 
-
-        $role = Role::find($role_id);
         $role->update(['name' => $validated['name']]);
-        $role->syncPermissions($validated['permissions'] ?? []);
+        $role->syncPermissions(
+            collect($validated['permissions'] ?? [])->intersect($permissionNames)->values()
+        );
 
         return to_route('roles.index');
     }
@@ -108,8 +129,29 @@ class RoleController extends Controller
     public function destroy($role_id)
     {
         $role = Role::find($role_id);
+        if (!$role || (!request()->user()->isSuperAdmin() && $role->name === 'super-admin')) {
+            abort(403);
+        }
 
         $role->delete();
         return to_route('roles.index');
+    }
+
+    protected function availablePermissions(User $user)
+    {
+        return Permission::query()
+            ->when(!$user->isSuperAdmin(), function ($query) {
+                $query->whereNotIn('name', [
+                    'view tenant',
+                    'edit tenant',
+                    'view plan',
+                    'create plan',
+                    'edit plan',
+                    'delete plan',
+                    'manage billing',
+                ]);
+            })
+            ->orderBy('name')
+            ->get();
     }
 }

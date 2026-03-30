@@ -5,6 +5,7 @@ import { FaUsers } from "react-icons/fa";
 import { FaUserTie } from "react-icons/fa6";
 import { BsBoxes } from "react-icons/bs";
 import { BsPersonBoundingBox } from "react-icons/bs";
+import { BsShieldLock } from "react-icons/bs";
 import { AiOutlineBorderlessTable } from "react-icons/ai";
 import { CiDollar } from "react-icons/ci";
 import { PiGearSixLight } from "react-icons/pi";
@@ -47,7 +48,8 @@ const Menu = ({ url }) => {
         isPathPrefix("/roles") || isPathPrefix("/users");
     const transactionActive = isPathPrefix("/transactions");
     const settingsActive =
-        isPathPrefix("/profile") || isPathPrefix("/settings");
+        isPathPrefix("/profile") || isPathPrefix("/settings") || isPathPrefix("/billing");
+    const superAdminActive = isPathPrefix("/super-admin");
 
     return (
         <div className="space-y-2">
@@ -273,6 +275,30 @@ const Menu = ({ url }) => {
                 </SidebarDropdown>
             )}
 
+            {permissions.includes("view tenant") && (
+                <Link
+                    href="/super-admin/tenants"
+                    className={linkClass(superAdminActive)}
+                >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                        <BsShieldLock />
+                    </span>
+                    <span>SaaS Control</span>
+                </Link>
+            )}
+
+            {permissions.includes("view plan") && (
+                <Link
+                    href="/super-admin/plans"
+                    className={linkClass(isPathPrefix("/super-admin/plans"))}
+                >
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                        <BsShieldLock />
+                    </span>
+                    <span>Billing Plans</span>
+                </Link>
+            )}
+
             {permissions.includes("view transaction") && (
                 <Link href="/transactions" className={linkClass(transactionActive)}>
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
@@ -307,6 +333,14 @@ const Menu = ({ url }) => {
                         >
                             General settings
                         </Link>
+                        {permissions.includes("view billing") && (
+                            <Link
+                                href="/billing"
+                                className={subLinkClass(isPathPrefix("/billing"))}
+                            >
+                                Billing
+                            </Link>
+                        )}
                     </div>
                 </SidebarDropdown>
             )}

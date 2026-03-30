@@ -32,3 +32,6 @@ require __DIR__ . '/modules/OrderRoutes.php';
 require __DIR__ . '/modules/SettingRoutes.php';
 require __DIR__ . '/modules/PurchaseRoutes.php';
 require __DIR__ . '/modules/SalaryRoutes.php';
+require __DIR__ . '/modules/TenantRoutes.php';
+require __DIR__ . '/modules/PlanRoutes.php';
+require __DIR__ . '/modules/BillingRoutes.php';

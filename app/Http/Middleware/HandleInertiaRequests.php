@@ -33,10 +33,12 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
+                    'tenant_id' => $request->user()->tenant_id,
                     'name' => $request->user()->name,
                     'phone' => $request->user()->phone,
                     'avatar' => $request->user()->avatar,
                     'email' => $request->user()->email,
+                    'is_super_admin' => $request->user()->isSuperAdmin(),
                     'roles' => $request->user()->getRoleNames(), // returns ["admin"]
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'), // returns collection of names
                 ] : null,

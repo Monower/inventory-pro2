@@ -12,7 +12,7 @@ import { applyTheme, resolveTheme } from "@/lib/theme";
 
 export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
-    const { settings, company_name, flash } = usePage().props;
+    const { settings, company_name, flash, tenant, billing } = usePage().props;
     const { url } = usePage();
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
@@ -78,6 +78,16 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         </div>
 
                         <div className="flex items-center gap-2 lg:gap-3">
+                            {tenant?.switched && (
+                                <Link
+                                    href={route("super-admin.tenants.clear-switch")}
+                                    method="delete"
+                                    as="button"
+                                    className="hidden rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700 shadow-sm transition hover:bg-sky-100 lg:inline-flex"
+                                >
+                                    Exit {tenant.name}
+                                </Link>
+                            )}
                             <button
                                 type="button"
                                 onClick={toggleTheme}
@@ -159,6 +169,50 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         {header}
                     </div>
                 </header>
+            )}
+
+            {tenant?.switched && (
+                <div className="border-b border-sky-200 bg-sky-50/80 px-4 py-3 text-sm text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100">
+                    <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            Viewing <span className="font-semibold">{tenant.name}</span> as super-admin.
+                            {tenant.home_tenant_name ? ` Home workspace: ${tenant.home_tenant_name}.` : ""}
+                        </div>
+                        <Link
+                            href={route("super-admin.tenants.clear-switch")}
+                            method="delete"
+                            as="button"
+                            className="inline-flex w-fit rounded-xl border border-sky-300 bg-white px-4 py-2 font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-800 dark:bg-slate-950 dark:text-sky-200 dark:hover:bg-slate-900"
+                        >
+                            Return to home workspace
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {billing?.alert && !tenant?.switched && (
+                <div
+                    className={`border-b px-4 py-3 text-sm ${
+                        billing.alert.type === "error"
+                            ? "border-red-200 bg-red-50 text-red-900 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-100"
+                            : billing.alert.type === "warning"
+                              ? "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100"
+                              : "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/30 dark:text-sky-100"
+                    }`}
+                >
+                    <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <span className="font-semibold">{billing.alert.title}:</span>{" "}
+                            {billing.alert.message}
+                        </div>
+                        <Link
+                            href={route("billing.index")}
+                            className="inline-flex w-fit rounded-xl border border-current/20 bg-white/70 px-4 py-2 font-medium transition hover:bg-white dark:bg-slate-950/60 dark:hover:bg-slate-950"
+                        >
+                            Open billing
+                        </Link>
+                    </div>
+                </div>
             )}
 
             <div className="flex min-h-[calc(100vh-5rem)]">

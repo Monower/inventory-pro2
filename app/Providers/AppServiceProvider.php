@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Plan;
 use App\Support\CurrentTenant;
+use App\Services\BillingService;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
                 $user = Auth::user();
                 return $user ? [
                     'id' => $user->id,
+                    'tenant_id' => $user->tenant_id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar,   // new
@@ -63,7 +66,9 @@ class AppServiceProvider extends ServiceProvider
             },
 
             'tenant' => function () {
-                $tenant = app(CurrentTenant::class)->get();
+                $tenantContext = app(CurrentTenant::class);
+                $tenant = $tenantContext->get();
+                $homeTenant = $tenantContext->homeTenant();
 
                 return $tenant ? [
                     'id' => $tenant->id,
@@ -71,7 +76,29 @@ class AppServiceProvider extends ServiceProvider
                     'slug' => $tenant->slug,
                     'domain' => $tenant->domain,
                     'status' => $tenant->status,
+                    'switched' => $tenantContext->switched(),
+                    'home_tenant_id' => $homeTenant?->id,
+                    'home_tenant_name' => $homeTenant?->name,
                 ] : null;
+            },
+
+            'billing' => function () {
+                $tenant = app(CurrentTenant::class)->get();
+
+                if (!$tenant) {
+                    return null;
+                }
+
+                $subscription = $tenant->currentSubscription?->load(['plan', 'nextPlan']);
+
+                return app(BillingService::class)->summary($subscription);
+            },
+
+            'billing_plans' => function () {
+                return Plan::query()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get(['id', 'name', 'slug', 'monthly_price', 'yearly_price', 'description', 'trial_days']);
             },
         ]);
     }

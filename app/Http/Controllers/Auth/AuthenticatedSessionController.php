@@ -31,6 +31,14 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        if (auth()->user()?->tenant && auth()->user()->tenant->status !== 'active') {
+            auth()->logout();
+
+            return redirect()->route('login')->withErrors([
+                'permission' => 'Your workspace is currently suspended. Please contact support.',
+            ]);
+        }
+
         // Check if the authenticated user has 'can login' permission
         if (!auth()->user()->can('can login')) {
             // Optionally, log out the user or handle unauthorized access as needed,

@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -16,8 +17,14 @@ class UserController extends Controller
     public function index()
     {
         $q = trim((string) request()->query('q', ''));
+        $authUser = request()->user();
 
         $users = User::with('roles')
+            ->when(!$authUser->isSuperAdmin(), function ($query) {
+                $query->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'super-admin');
+                });
+            })
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
                     $subQuery->where('name', 'like', "%{$q}%")
@@ -46,7 +53,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::where('name', '!=', 'admin')->get();
+        $roles = $this->availableRoles(request()->user())->get();
         return Inertia::render('users/create', ['roles' => $roles]);
     }
 
@@ -55,28 +62,25 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // ✅ Validate request
+        $roles = $this->availableRoles($request->user())->pluck('name');
+
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'phone'    => 'nullable|string|max:20',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'role'     => 'required|exists:roles,name',
+            'role'     => ['required', Rule::in($roles)],
         ]);
 
         $imagePath = null;
 
-        // ✅ Handle image upload with timestamp name
         if ($request->hasFile('image')) {
             $file     = $request->file('image');
             $filename = time() . '.' . $file->getClientOriginalExtension();
             $imagePath = $file->storeAs('avatars', $filename, 'public');
         }
 
-        // dd($imagePath);
-
-        // ✅ Create user
         $user = User::create([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
@@ -85,7 +89,6 @@ class UserController extends Controller
             'avatar'   => $imagePath, // stored with timestamp name
         ]);
 
-        // ✅ Assign role (Spatie Permissions)
         $user->assignRole($validated['role']);
 
         return redirect()->route('users.index')->with('success', 'User created successfully!');
@@ -107,7 +110,11 @@ class UserController extends Controller
     public function edit($user_id)
     {
         $user = User::with('roles')->find($user_id);
-        $roles = Role::where('name', '!=', 'admin')->get();
+        if (!$user || !$this->canManageUser(request()->user(), $user)) {
+            abort(403);
+        }
+
+        $roles = $this->availableRoles(request()->user())->get();
         return Inertia::render('users/edit', ['user' => $user, 'roles' => $roles]);
     }
 
@@ -117,17 +124,20 @@ class UserController extends Controller
     public function update(Request $request, $user_id)
     {
 
-        // dd($request->all());
         $user = User::findOrFail($user_id);
+        if (!$this->canManageUser($request->user(), $user)) {
+            abort(403);
+        }
 
-        // Validate request
+        $roles = $this->availableRoles($request->user())->pluck('name');
+
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
             'phone'    => 'nullable|string|max:20',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'role'     => 'required|exists:roles,name',
+            'role'     => ['required', Rule::in($roles)],
             'remove_image' => 'nullable|boolean',
         ]);
 
@@ -170,7 +180,27 @@ class UserController extends Controller
     public function destroy($user_id)
     {
         $user = User::find($user_id);
+        if (!$user || !$this->canManageUser(request()->user(), $user)) {
+            abort(403);
+        }
+
         $user->delete();
         return redirect()->route('users.index');
+    }
+
+    protected function availableRoles(User $user)
+    {
+        return Role::query()
+            ->when(!$user->isSuperAdmin(), function ($query) {
+                $query->whereNotIn('name', ['admin', 'super-admin']);
+            }, function ($query) {
+                $query->where('name', '!=', 'admin');
+            })
+            ->orderBy('name');
+    }
+
+    protected function canManageUser(User $actor, User $subject): bool
+    {
+        return $actor->isSuperAdmin() || !$subject->hasRole('super-admin');
     }
 }
