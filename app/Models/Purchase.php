@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Purchase extends Model
 {
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'invoice_no',
@@ -17,6 +18,7 @@ class Purchase extends Model
         'total_amount',
         'payment_status',
         'paid_amount',
+        'tenant_id',
     ];
 
     public function items()

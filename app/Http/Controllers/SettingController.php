@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Support\CurrentTenant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
@@ -32,39 +33,35 @@ class SettingController extends Controller
      */
     public function update(Request $request)
     {
-        // Validate inputs
         $request->validate([
             'company_name' => 'required|string|max:255',
-            'logo' => 'nullable|image|max:2048', // max 2MB
+            'logo' => 'nullable|image|max:2048',
         ]);
 
-        // Update or create company_name
+        $tenantId = app(CurrentTenant::class)->id();
+
         Setting::updateOrCreate(
-            ['name' => 'company_name'],
+            ['tenant_id' => $tenantId, 'name' => 'company_name'],
             ['value' => $request->company_name]
         );
 
-        // Handle logo upload
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
 
-            // Delete old logo if exists
             $oldLogo = Setting::where('name', 'logo')->first();
             if ($oldLogo && $oldLogo->value && Storage::disk('public')->exists($oldLogo->value)) {
                 Storage::disk('public')->delete($oldLogo->value);
             }
 
-            // Generate unique filename with timestamp
             $filename = time() . '_' . $file->getClientOriginalName();
             $path = $file->storeAs('logos', $filename, 'public');
 
             Setting::updateOrCreate(
-                ['name' => 'logo'],
+                ['tenant_id' => $tenantId, 'name' => 'logo'],
                 ['value' => $path]
             );
         }
 
-        // Redirect back with a flash message (valid Inertia response)
         return redirect()->route('settings.index')->with('success', 'Settings updated successfully.');
     }
 }

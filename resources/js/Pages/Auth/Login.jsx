@@ -2,7 +2,7 @@ import Checkbox from "@/Components/Checkbox";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import GuestLayout from "@/Layouts/GuestLayout";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, Link, useForm } from "@inertiajs/react";
 import { usePage } from "@inertiajs/react";
 
 export default function Login({ status, canResetPassword }) {
@@ -109,6 +109,13 @@ export default function Login({ status, canResetPassword }) {
                 </div> */}
 
                 <div className="mt-4 flex items-center justify-end">
+                    <Link
+                        href={route("register")}
+                        className="mr-4 text-sm text-muted-foreground underline transition hover:text-foreground"
+                    >
+                        Create workspace
+                    </Link>
+
                     {/* Uncomment if you want a forgot password link */}
                     {/* {canResetPassword && (
                         <Link

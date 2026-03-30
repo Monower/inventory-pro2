@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class AttributeController extends Controller
@@ -45,8 +45,10 @@ class AttributeController extends Controller
     // Store a new attribute along with its values
     public function store(Request $request)
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:attributes',
+            'name' => ['required', 'string', 'max:255', Rule::unique('attributes', 'name')->where('tenant_id', $tenantId)],
             'values' => 'nullable|array',
             'values.*' => 'required|string|max:255',
         ]);
@@ -74,8 +76,10 @@ class AttributeController extends Controller
     // Update attribute and its values
     public function update(Request $request, Attribute $attribute)
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:attributes,name,' . $attribute->id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('attributes', 'name')->where('tenant_id', $tenantId)->ignore($attribute->id)],
             'values' => 'nullable|array',
             'values.*.id' => 'nullable|exists:attribute_values,id',
             'values.*.name' => 'required|string|max:255',

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Customer;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -40,17 +40,16 @@ class CustomerController extends Controller
 
 
     public function store(Request $request){
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
-            'phone' => 'required|string|size:11|unique:customers,phone',
-            'email' => 'nullable|email|max:255|unique:customers,email',
+            'phone' => ['required', 'string', 'size:11', Rule::unique('customers', 'phone')->where('tenant_id', $tenantId)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('customers', 'email')->where('tenant_id', $tenantId)],
             'address' => 'nullable|string|max:1000',
         ]);
 
         $email = $validated['email'] ?? '';
-        // if (!$email) {
-        //     $email = 'customer+' . $validated['phone'] . '+' . Str::lower(Str::random(8)) . '@placeholder.local';
-        // }
 
         Customer::create([
             'name' => $validated['name'] ?? '',
@@ -70,11 +69,12 @@ class CustomerController extends Controller
 
 
     public function update(Request $request, $customer_id){
+        $tenantId = $request->user()->tenant_id;
 
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
-            'phone' => 'required|string|size:11|unique:customers,phone,' . $customer_id,
-            'email' => 'nullable|email|max:255|unique:customers,email,' . $customer_id,
+            'phone' => ['required', 'string', 'size:11', Rule::unique('customers', 'phone')->where('tenant_id', $tenantId)->ignore($customer_id)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('customers', 'email')->where('tenant_id', $tenantId)->ignore($customer_id)],
             'address' => 'nullable|string|max:1000',
         ]);
 

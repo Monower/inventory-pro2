@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\CurrentTenant;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -16,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(CurrentTenant::class, fn () => new CurrentTenant());
     }
 
     /**
@@ -41,10 +42,13 @@ class AppServiceProvider extends ServiceProvider
             },
 
             'settings' => function () {
-                $settings = Setting::whereIn('name', ['company_name', 'logo'])->get()->keyBy('name');
+                $tenant = app(CurrentTenant::class)->get();
+                $settings = $tenant
+                    ? Setting::whereIn('name', ['company_name', 'logo'])->get()->keyBy('name')
+                    : collect();
 
                 return [
-                    'company_name' => $settings['company_name']->value ?? '',
+                    'company_name' => $settings['company_name']->value ?? config('app.name'),
                     'logo_url' => isset($settings['logo']) && $settings['logo']->value
                         ? Storage::url($settings['logo']->value)
                         : null,
@@ -52,8 +56,22 @@ class AppServiceProvider extends ServiceProvider
             },
 
             'company_name' => function () {
-                $setting = Setting::where('name', 'company_name')->first();
-                return $setting ? $setting->value : 'Default Company Name';
+                $tenant = app(CurrentTenant::class)->get();
+                $setting = $tenant ? Setting::where('name', 'company_name')->first() : null;
+
+                return $setting ? $setting->value : config('app.name', 'Inventory Pro');
+            },
+
+            'tenant' => function () {
+                $tenant = app(CurrentTenant::class)->get();
+
+                return $tenant ? [
+                    'id' => $tenant->id,
+                    'name' => $tenant->name,
+                    'slug' => $tenant->slug,
+                    'domain' => $tenant->domain,
+                    'status' => $tenant->status,
+                ] : null;
             },
         ]);
     }

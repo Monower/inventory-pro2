@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class StaffController extends Controller
@@ -50,10 +51,12 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|size:11',
-            'email' => 'nullable|email|max:255',
+            'phone' => ['required', 'string', 'size:11', Rule::unique('staff', 'phone')->where('tenant_id', $tenantId)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('staff', 'email')->where('tenant_id', $tenantId)],
             'salary' => 'nullable|numeric|min:0',
             'address' => 'nullable|string|max:1000',
         ]);
@@ -92,10 +95,12 @@ class StaffController extends Controller
      */
     public function update(Request $request, $staff_id)
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|size:11',
-            'email' => 'nullable|email|max:255',
+            'phone' => ['required', 'string', 'size:11', Rule::unique('staff', 'phone')->where('tenant_id', $tenantId)->ignore($staff_id)],
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('staff', 'email')->where('tenant_id', $tenantId)->ignore($staff_id)],
             'salary' => 'nullable|numeric|min:0',
             'address' => 'nullable|string|max:1000',
         ]);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class BankController extends Controller
@@ -44,8 +45,10 @@ class BankController extends Controller
      */
     public function store(Request $request)
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            "name" => "required|string|max:255|unique:banks,name",
+            'name' => ['required', 'string', 'max:255', Rule::unique('banks', 'name')->where('tenant_id', $tenantId)],
         ]);
 
         $result = Bank::create($validated);
@@ -84,8 +87,10 @@ class BankController extends Controller
      */
     public function update(Request $request, Bank $bank)
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            "name" => "required|string|max:255|unique:banks,name," . $bank->id,
+            'name' => ['required', 'string', 'max:255', Rule::unique('banks', 'name')->where('tenant_id', $tenantId)->ignore($bank->id)],
         ]);
 
         $bank->update($validated);

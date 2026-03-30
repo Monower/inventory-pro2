@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class PermissionSeeder extends Seeder
 {
@@ -102,6 +103,15 @@ class PermissionSeeder extends Seeder
 
         // Check if there is at least one user
         $user = User::first();
+        $tenant = Tenant::first();
+
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Workspace',
+                'slug' => Str::slug('Default Workspace'),
+                'status' => 'active',
+            ]);
+        }
 
         if (!$user) {
             // Create default admin user
@@ -109,7 +119,12 @@ class PermissionSeeder extends Seeder
                 'name' => 'Admin',
                 'phone' => '01111111111',
                 'password' => '12345678', // hash the password
+                'tenant_id' => $tenant->id,
             ]);
+        }
+
+        if (!$user->tenant_id) {
+            $user->update(['tenant_id' => $tenant->id]);
         }
 
         // Assign admin role if not already assigned
