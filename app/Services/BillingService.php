@@ -188,21 +188,23 @@ class BillingService
             if ($targetPrice > $currentPrice || $subscription->status === 'trial') {
                 $periodStart = $subscription->current_period_start ?? now();
                 $periodEnd = $subscription->current_period_end ?? now();
-                $periodSeconds = max(1, $periodStart->diffInSeconds($periodEnd));
+                $now = now();
+                $periodSeconds = max(1, $periodEnd->getTimestamp() - $periodStart->getTimestamp());
                 $remainingSeconds = $periodEnd->isFuture()
-                    ? now()->diffInSeconds($periodEnd)
+                    ? max(0, $periodEnd->getTimestamp() - $now->getTimestamp())
                     : 0;
+                $remainingRatio = min(1, max(0, $remainingSeconds / $periodSeconds));
                 $credit = $subscription->status === 'trial'
                     ? 0
-                    : round(min($currentPrice, $currentPrice * ($remainingSeconds / $periodSeconds)), 2);
+                    : round(min($currentPrice, $currentPrice * $remainingRatio), 2);
                 $amount = round(max($targetPrice - $credit, 0), 2);
 
                 $subscription->update([
                     'plan_id' => $targetPlan->id,
                     'billing_cycle' => $targetCycle,
                     'status' => 'active',
-                    'current_period_start' => now(),
-                    'current_period_end' => $this->periodEnd(now(), $targetCycle),
+                    'current_period_start' => $now,
+                    'current_period_end' => $this->periodEnd($now, $targetCycle),
                     'trial_ends_at' => null,
                     'expired_at' => null,
                     'cancel_at_period_end' => false,
@@ -221,7 +223,7 @@ class BillingService
                     'amount' => $amount,
                     'credit_amount' => $credit,
                     'notes' => $notes ?: 'Upgrade applied immediately with prorated credit.',
-                    'effective_at' => now(),
+                    'effective_at' => $now,
                 ]);
 
                 return [

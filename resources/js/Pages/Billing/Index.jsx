@@ -4,58 +4,7 @@ import { Head, useForm, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
 const currency = (value) => `TK ${Number(value ?? 0).toFixed(2)}`;
-const PLAN_FEATURES = {
-    starter: [
-        "Core dashboard and workspace settings",
-        "Inventory, products, and category management",
-        "Sales, customers, and supplier records",
-        "Basic reports for daily operations",
-    ],
-    growth: [
-        "Advanced reporting and business insights",
-        "Multi-user team workflows and permissions",
-        "Billing visibility and renewal planning",
-        "Priority support for growing teams",
-    ],
-    scale: [
-        "Full feature access across all business modules",
-        "Higher usage headroom for growing operations",
-        "Dedicated onboarding and account assistance",
-        "Early access to new platform capabilities",
-    ],
-};
-
-const PLAN_ORDER = ["starter", "growth", "scale"];
-
-const normalizePlanKey = (plan, index) => {
-    const source = `${plan?.slug ?? ""} ${plan?.name ?? ""}`.toLowerCase();
-
-    if (source.includes("starter")) {
-        return "starter";
-    }
-
-    if (source.includes("growth")) {
-        return "growth";
-    }
-
-    if (source.includes("scale")) {
-        return "scale";
-    }
-
-    return PLAN_ORDER[index] ?? "starter";
-};
-
-const featuresForPlan = (planKey) => {
-    const tierIndex = PLAN_ORDER.indexOf(planKey);
-
-    if (tierIndex === -1) {
-        return PLAN_FEATURES.starter;
-    }
-
-    return PLAN_ORDER.slice(0, tierIndex + 1).flatMap((key) => PLAN_FEATURES[key]);
-};
-
-const allPlanFeatures = PLAN_ORDER.flatMap((key) => PLAN_FEATURES[key]);
+const featuresForPlan = (plan) => Array.isArray(plan?.modules) ? plan.modules : [];
 
 export default function Index({ subscription, changes }) {
     const { company_name, billing, billing_plans, auth } = usePage().props;
@@ -333,8 +282,7 @@ export default function Index({ subscription, changes }) {
                                 const savings = yearlySavings(plan);
                                 const discount = annualDiscountPercent(plan);
                                 const isFeatured = billing_plans?.length > 2 && plan.id === billing_plans?.[1]?.id;
-                                const planKey = normalizePlanKey(plan, index);
-                                const includedFeatures = featuresForPlan(planKey);
+                                const includedFeatures = featuresForPlan(plan);
                                 const action = getPlanAction(plan, index);
                                 const planIsSelected = String(data.plan_id) === String(plan.id);
 
@@ -384,20 +332,14 @@ export default function Index({ subscription, changes }) {
                                         </div>
 
                                         <div className="mt-6 space-y-3 text-left text-sm leading-7 text-slate-600 dark:text-slate-300">
-                                            {allPlanFeatures.map((feature) => {
-                                                const included = includedFeatures.includes(feature);
-
-                                                return (
-                                                    <p key={feature} className="flex items-start gap-3">
-                                                        <span className={`mt-1 font-semibold ${included ? "text-emerald-600" : "text-rose-500"}`}>
-                                                            {included ? "✓" : "✕"}
-                                                        </span>
-                                                        <span className={included ? "" : "text-slate-400 dark:text-slate-500"}>
-                                                            {feature}
-                                                        </span>
-                                                    </p>
-                                                );
-                                            })}
+                                            {includedFeatures.map((feature) => (
+                                                <p key={feature} className="flex items-start gap-3">
+                                                    <span className="mt-1 font-semibold text-emerald-600">
+                                                        ✓
+                                                    </span>
+                                                    <span>{feature}</span>
+                                                </p>
+                                            ))}
                                         </div>
 
                                         <div className="mt-6 flex items-center justify-between gap-3">

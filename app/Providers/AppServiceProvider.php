@@ -11,6 +11,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,16 +34,18 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share([
             'auth' => function () {
                 $user = Auth::user();
-                return $user ? [
-                    'id' => $user->id,
-                    'tenant_id' => $user->tenant_id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'avatar' => $user->avatar,   // new
-                    'phone' => $user->phone,     // new
-                    'roles' => $user->getRoleNames(),
-                    'permissions' => $user->getAllPermissions()->pluck('name'),
-                ] : null;
+                return [
+                    'user' => $user ? [
+                        'id' => $user->id,
+                        'tenant_id' => $user->tenant_id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'avatar' => $user->avatar,
+                        'phone' => $user->phone,
+                        'roles' => $user->getRoleNames(),
+                        'permissions' => $user->getAllPermissions()->pluck('name'),
+                    ] : null,
+                ];
             },
 
             'settings' => function () {
@@ -83,22 +87,95 @@ class AppServiceProvider extends ServiceProvider
             },
 
             'billing' => function () {
-                $tenant = app(CurrentTenant::class)->get();
+                try {
+                    $tenant = app(CurrentTenant::class)->get();
 
-                if (!$tenant) {
+                    if (!$tenant) {
+                        return null;
+                    }
+
+                    $subscription = $tenant->currentSubscription?->load(['plan', 'nextPlan']);
+
+                    return app(BillingService::class)->summary($subscription);
+                } catch (Throwable $e) {
+                    report($e);
+
                     return null;
                 }
-
-                $subscription = $tenant->currentSubscription?->load(['plan', 'nextPlan']);
-
-                return app(BillingService::class)->summary($subscription);
             },
 
             'billing_plans' => function () {
-                return Plan::query()
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->get(['id', 'name', 'slug', 'monthly_price', 'yearly_price', 'description', 'trial_days']);
+                try {
+                    $planFeatures = config('plan_features', []);
+
+                    return Plan::query()
+                        ->where('is_active', true)
+                        ->orderBy('sort_order')
+                        ->get(['id', 'name', 'slug', 'monthly_price', 'yearly_price', 'description', 'trial_days'])
+                        ->map(function (Plan $plan) use ($planFeatures) {
+                            $featureConfig = $planFeatures[Str::lower($plan->slug)] ?? [];
+
+                            return [
+                                'id' => $plan->id,
+                                'name' => $plan->name,
+                                'slug' => $plan->slug,
+                                'monthly_price' => $plan->monthly_price,
+                                'yearly_price' => $plan->yearly_price,
+                                'description' => $featureConfig['description'] ?? $plan->description,
+                                'trial_days' => $plan->trial_days,
+                                'modules' => $featureConfig['modules'] ?? [],
+                            ];
+                        })
+                        ->values();
+                } catch (Throwable $e) {
+                    report($e);
+
+                    return collect();
+                }
+            },
+
+            'subscription_access' => function () {
+                try {
+                    $user = Auth::user();
+                    $tenant = app(CurrentTenant::class)->get();
+
+                    if (!$user || !$tenant || $user->isSuperAdmin()) {
+                        return [
+                            'read_only' => false,
+                            'message' => null,
+                        ];
+                    }
+
+                    $subscription = $tenant->currentSubscription;
+
+                    if (!$subscription) {
+                        return [
+                            'read_only' => true,
+                            'message' => 'Your workspace is in read-only mode. You can browse pages, but creating, updating, and deleting records will stay locked until you purchase a plan.',
+                        ];
+                    }
+
+                    $subscription = app(BillingService::class)->sync($subscription);
+
+                    if (in_array($subscription->status, ['expired', 'cancelled'], true)) {
+                        return [
+                            'read_only' => true,
+                            'message' => 'Your plan is no longer active. You can still browse the workspace, but create, update, and delete actions are disabled until billing is restored.',
+                        ];
+                    }
+
+                    return [
+                        'read_only' => false,
+                        'message' => null,
+                    ];
+                } catch (Throwable $e) {
+                    report($e);
+
+                    return [
+                        'read_only' => false,
+                        'message' => null,
+                    ];
+                }
             },
         ]);
     }

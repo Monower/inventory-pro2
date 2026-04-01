@@ -12,7 +12,7 @@ import { applyTheme, resolveTheme } from "@/lib/theme";
 
 export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
-    const { settings, company_name, flash, tenant, billing } = usePage().props;
+    const { settings, company_name, flash, tenant, billing, subscription_access } = usePage().props;
     const { url } = usePage();
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
@@ -185,6 +185,23 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                             className="inline-flex w-fit rounded-xl border border-sky-300 bg-white px-4 py-2 font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-800 dark:bg-slate-950 dark:text-sky-200 dark:hover:bg-slate-900"
                         >
                             Return to home workspace
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {subscription_access?.read_only && !tenant?.switched && (
+                <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+                    <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <span className="font-semibold">Read-only workspace:</span>{" "}
+                            {subscription_access.message}
+                        </div>
+                        <Link
+                            href={route("billing.index")}
+                            className="inline-flex w-fit rounded-xl border border-amber-300 bg-white px-4 py-2 font-medium text-amber-900 transition hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-950/60 dark:text-amber-100 dark:hover:bg-slate-950"
+                        >
+                            View plans
                         </Link>
                     </div>
                 </div>

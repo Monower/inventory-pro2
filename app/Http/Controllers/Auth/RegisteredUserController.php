@@ -72,6 +72,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('billing.index', absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 class PermissionSeeder extends Seeder
@@ -170,7 +171,7 @@ class PermissionSeeder extends Seeder
             [
                 'name' => 'Starter',
                 'slug' => 'starter',
-                'description' => 'For small teams beginning with inventory, orders, and billing.',
+                'description' => Config::get('plan_features.starter.description', 'For small businesses that need core inventory, sales, customer, and workspace management.'),
                 'monthly_price' => 990,
                 'yearly_price' => 9900,
                 'trial_days' => 14,
@@ -179,7 +180,7 @@ class PermissionSeeder extends Seeder
             [
                 'name' => 'Growth',
                 'slug' => 'growth',
-                'description' => 'For growing operations that need more room and longer billing commitments.',
+                'description' => Config::get('plan_features.growth.description', 'For growing teams that need purchasing, finance controls, and multi-user operations.'),
                 'monthly_price' => 1990,
                 'yearly_price' => 19900,
                 'trial_days' => 14,
@@ -188,7 +189,7 @@ class PermissionSeeder extends Seeder
             [
                 'name' => 'Scale',
                 'slug' => 'scale',
-                'description' => 'For established businesses standardizing their full workflow in one workspace.',
+                'description' => Config::get('plan_features.scale.description', 'For mature operations that need governance, payroll workflows, and broader operational control.'),
                 'monthly_price' => 3490,
                 'yearly_price' => 34900,
                 'trial_days' => 14,
