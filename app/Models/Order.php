@@ -15,11 +15,15 @@ class Order extends Model
      */
     protected $fillable = [
         'order_number',
+        'invoice_number',
         'customer_id',
         'total_amount',
         'paid_amount',
         'due_amount',
         'payment_status',
+        'payment_method',
+        'bank_id',
+        'mfs',
         'tenant_id',
     ];
 
@@ -58,6 +62,11 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
     }
 
     public function products()

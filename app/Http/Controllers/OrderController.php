@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Models\Setting;
+use App\Support\CurrentTenant;
 
 class OrderController extends Controller
 {
@@ -22,6 +24,7 @@ class OrderController extends Controller
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
                     $subQuery->where('order_number', 'like', "%{$q}%")
+                        ->orWhere('invoice_number', 'like', "%{$q}%")
                         ->orWhere('total_amount', 'like', "%{$q}%")
                         ->orWhere('payment_status', 'like', "%{$q}%")
                         ->orWhereHas('customer', function ($customerQuery) use ($q) {
@@ -72,7 +75,9 @@ class OrderController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($validated) {
+            $order = null;
+
+            DB::transaction(function () use ($validated, &$order) {
                 $orderNumber = 'ORD-' . Str::upper(Str::random(6));
 
                 $totalAmount = 0;
@@ -87,6 +92,10 @@ class OrderController extends Controller
                     $totalAmount += $product->selling_price * $item['quantity'];
                 }
 
+                if ($validated['payment_amount'] > $totalAmount) {
+                    throw new \Exception('Payment amount cannot exceed total amount.');
+                }
+
                 $paidAmount = $validated['payment_amount'];
                 $dueAmount = max($totalAmount - $paidAmount, 0);
                 $paymentStatus = $paidAmount == 0
@@ -95,11 +104,19 @@ class OrderController extends Controller
 
                 $order = Order::create([
                     'order_number' => $orderNumber,
+                    'invoice_number' => $this->generateInvoiceNumber(),
                     'customer_id' => $validated['customer_id'],
                     'total_amount' => $totalAmount,
                     'paid_amount' => $paidAmount,
                     'due_amount' => $dueAmount,
                     'payment_status' => $paymentStatus,
+                    'payment_method' => $validated['payment_method'],
+                    'bank_id' => $validated['payment_method'] === 'bank'
+                        ? $validated['bank_id']
+                        : null,
+                    'mfs' => $validated['payment_method'] === 'mobile'
+                        ? $validated['mfs']
+                        : null,
                 ]);
 
                 foreach ($validated['cart'] as $item) {
@@ -117,7 +134,8 @@ class OrderController extends Controller
             });
 
             return redirect()
-                ->route('orders.index')
+                ->route('orders.show', $order->id)
+                ->with('open_order_actions_modal', true)
                 ->with('success', 'Order created successfully.');
         } catch (\Throwable $e) {
             return back()
@@ -128,7 +146,7 @@ class OrderController extends Controller
 
     public function edit(Order $order)
     {
-        $order->load('items.product');
+        $order->load('items.product', 'bank');
         $customers = Customer::all();
         $products = Product::all();
         $banks = Bank::all();
@@ -250,14 +268,28 @@ class OrderController extends Controller
             $order = Order::findOrFail($id);
 
             if ($order) {
-                $order->load('customer', 'items.product');
-                return Inertia::render('orders/show', compact('order'));
+                $order->load('customer', 'items.product', 'bank');
+                return Inertia::render('orders/show', [
+                    'order' => $order,
+                    'can_print_sales_documents' => $this->canPrintSalesDocuments(),
+                    'open_order_actions_modal' => (bool) request()->session()->get('open_order_actions_modal', false),
+                ]);
             } else {
                 return redirect()->route('orders.index')->with('error', 'Order not found.');
             }
         } else {
             return redirect()->route('orders.index')->with('error', 'Order not found.');
         }
+    }
+
+    public function invoice(Order $order)
+    {
+        return $this->renderPrintableDocument($order, 'invoice');
+    }
+
+    public function receipt(Order $order)
+    {
+        return $this->renderPrintableDocument($order, 'receipt');
     }
 
 
@@ -280,5 +312,67 @@ class OrderController extends Controller
         } else {
             return redirect()->route('orders.index')->with('error', 'Order not found.');
         }
+    }
+
+    protected function renderPrintableDocument(Order $order, string $documentType)
+    {
+        if (!$this->canPrintSalesDocuments()) {
+            return redirect()
+                ->route('orders.show', $order->id)
+                ->with('error', 'Printable invoices and receipts are available on the Growth plan and above.');
+        }
+
+        $order->load('customer', 'items.product', 'bank');
+
+        return Inertia::render('orders/print', [
+            'order' => $order,
+            'documentType' => $documentType,
+            'receiptSettings' => $this->receiptSettings(),
+        ]);
+    }
+
+    protected function receiptSettings(): array
+    {
+        $tenantId = app(CurrentTenant::class)->id();
+
+        $settings = Setting::query()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('name', [
+                'company_name',
+                'company_address',
+                'company_phone',
+                'receipt_footer',
+            ])
+            ->pluck('value', 'name');
+
+        return [
+            'company_name' => $settings->get('company_name', config('app.name')),
+            'company_address' => $settings->get('company_address', ''),
+            'company_phone' => $settings->get('company_phone', ''),
+            'receipt_footer' => $settings->get('receipt_footer', 'Thank you for shopping with us.'),
+        ];
+    }
+
+    protected function generateInvoiceNumber(): string
+    {
+        do {
+            $invoiceNumber = 'INV-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
+        } while (Order::where('invoice_number', $invoiceNumber)->exists());
+
+        return $invoiceNumber;
+    }
+
+    protected function canPrintSalesDocuments(): bool
+    {
+        $user = request()->user();
+
+        if ($user && $user->isSuperAdmin()) {
+            return true;
+        }
+
+        $tenant = app(CurrentTenant::class)->get();
+        $planSlug = strtolower((string) $tenant?->currentSubscription?->plan?->slug);
+
+        return in_array($planSlug, ['growth', 'scale'], true);
     }
 }

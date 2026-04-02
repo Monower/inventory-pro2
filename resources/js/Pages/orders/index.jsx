@@ -24,6 +24,7 @@ const Index = ({ orders }) => {
     const columns = [
         { key: "si", label: "SI" },
         { key: "order_number", label: "Order number" },
+        { key: "invoice_number", label: "Invoice no" },
         // { key: "customer_name", label: "Customer name" },
         { key: "total_amount", label: "Total amount" },
         // { key: "paid_amount", label: "Paid amount" },
@@ -38,6 +39,7 @@ const Index = ({ orders }) => {
         si: (orders.current_page - 1) * orders.per_page + i + 1,
         id: o.id,
         order_number: o.order_number,
+        invoice_number: o.invoice_number || "-",
         // customer_name: o.customer?.name || "-",
         total_amount: o.total_amount,
         // paid_amount: o.paid_amount,

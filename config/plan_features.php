@@ -18,6 +18,7 @@ return [
         'description' => 'For growing teams that need purchasing, finance controls, and multi-user operations.',
         'modules' => [
             'Everything in Starter',
+            'Printable invoices and receipts',
             'Attributes',
             'Purchases',
             'Transactions',

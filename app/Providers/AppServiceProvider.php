@@ -51,11 +51,20 @@ class AppServiceProvider extends ServiceProvider
             'settings' => function () {
                 $tenant = app(CurrentTenant::class)->get();
                 $settings = $tenant
-                    ? Setting::whereIn('name', ['company_name', 'logo'])->get()->keyBy('name')
+                    ? Setting::whereIn('name', [
+                        'company_name',
+                        'company_address',
+                        'company_phone',
+                        'receipt_footer',
+                        'logo',
+                    ])->get()->keyBy('name')
                     : collect();
 
                 return [
                     'company_name' => $settings['company_name']->value ?? config('app.name'),
+                    'company_address' => $settings['company_address']->value ?? '',
+                    'company_phone' => $settings['company_phone']->value ?? '',
+                    'receipt_footer' => $settings['receipt_footer']->value ?? 'Thank you for shopping with us.',
                     'logo_url' => isset($settings['logo']) && $settings['logo']->value
                         ? Storage::url($settings['logo']->value)
                         : null,

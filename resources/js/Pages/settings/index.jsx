@@ -10,6 +10,9 @@ const Index = ({ settings }) => {
 
     const { data, setData, post, processing, errors } = useForm({
         company_name: settings?.company_name || "",
+        company_address: settings?.company_address || "",
+        company_phone: settings?.company_phone || "",
+        receipt_footer: settings?.receipt_footer || "",
         logo: null,
     });
 
@@ -40,6 +43,9 @@ const Index = ({ settings }) => {
 
         const formData = new FormData();
         formData.append("company_name", data.company_name);
+        formData.append("company_address", data.company_address || "");
+        formData.append("company_phone", data.company_phone || "");
+        formData.append("receipt_footer", data.receipt_footer || "");
 
         if (data.logo) {
             formData.append("logo", data.logo);
@@ -102,6 +108,61 @@ const Index = ({ settings }) => {
                                     required
                                 />
                                 <InputError className="mt-2" message={errors.company_name} />
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="company_address"
+                                    value="Company Address"
+                                />
+                                <textarea
+                                    id="company_address"
+                                    value={data.company_address}
+                                    onChange={(e) =>
+                                        setData("company_address", e.target.value)
+                                    }
+                                    className="mt-1"
+                                    rows={3}
+                                    placeholder="Enter company address"
+                                />
+                                <InputError className="mt-2" message={errors.company_address} />
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="company_phone"
+                                    value="Company Phone"
+                                />
+                                <input
+                                    id="company_phone"
+                                    type="text"
+                                    value={data.company_phone}
+                                    onChange={(e) =>
+                                        setData("company_phone", e.target.value)
+                                    }
+                                    className="mt-1"
+                                    placeholder="Enter company phone"
+                                />
+                                <InputError className="mt-2" message={errors.company_phone} />
+                            </div>
+
+                            <div>
+                                <InputLabel
+                                    htmlFor="receipt_footer"
+                                    value="Receipt Footer"
+                                    hint="Shown at the bottom of printed invoice and receipt"
+                                />
+                                <textarea
+                                    id="receipt_footer"
+                                    value={data.receipt_footer}
+                                    onChange={(e) =>
+                                        setData("receipt_footer", e.target.value)
+                                    }
+                                    className="mt-1"
+                                    rows={3}
+                                    placeholder="Thank you for shopping with us."
+                                />
+                                <InputError className="mt-2" message={errors.receipt_footer} />
                             </div>
 
                             <div>
