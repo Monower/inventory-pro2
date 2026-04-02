@@ -6,6 +6,7 @@ import { FaUserTie } from "react-icons/fa6";
 import { BsBoxes } from "react-icons/bs";
 import { BsPersonBoundingBox } from "react-icons/bs";
 import { AiOutlineBorderlessTable } from "react-icons/ai";
+import { AiOutlineBarChart } from "react-icons/ai";
 import { CiDollar } from "react-icons/ci";
 import { PiGearSixLight } from "react-icons/pi";
 
@@ -46,6 +47,7 @@ const Menu = ({ url }) => {
     const userManagementActive =
         isPathPrefix("/roles") || isPathPrefix("/users");
     const transactionActive = isPathPrefix("/transactions");
+    const reportActive = isPathPrefix("/reports");
     const settingsActive =
         isPathPrefix("/profile") || isPathPrefix("/settings");
 
@@ -280,6 +282,58 @@ const Menu = ({ url }) => {
                     </span>
                     <span>Transaction tracker</span>
                 </Link>
+            )}
+
+            {permissions.includes("view report") && (
+                <SidebarDropdown
+                    title="Reports"
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <AiOutlineBarChart />
+                        </span>
+                    }
+                    active={reportActive}
+                    defaultOpen={reportActive}
+                >
+                    <div className="mt-2 flex flex-col space-y-2">
+                        <Link
+                            href="/reports"
+                            className={subLinkClass(isPath("/reports"))}
+                        >
+                            Overview
+                        </Link>
+                        <Link
+                            href="/reports/orders"
+                            className={subLinkClass(isPathPrefix("/reports/orders"))}
+                        >
+                            Orders report
+                        </Link>
+                        <Link
+                            href="/reports/purchases"
+                            className={subLinkClass(
+                                isPathPrefix("/reports/purchases")
+                            )}
+                        >
+                            Purchase report
+                        </Link>
+                        <Link
+                            href="/reports/salaries"
+                            className={subLinkClass(
+                                isPathPrefix("/reports/salaries")
+                            )}
+                        >
+                            Salary report
+                        </Link>
+                        <Link
+                            href="/reports/profit-loss"
+                            className={subLinkClass(
+                                isPathPrefix("/reports/profit-loss")
+                            )}
+                        >
+                            Profit & loss
+                        </Link>
+                    </div>
+                </SidebarDropdown>
             )}
 
             {(permissions.includes("view settings") ||

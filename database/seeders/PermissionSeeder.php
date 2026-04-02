@@ -81,6 +81,7 @@ class PermissionSeeder extends Seeder
             'create purchase',
             'edit purchase',
             'delete purchase',
+            'view report',
             'view salary',
             'create salary',
             'edit salary',

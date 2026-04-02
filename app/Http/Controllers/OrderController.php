@@ -110,6 +110,7 @@ class OrderController extends Controller
                         'product_id' => $product->id,
                         'quantity' => $item['quantity'],
                         'price' => $product->selling_price,
+                        'cost_price' => $product->buying_price,
                     ]);
 
                     $product->decrement('stock', $item['quantity']);
@@ -223,6 +224,7 @@ class OrderController extends Controller
                         'product_id' => $product->id,
                         'quantity' => $item['quantity'],
                         'price' => $product->selling_price,
+                        'cost_price' => $product->buying_price,
                     ]);
 
                     $product->decrement('stock', $item['quantity']);

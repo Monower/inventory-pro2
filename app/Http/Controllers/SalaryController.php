@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Salary;
 use App\Models\Staff;
 use App\Models\AdvanceSalary;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -94,7 +95,20 @@ class SalaryController extends Controller
 
     public function markPaid(Salary $salary)
     {
-        $salary->update(['is_paid' => true]);
+        if (!$salary->is_paid) {
+            $salary->update([
+                'is_paid' => true,
+                'paid_at' => now()->toDateString(),
+            ]);
+
+            Transaction::create([
+                'name' => 'Salary Payment - ' . ($salary->staff?->name ?? 'Employee') . ' - ' . $salary->month,
+                'payment_method' => 'cash',
+                'transaction_type' => 'expense',
+                'source' => 'Salary',
+                'amount' => $salary->net_salary,
+            ]);
+        }
 
         return redirect()->route('salaries.index')->with('success', 'Salary marked as paid successfully!');
     }
