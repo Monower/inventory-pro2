@@ -112,7 +112,7 @@ class OrderController extends Controller
                         'price' => $product->selling_price,
                     ]);
 
-                    $product->decrement('stock', $item['quantity']);
+                    $product->decrementVariantlessStock((int) $item['quantity']);
                 }
             });
 
@@ -157,7 +157,7 @@ class OrderController extends Controller
                Restore previous stock
             ----------------------------- */
                 foreach ($order->items as $oldItem) {
-                    $oldItem->product->increment('stock', $oldItem->quantity);
+                    $oldItem->product->incrementVariantlessStock((int) $oldItem->quantity);
                 }
                 $order->items()->delete();
 
@@ -225,7 +225,7 @@ class OrderController extends Controller
                         'price' => $product->selling_price,
                     ]);
 
-                    $product->decrement('stock', $item['quantity']);
+                    $product->decrementVariantlessStock((int) $item['quantity']);
                 }
             });
 

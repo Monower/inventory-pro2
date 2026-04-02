@@ -105,7 +105,7 @@ const Index = () => {
                                             {product.selling_price}
                                         </td>
                                         <td className="custom-body-td">
-                                            {product.stock}
+                                            {product.stock} {product.unit}
                                         </td>
                                         <td className="custom-body-td">
                                             {dateTimeFormater(product.created_at)}

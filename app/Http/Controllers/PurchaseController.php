@@ -91,7 +91,7 @@ class PurchaseController extends Controller
                 ]);
 
                 $product = Product::find($item['product_id']);
-                $product->increment('stock', $item['quantity']);
+                $product->incrementVariantlessStock((int) $item['quantity']);
                 $product->update(['buying_price' => $item['buying_price']]);
             }
 
@@ -154,7 +154,7 @@ class PurchaseController extends Controller
             // Revert previous stock
             foreach ($purchase->items as $oldItem) {
                 $product = Product::find($oldItem->product_id);
-                $product->decrement('stock', $oldItem->quantity);
+                $product->decrementVariantlessStock((int) $oldItem->quantity);
             }
 
             $purchase->items()->delete();
@@ -172,7 +172,7 @@ class PurchaseController extends Controller
                 ]);
 
                 $product = Product::find($item['product_id']);
-                $product->increment('stock', $item['quantity']);
+                $product->incrementVariantlessStock((int) $item['quantity']);
                 $product->update(['buying_price' => $item['buying_price']]);
             }
 
@@ -215,7 +215,7 @@ class PurchaseController extends Controller
         DB::transaction(function () use ($purchase) {
             foreach ($purchase->items as $item) {
                 $product = Product::find($item->product_id);
-                $product->decrement('stock', $item->quantity);
+                $product->decrementVariantlessStock((int) $item->quantity);
             }
 
             $purchase->items()->delete();
