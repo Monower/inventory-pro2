@@ -73,6 +73,8 @@ const Create = ({ categories, attributes }) => {
             ...data.attribute_stocks,
             {
                 attribute_value_id: valueId,
+                buying_price: "",
+                selling_price: "",
                 stock: "",
             },
         ];
@@ -92,12 +94,12 @@ const Create = ({ categories, attributes }) => {
         setData("attribute_stocks", nextAttributeStocks);
     };
 
-    const handleVariantStockChange = (valueId, stock) => {
+    const handleVariantFieldChange = (valueId, field, value) => {
         setData(
             "attribute_stocks",
             data.attribute_stocks.map((item) =>
                 String(item.attribute_value_id) === String(valueId)
-                    ? { ...item, stock }
+                    ? { ...item, [field]: value }
                     : item
             )
         );
@@ -113,9 +115,15 @@ const Create = ({ categories, attributes }) => {
 
         if (
             selectedAttribute &&
-            data.attribute_stocks.some((item) => item.stock === "" || Number(item.stock) < 0)
+            data.attribute_stocks.some(
+                (item) =>
+                    item.stock === "" ||
+                    Number(item.stock) < 0 ||
+                    (item.buying_price !== "" && Number(item.buying_price) < 0) ||
+                    (item.selling_price !== "" && Number(item.selling_price) < 0)
+            )
         ) {
-            setClientError("Please enter a valid stock quantity for every selected attribute value.");
+            setClientError("Please enter valid stock and price values for every selected attribute value.");
             return;
         }
 
@@ -326,7 +334,7 @@ const Create = ({ categories, attributes }) => {
                                                 return (
                                                     <div
                                                         key={item.attribute_value_id}
-                                                        className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_180px_auto] dark:border-slate-700 dark:bg-slate-800/50"
+                                                        className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_160px_160px_160px_auto] dark:border-slate-700 dark:bg-slate-800/50"
                                                     >
                                                         <div>
                                                             <p className="font-medium text-slate-900 dark:text-slate-100">
@@ -339,10 +347,41 @@ const Create = ({ categories, attributes }) => {
                                                         <input
                                                             type="number"
                                                             min="0"
+                                                            step="0.01"
+                                                            value={item.buying_price ?? ""}
+                                                            onChange={(e) =>
+                                                                handleVariantFieldChange(
+                                                                    item.attribute_value_id,
+                                                                    "buying_price",
+                                                                    e.target.value
+                                                                )
+                                                            }
+                                                            className="custom-input"
+                                                            placeholder="Buying price"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            value={item.selling_price ?? ""}
+                                                            onChange={(e) =>
+                                                                handleVariantFieldChange(
+                                                                    item.attribute_value_id,
+                                                                    "selling_price",
+                                                                    e.target.value
+                                                                )
+                                                            }
+                                                            className="custom-input"
+                                                            placeholder="Selling price"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            min="0"
                                                             value={item.stock}
                                                             onChange={(e) =>
-                                                                handleVariantStockChange(
+                                                                handleVariantFieldChange(
                                                                     item.attribute_value_id,
+                                                                    "stock",
                                                                     e.target.value
                                                                 )
                                                             }

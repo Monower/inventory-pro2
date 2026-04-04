@@ -70,6 +70,8 @@ class ProductController extends Controller
             'attribute_id' => 'nullable|exists:attributes,id',
             'attribute_stocks' => 'nullable|array',
             'attribute_stocks.*.attribute_value_id' => 'required|exists:attribute_values,id',
+            'attribute_stocks.*.buying_price' => 'nullable|numeric|min:0',
+            'attribute_stocks.*.selling_price' => 'nullable|numeric|min:0',
             'attribute_stocks.*.stock' => 'required|integer|min:0',
         ]);
 
@@ -133,6 +135,8 @@ class ProductController extends Controller
             'attribute_id' => 'nullable|exists:attributes,id',
             'attribute_stocks' => 'nullable|array',
             'attribute_stocks.*.attribute_value_id' => 'required|exists:attribute_values,id',
+            'attribute_stocks.*.buying_price' => 'nullable|numeric|min:0',
+            'attribute_stocks.*.selling_price' => 'nullable|numeric|min:0',
             'attribute_stocks.*.stock' => 'required|integer|min:0',
         ]);
 
@@ -221,6 +225,9 @@ class ProductController extends Controller
         $attributeStocks = collect($validated['attribute_stocks'] ?? [])
             ->map(fn ($item) => [
                 'attribute_value_id' => $item['attribute_value_id'],
+                'buying_price' => $item['buying_price'] ?? null,
+                'average_cost' => $item['buying_price'] ?? null,
+                'selling_price' => $item['selling_price'] ?? null,
                 'stock' => (int) $item['stock'],
             ])
             ->unique('attribute_value_id')
@@ -235,6 +242,9 @@ class ProductController extends Controller
         } else {
             $product->variants()->create([
                 'attribute_value_id' => null,
+                'buying_price' => $validated['buying_price'],
+                'average_cost' => $validated['buying_price'],
+                'selling_price' => $validated['selling_price'],
                 'stock' => (int) ($validated['stock'] ?? 0),
             ]);
         }

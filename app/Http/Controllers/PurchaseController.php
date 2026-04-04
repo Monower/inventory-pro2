@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\Transaction;
@@ -16,7 +17,7 @@ class PurchaseController extends Controller
     {
         $q = trim((string) request()->query('q', ''));
 
-        $purchase_items = PurchaseItem::with(['purchase', 'product'])
+        $purchase_items = PurchaseItem::with(['purchase', 'product', 'productVariant.attributeValue.attribute'])
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
                     $subQuery->whereHas('product', function ($productQuery) use ($q) {
@@ -42,7 +43,9 @@ class PurchaseController extends Controller
 
     public function create()
     {
-        $products = Product::select('id', 'name', 'buying_price', 'stock')->get();
+        $products = Product::with('variants.attributeValue.attribute')
+            ->select('id', 'name', 'buying_price', 'stock', 'unit')
+            ->get();
         return Inertia::render('Purchase/Create', [
             'products' => $products
         ]);
@@ -60,11 +63,14 @@ class PurchaseController extends Controller
             'paid_amount' => 'required|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.buying_price' => 'required|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($validated) {
+            $items = $this->preparePurchaseItems(collect($validated['items']));
+            $affectedVariantIds = [];
             $invoice = 'INV-' . time();
 
             $purchase = Purchase::create([
@@ -79,21 +85,31 @@ class PurchaseController extends Controller
 
             $totalAmount = 0;
 
-            foreach ($validated['items'] as $item) {
+            foreach ($items as $item) {
                 $lineTotal = $item['quantity'] * $item['buying_price'];
                 $totalAmount += $lineTotal;
 
                 $purchase->items()->create([
-                    'product_id' => $item['product_id'],
+                    'product_id' => $item['product']->id,
+                    'product_variant_id' => $item['variant']->id,
                     'quantity' => $item['quantity'],
                     'buying_price' => $item['buying_price'],
                     'total' => $lineTotal,
                 ]);
 
-                $product = Product::find($item['product_id']);
-                $product->incrementVariantlessStock((int) $item['quantity']);
-                $product->update(['buying_price' => $item['buying_price']]);
+                $item['product']->incrementStockForVariant($item['variant']->id, (int) $item['quantity']);
+                $item['variant']->update(['buying_price' => $item['buying_price']]);
+                $affectedVariantIds[] = $item['variant']->id;
+
+                if ($item['variant']->attribute_value_id === null) {
+                    $item['product']->update(['buying_price' => $item['buying_price']]);
+                }
             }
+
+            ProductVariant::whereIn('id', array_unique($affectedVariantIds))
+                ->get()
+                ->each
+                ->syncCostFromPurchaseHistory();
 
             // Update purchase totals AFTER calculating items
             $purchase->update([
@@ -119,8 +135,10 @@ class PurchaseController extends Controller
 
     public function edit(Purchase $purchase)
     {
-        $purchase->load('items.product');
-        $products = Product::select('id', 'name', 'buying_price')->get();
+        $purchase->load('items.product', 'items.productVariant.attributeValue.attribute');
+        $products = Product::with('variants.attributeValue.attribute')
+            ->select('id', 'name', 'buying_price', 'stock', 'unit')
+            ->get();
         return Inertia::render('Purchase/Edit', [
             'purchase' => $purchase,
             'products' => $products
@@ -130,7 +148,7 @@ class PurchaseController extends Controller
     public function show(Purchase $purchase)
     {
         return Inertia::render('Purchase/Show', [
-            'purchase' => $purchase->load('items.product'),
+            'purchase' => $purchase->load('items.product', 'items.productVariant.attributeValue.attribute'),
         ]);
     }
 
@@ -144,37 +162,49 @@ class PurchaseController extends Controller
             'paid_amount' => 'required|numeric|min:0', // this is the new payment entered
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.buying_price' => 'required|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($validated, $purchase) {
+            $items = $this->preparePurchaseItems(collect($validated['items']));
+            $affectedVariantIds = $purchase->items->pluck('product_variant_id')->filter()->values()->all();
             $totalAmount = 0;
 
             // Revert previous stock
             foreach ($purchase->items as $oldItem) {
-                $product = Product::find($oldItem->product_id);
-                $product->decrementVariantlessStock((int) $oldItem->quantity);
+                $oldItem->product->decrementStockForVariant($oldItem->product_variant_id, (int) $oldItem->quantity);
             }
 
             $purchase->items()->delete();
 
             // Add updated items
-            foreach ($validated['items'] as $item) {
+            foreach ($items as $item) {
                 $lineTotal = $item['quantity'] * $item['buying_price'];
                 $totalAmount += $lineTotal;
 
                 $purchase->items()->create([
-                    'product_id' => $item['product_id'],
+                    'product_id' => $item['product']->id,
+                    'product_variant_id' => $item['variant']->id,
                     'quantity' => $item['quantity'],
                     'buying_price' => $item['buying_price'],
                     'total' => $lineTotal,
                 ]);
 
-                $product = Product::find($item['product_id']);
-                $product->incrementVariantlessStock((int) $item['quantity']);
-                $product->update(['buying_price' => $item['buying_price']]);
+                $item['product']->incrementStockForVariant($item['variant']->id, (int) $item['quantity']);
+                $item['variant']->update(['buying_price' => $item['buying_price']]);
+                $affectedVariantIds[] = $item['variant']->id;
+
+                if ($item['variant']->attribute_value_id === null) {
+                    $item['product']->update(['buying_price' => $item['buying_price']]);
+                }
             }
+
+            ProductVariant::whereIn('id', array_unique($affectedVariantIds))
+                ->get()
+                ->each
+                ->syncCostFromPurchaseHistory();
 
             // Calculate new cumulative paid amount
             $newPaid = $validated['paid_amount']; // new payment this edit
@@ -213,15 +243,66 @@ class PurchaseController extends Controller
     public function destroy(Purchase $purchase)
     {
         DB::transaction(function () use ($purchase) {
+            $affectedVariantIds = $purchase->items->pluck('product_variant_id')->filter()->values()->all();
             foreach ($purchase->items as $item) {
-                $product = Product::find($item->product_id);
-                $product->decrementVariantlessStock((int) $item->quantity);
+                $item->product->decrementStockForVariant($item->product_variant_id, (int) $item->quantity);
             }
 
             $purchase->items()->delete();
+
+            ProductVariant::whereIn('id', array_unique($affectedVariantIds))
+                ->get()
+                ->each
+                ->syncCostFromPurchaseHistory();
+
             $purchase->delete();
         });
 
         return redirect()->route('purchases.index')->with('success', 'Purchase deleted successfully.');
+    }
+
+    protected function preparePurchaseItems($items)
+    {
+        $productIds = $items->pluck('product_id')->filter()->unique()->values();
+        $variantIds = $items->pluck('product_variant_id')->filter()->unique()->values();
+
+        $products = Product::with('variants.attributeValue.attribute')
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
+        $variants = ProductVariant::with('attributeValue.attribute')
+            ->whereIn('id', $variantIds)
+            ->get()
+            ->keyBy('id');
+
+        return $items->map(function ($item) use ($products, $variants) {
+            $product = $products->get($item['product_id']);
+
+            if (!$product) {
+                throw new \RuntimeException('Selected product was not found.');
+            }
+
+            if (!empty($item['product_variant_id'])) {
+                $variant = $variants->get((int) $item['product_variant_id']);
+
+                if (!$variant || (int) $variant->product_id !== (int) $product->id) {
+                    throw new \RuntimeException("Selected variant does not belong to {$product->name}.");
+                }
+            } else {
+                $variant = $product->resolveVariant();
+            }
+
+            if (!$variant) {
+                throw new \RuntimeException("No stock variant is available for {$product->name}.");
+            }
+
+            return [
+                'product' => $product,
+                'variant' => $variant,
+                'quantity' => (int) $item['quantity'],
+                'buying_price' => (float) $item['buying_price'],
+            ];
+        });
     }
 }

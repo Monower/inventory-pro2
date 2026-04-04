@@ -59,6 +59,7 @@ export default function Index() {
                                     <th className="custom-th rounded-l-md">SI</th>
                                     <th className="custom-th">Invoice</th>
                                     <th className="custom-th">Product</th>
+                                    <th className="custom-th">Variant</th>
                                     <th className="custom-th">Supplier</th>
                                     <th className="custom-th">Quantity</th>
                                     <th className="custom-th">Unit Price</th>
@@ -82,6 +83,9 @@ export default function Index() {
                                         </td>
                                         <td className="custom-body-td">
                                             {item.product?.name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {item.product_variant?.attribute_value?.name || "Standard"}
                                         </td>
                                         <td className="custom-body-td">
                                             {item.purchase?.supplier_name}

@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Bank;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,7 +19,7 @@ class OrderController extends Controller
     {
         $q = trim((string) request()->query('q', ''));
 
-        $orders = Order::with('customer', 'items.product')
+        $orders = Order::with('customer', 'items.product', 'items.productVariant.attributeValue.attribute')
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($subQuery) use ($q) {
                     $subQuery->where('order_number', 'like', "%{$q}%")
@@ -44,7 +45,7 @@ class OrderController extends Controller
     public function create()
     {
         $customers = Customer::all();
-        $products = Product::all();
+        $products = Product::with('variants.attributeValue.attribute')->get();
         $banks = Bank::all();
         return Inertia::render('orders/create', compact('customers', 'products', 'banks'));
     }
@@ -54,7 +55,8 @@ class OrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'cart' => 'required|array|min:1',
-            'cart.*.id' => 'required|exists:products,id',
+            'cart.*.product_id' => 'required|exists:products,id',
+            'cart.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'cart.*.quantity' => 'required|integer|min:1',
             'payment_method' => 'required|in:cash,bank,mobile',
             'bank_id' => 'nullable|required_if:payment_method,bank|exists:banks,id',
@@ -62,7 +64,7 @@ class OrderController extends Controller
             'payment_amount' => 'required|numeric|min:0',
         ], [
             'customer_id.required' => 'Customer is required',
-            'cart.*.id.required' => 'Product ID is required',
+            'cart.*.product_id.required' => 'Product ID is required',
             'cart.*.quantity.required' => 'Quantity is required',
             'cart.*.quantity.integer' => 'Quantity must be an integer',
             'cart.*.quantity.min' => 'Quantity must be at least 1',
@@ -73,18 +75,19 @@ class OrderController extends Controller
 
         try {
             DB::transaction(function () use ($validated) {
+                $cartItems = $this->prepareCartItems(collect($validated['cart']));
                 $orderNumber = 'ORD-' . Str::upper(Str::random(6));
-
                 $totalAmount = 0;
 
-                foreach ($validated['cart'] as $item) {
-                    $product = Product::findOrFail($item['id']);
+                foreach ($cartItems as $item) {
+                    $variant = $item['variant'];
+                    $product = $item['product'];
 
-                    if ($product->stock < $item['quantity']) {
-                        throw new \Exception("Not enough stock for {$product->name}");
+                    if ($variant->stock < $item['quantity']) {
+                        throw new \Exception("Not enough stock for {$this->describeLineItem($product, $variant)}");
                     }
 
-                    $totalAmount += $product->selling_price * $item['quantity'];
+                    $totalAmount += (float) $variant->selling_price * $item['quantity'];
                 }
 
                 $paidAmount = $validated['payment_amount'];
@@ -102,17 +105,17 @@ class OrderController extends Controller
                     'payment_status' => $paymentStatus,
                 ]);
 
-                foreach ($validated['cart'] as $item) {
-                    $product = Product::findOrFail($item['id']);
-
+                foreach ($cartItems as $item) {
+                    $product = $item['product'];
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $product->id,
+                        'product_variant_id' => $item['variant']->id,
                         'quantity' => $item['quantity'],
-                        'price' => $product->selling_price,
+                        'price' => $item['variant']->selling_price,
                     ]);
 
-                    $product->decrementVariantlessStock((int) $item['quantity']);
+                    $product->decrementStockForVariant($item['variant']->id, (int) $item['quantity']);
                 }
             });
 
@@ -128,9 +131,9 @@ class OrderController extends Controller
 
     public function edit(Order $order)
     {
-        $order->load('items.product');
+        $order->load('items.product', 'items.productVariant.attributeValue.attribute');
         $customers = Customer::all();
-        $products = Product::all();
+        $products = Product::with('variants.attributeValue.attribute')->get();
         $banks = Bank::all();
 
         return Inertia::render('orders/edit', compact('order', 'customers', 'products', 'banks'));
@@ -142,6 +145,7 @@ class OrderController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'cart' => 'required|array|min:1',
             'cart.*.product_id' => 'required|exists:products,id',
+            'cart.*.product_variant_id' => 'nullable|exists:product_variants,id',
             'cart.*.quantity' => 'required|integer|min:1',
 
             'payment_method' => 'required|in:cash,bank,mobile',
@@ -152,12 +156,13 @@ class OrderController extends Controller
 
         try {
             DB::transaction(function () use ($request, $order) {
+                $cartItems = $this->prepareCartItems(collect($request->cart));
 
                 /* ----------------------------
                Restore previous stock
             ----------------------------- */
                 foreach ($order->items as $oldItem) {
-                    $oldItem->product->incrementVariantlessStock((int) $oldItem->quantity);
+                    $oldItem->product->incrementStockForVariant($oldItem->product_variant_id, (int) $oldItem->quantity);
                 }
                 $order->items()->delete();
 
@@ -165,19 +170,15 @@ class OrderController extends Controller
                Calculate total
             ----------------------------- */
                 $totalAmount = 0;
-                $products = Product::whereIn(
-                    'id',
-                    collect($request->cart)->pluck('product_id')
-                )->get()->keyBy('id');
+                foreach ($cartItems as $item) {
+                    $variant = $item['variant'];
+                    $product = $item['product'];
 
-                foreach ($request->cart as $item) {
-                    $product = $products[$item['product_id']];
-
-                    if ($product->stock < $item['quantity']) {
-                        throw new \Exception("Not enough stock for {$product->name}");
+                    if ($variant->stock < $item['quantity']) {
+                        throw new \Exception("Not enough stock for {$this->describeLineItem($product, $variant)}");
                     }
 
-                    $totalAmount += $product->selling_price * $item['quantity'];
+                    $totalAmount += (float) $variant->selling_price * $item['quantity'];
                 }
 
                 /* ----------------------------
@@ -215,17 +216,18 @@ class OrderController extends Controller
                 /* ----------------------------
                Create new items & deduct stock
             ----------------------------- */
-                foreach ($request->cart as $item) {
-                    $product = $products[$item['product_id']];
+                foreach ($cartItems as $item) {
+                    $product = $item['product'];
 
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $product->id,
+                        'product_variant_id' => $item['variant']->id,
                         'quantity' => $item['quantity'],
-                        'price' => $product->selling_price,
+                        'price' => $item['variant']->selling_price,
                     ]);
 
-                    $product->decrementVariantlessStock((int) $item['quantity']);
+                    $product->decrementStockForVariant($item['variant']->id, (int) $item['quantity']);
                 }
             });
 
@@ -250,7 +252,7 @@ class OrderController extends Controller
             $order = Order::findOrFail($id);
 
             if ($order) {
-                $order->load('customer', 'items.product');
+                $order->load('customer', 'items.product', 'items.productVariant.attributeValue.attribute');
                 return Inertia::render('orders/show', compact('order'));
             } else {
                 return redirect()->route('orders.index')->with('error', 'Order not found.');
@@ -268,7 +270,7 @@ class OrderController extends Controller
 
             if ($order) {
                 foreach ($order->items as $item) {
-                    $item->product->increment('stock', $item->quantity);
+                    $item->product->incrementStockForVariant($item->product_variant_id, (int) $item->quantity);
                 }
                 $order->items()->delete();
                 $order->delete();
@@ -280,5 +282,62 @@ class OrderController extends Controller
         } else {
             return redirect()->route('orders.index')->with('error', 'Order not found.');
         }
+    }
+
+    protected function prepareCartItems($cartItems)
+    {
+        $productIds = $cartItems->pluck('product_id')->filter()->unique()->values();
+        $variantIds = $cartItems->pluck('product_variant_id')->filter()->unique()->values();
+
+        $products = Product::with('variants.attributeValue.attribute')
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
+        $variants = ProductVariant::with('attributeValue.attribute')
+            ->whereIn('id', $variantIds)
+            ->get()
+            ->keyBy('id');
+
+        return $cartItems->map(function ($item) use ($products, $variants) {
+            $product = $products->get($item['product_id']);
+
+            if (!$product) {
+                throw new \Exception('Selected product was not found.');
+            }
+
+            $variant = null;
+
+            if (!empty($item['product_variant_id'])) {
+                $variant = $variants->get((int) $item['product_variant_id']);
+
+                if (!$variant || (int) $variant->product_id !== (int) $product->id) {
+                    throw new \Exception("Selected variant does not belong to {$product->name}.");
+                }
+            } else {
+                $variant = $product->resolveVariant();
+            }
+
+            if (!$variant) {
+                throw new \Exception("No stock variant is available for {$product->name}.");
+            }
+
+            if ($variant->selling_price === null) {
+                throw new \Exception("Selling price is not set for {$this->describeLineItem($product, $variant)}.");
+            }
+
+            return [
+                'product' => $product,
+                'variant' => $variant,
+                'quantity' => (int) $item['quantity'],
+            ];
+        });
+    }
+
+    protected function describeLineItem(Product $product, ProductVariant $variant): string
+    {
+        $valueName = $variant->attributeValue?->name;
+
+        return $valueName ? "{$product->name} ({$valueName})" : $product->name;
     }
 }

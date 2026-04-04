@@ -118,6 +118,9 @@ const Show = ({ product }) => {
                                     <tr>
                                         <th className="custom-th rounded-l-md">Attribute</th>
                                         <th className="custom-th">Value</th>
+                                        <th className="custom-th">Buying price</th>
+                                        <th className="custom-th">Average cost</th>
+                                        <th className="custom-th">Selling price</th>
                                         <th className="custom-th rounded-r-md">Stock</th>
                                     </tr>
                                 </thead>
@@ -129,6 +132,15 @@ const Show = ({ product }) => {
                                             </td>
                                             <td className="custom-body-td">
                                                 {variant.attribute_value?.name || "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.buying_price ?? "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.average_cost ?? "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.selling_price ?? "Not set"}
                                             </td>
                                             <td className="custom-body-td">
                                                 {variant.stock} {product?.unit || ""}

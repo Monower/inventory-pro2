@@ -38,23 +38,45 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function resolveVariant(?int $variantId = null): ?ProductVariant
+    {
+        if ($variantId) {
+            return $this->variants()->whereKey($variantId)->first();
+        }
+
+        return $this->variants()->whereNull('attribute_value_id')->first()
+            ?? $this->variants()->orderBy('id')->first();
+    }
+
     public function syncStockFromVariants(): void
     {
-        $totalStock = (int) $this->variants()->sum('stock');
+        $variants = $this->variants()->get();
+        $totalStock = (int) $variants->sum('stock');
+        $weightedBuyingPrice = null;
+
+        if ($totalStock > 0) {
+            $weightedCost = $variants->sum(function ($variant) {
+                $cost = $variant->average_cost ?? $variant->buying_price ?? 0;
+
+                return (float) $cost * (int) $variant->stock;
+            });
+
+            $weightedBuyingPrice = $weightedCost / $totalStock;
+        } else {
+            $firstVariant = $variants->first();
+            $weightedBuyingPrice = $firstVariant?->average_cost ?? $firstVariant?->buying_price;
+        }
 
         $this->forceFill([
             'stock' => $totalStock,
             'attribute_value_id' => $this->variants()->value('attribute_value_id'),
+            'buying_price' => $weightedBuyingPrice ?? $this->buying_price,
         ])->save();
     }
 
     public function incrementVariantlessStock(int $quantity): void
     {
-        $variant = $this->variants()->whereNull('attribute_value_id')->first();
-
-        if (!$variant) {
-            $variant = $this->variants()->orderBy('id')->first();
-        }
+        $variant = $this->resolveVariant();
 
         if (!$variant) {
             $variant = $this->variants()->create([
@@ -95,5 +117,27 @@ class Product extends Model
         }
 
         $this->syncStockFromVariants();
+    }
+
+    public function incrementStockForVariant(?int $variantId, int $quantity): void
+    {
+        $variant = $this->resolveVariant($variantId);
+
+        if (!$variant) {
+            throw new \RuntimeException("Stock variant is missing for {$this->name}");
+        }
+
+        $variant->incrementStock($quantity);
+    }
+
+    public function decrementStockForVariant(?int $variantId, int $quantity): void
+    {
+        $variant = $this->resolveVariant($variantId);
+
+        if (!$variant) {
+            throw new \RuntimeException("Stock variant is missing for {$this->name}");
+        }
+
+        $variant->decrementStock($quantity);
     }
 }
