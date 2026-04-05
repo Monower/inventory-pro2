@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\Staff;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
-use App\Models\Order;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        if (request()->user()?->isSuperAdmin() && !request()->user()?->isOperatingInTenantContext()) {
+            return redirect()->route('super-admin.dashboard');
+        }
+
         $total_product_count = Product::count();
         $total_product_price = Product::select(DB::raw('SUM(selling_price * stock) as total'))->value('total');
         $total_customer_count = Customer::count();
@@ -70,7 +73,7 @@ class DashboardController extends Controller
 
 
         return Inertia::render('Dashboard', [
-            'data' => $data
+            'data' => $data,
         ]);
     }
 }

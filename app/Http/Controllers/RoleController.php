@@ -17,9 +17,10 @@ class RoleController extends Controller
     {
         $q = trim((string) request()->query('q', ''));
         $authUser = request()->user();
+        $isPlatformSuperAdmin = $authUser->isSuperAdmin() && !$authUser->isOperatingInTenantContext();
 
         $roles = Role::with('permissions')
-            ->when(!$authUser->isSuperAdmin(), function ($query) {
+            ->when(!$isPlatformSuperAdmin, function ($query) {
                 $query->where('name', '!=', 'super-admin');
             })
             ->when($q !== '', function ($query) use ($q) {
@@ -63,7 +64,7 @@ class RoleController extends Controller
             'permissions' => 'required',
         ]);
 
-        if (!$request->user()->isSuperAdmin() && $validated['name'] === 'super-admin') {
+        if ((!$request->user()->isSuperAdmin() || $request->user()->isOperatingInTenantContext()) && $validated['name'] === 'super-admin') {
             abort(403);
         }
 
@@ -90,7 +91,7 @@ class RoleController extends Controller
     public function edit($role_id)
     {
         $role = Role::find($role_id)->load('permissions');
-        if (!$role || (!request()->user()->isSuperAdmin() && $role->name === 'super-admin')) {
+        if (!$role || ((!request()->user()->isSuperAdmin() || request()->user()->isOperatingInTenantContext()) && $role->name === 'super-admin')) {
             abort(403);
         }
 
@@ -104,7 +105,7 @@ class RoleController extends Controller
     public function update(Request $request, $role_id)
     {
         $role = Role::find($role_id);
-        if (!$role || (!request()->user()->isSuperAdmin() && $role->name === 'super-admin')) {
+        if (!$role || ((!request()->user()->isSuperAdmin() || request()->user()->isOperatingInTenantContext()) && $role->name === 'super-admin')) {
             abort(403);
         }
 
@@ -129,7 +130,7 @@ class RoleController extends Controller
     public function destroy($role_id)
     {
         $role = Role::find($role_id);
-        if (!$role || (!request()->user()->isSuperAdmin() && $role->name === 'super-admin')) {
+        if (!$role || ((!request()->user()->isSuperAdmin() || request()->user()->isOperatingInTenantContext()) && $role->name === 'super-admin')) {
             abort(403);
         }
 
@@ -140,7 +141,7 @@ class RoleController extends Controller
     protected function availablePermissions(User $user)
     {
         return Permission::query()
-            ->when(!$user->isSuperAdmin(), function ($query) {
+            ->when(!$user->isSuperAdmin() || $user->isOperatingInTenantContext(), function ($query) {
                 $query->whereNotIn('name', [
                     'view tenant',
                     'edit tenant',

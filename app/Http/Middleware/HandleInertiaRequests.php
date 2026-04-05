@@ -39,6 +39,8 @@ class HandleInertiaRequests extends Middleware
                     'avatar' => $request->user()->avatar,
                     'email' => $request->user()->email,
                     'is_super_admin' => $request->user()->isSuperAdmin(),
+                    'is_tenant_context' => $request->user()->isOperatingInTenantContext(),
+                    'dashboard_route_name' => $request->user()->dashboardRouteName(),
                     'roles' => $request->user()->getRoleNames(), // returns ["admin"]
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'), // returns collection of names
                 ] : null,

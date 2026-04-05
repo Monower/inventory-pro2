@@ -14,7 +14,7 @@ class EnsureTenantSubscriptionAccess
     {
         $user = $request->user();
 
-        if (!$user || $user->isSuperAdmin()) {
+        if (!$user || ($user->isSuperAdmin() && !$user->isOperatingInTenantContext())) {
             return $next($request);
         }
 

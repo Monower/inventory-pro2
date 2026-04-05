@@ -11,8 +11,12 @@ import { CiDollar } from "react-icons/ci";
 import { PiGearSixLight } from "react-icons/pi";
 
 const Menu = ({ url }) => {
-    const { auth } = usePage().props;
+    const { auth, tenant } = usePage().props;
     const permissions = auth.user?.permissions || [];
+    const dashboardHref =
+        auth.user?.dashboard_route_name === "super-admin.dashboard"
+            ? "/super-admin/dashboard"
+            : "/dashboard";
     const currentPath =
         url.split("?")[0].split("#")[0].replace(/\/+$/, "") || "/";
 
@@ -30,7 +34,8 @@ const Menu = ({ url }) => {
             ? "bg-amber-50 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
             : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100");
 
-    const dashboardActive = isPath("/dashboard");
+    const dashboardActive =
+        isPath("/dashboard") || isPath("/super-admin/dashboard");
     const orderActive = isPathPrefix("/orders") || isPathPrefix("/banks");
     const productActive =
         isPathPrefix("/products") ||
@@ -54,7 +59,7 @@ const Menu = ({ url }) => {
     return (
         <div className="space-y-2">
             {permissions.includes("view dashboard") && (
-                <Link href="/dashboard" className={linkClass(dashboardActive)}>
+                <Link href={dashboardHref} className={linkClass(dashboardActive)}>
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
                         <MdOutlineDashboard />
                     </span>
@@ -275,7 +280,7 @@ const Menu = ({ url }) => {
                 </SidebarDropdown>
             )}
 
-            {permissions.includes("view tenant") && (
+            {!tenant?.switched && permissions.includes("view tenant") && (
                 <Link
                     href="/super-admin/tenants"
                     className={linkClass(superAdminActive)}
@@ -287,7 +292,7 @@ const Menu = ({ url }) => {
                 </Link>
             )}
 
-            {permissions.includes("view plan") && (
+            {!tenant?.switched && permissions.includes("view plan") && (
                 <Link
                     href="/super-admin/plans"
                     className={linkClass(isPathPrefix("/super-admin/plans"))}

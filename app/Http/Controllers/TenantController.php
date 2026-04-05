@@ -22,14 +22,18 @@ class TenantController extends Controller
             'tenant_id' => $tenant->id,
         ]);
 
-        return back()->with('success', "Switched into {$tenant->name}.");
+        return redirect()
+            ->route('dashboard', status: 303)
+            ->with('success', "Switched into {$tenant->name}.");
     }
 
     public function clearSwitch(Request $request)
     {
         $request->session()->forget('tenant_switch');
 
-        return back()->with('success', 'Returned to your home workspace context.');
+        return redirect()
+            ->route('super-admin.dashboard', status: 303)
+            ->with('success', 'Returned to your home workspace context.');
     }
 
     public function index()

@@ -22,6 +22,19 @@ class PermissionSeeder extends Seeder
         'delete plan',
     ];
 
+    protected array $superAdminPermissions = [
+        'can login',
+        'view dashboard',
+        'view tenant',
+        'edit tenant',
+        'view plan',
+        'create plan',
+        'edit plan',
+        'delete plan',
+        'view profile',
+        'edit profile',
+    ];
+
     /**
      * Run the database seeds.
      */
@@ -127,8 +140,10 @@ class PermissionSeeder extends Seeder
             ->whereIn('name', ['view dashboard', 'can login'])
             ->values();
 
-        // Platform owner keeps all permissions, tenant admin gets app-only permissions.
-        $superAdminRole->syncPermissions($allPermissions);
+        // Super admin stays in platform scope; tenant admin keeps app modules.
+        $superAdminRole->syncPermissions(
+            $allPermissions->whereIn('name', $this->superAdminPermissions)->values()
+        );
         $adminRole->syncPermissions($tenantAdminPermissions);
         $userRole->syncPermissions($userPermissions);
 
@@ -144,6 +159,8 @@ class PermissionSeeder extends Seeder
             ]);
         }
 
+        $createdDefaultUser = false;
+
         if (!$user) {
             // Create default admin user
             $user = User::create([
@@ -152,19 +169,15 @@ class PermissionSeeder extends Seeder
                 'password' => '12345678', // hash the password
                 'tenant_id' => $tenant->id,
             ]);
+            $createdDefaultUser = true;
         }
 
         if (!$user->tenant_id) {
             $user->update(['tenant_id' => $tenant->id]);
         }
 
-        // Assign admin role if not already assigned
-        if (!$user->hasRole('admin')) {
-            $user->assignRole($adminRole);
-        }
-
-        if (!$user->hasRole('super-admin')) {
-            $user->assignRole($superAdminRole);
+        if ($createdDefaultUser && !$user->hasRole('super-admin')) {
+            $user->syncRoles([$superAdminRole]);
         }
 
         $plans = [

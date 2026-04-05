@@ -18,9 +18,10 @@ class UserController extends Controller
     {
         $q = trim((string) request()->query('q', ''));
         $authUser = request()->user();
+        $isPlatformSuperAdmin = $authUser->isSuperAdmin() && !$authUser->isOperatingInTenantContext();
 
         $users = User::with('roles')
-            ->when(!$authUser->isSuperAdmin(), function ($query) {
+            ->when(!$isPlatformSuperAdmin, function ($query) {
                 $query->whereDoesntHave('roles', function ($roleQuery) {
                     $roleQuery->where('name', 'super-admin');
                 });
@@ -191,7 +192,7 @@ class UserController extends Controller
     protected function availableRoles(User $user)
     {
         return Role::query()
-            ->when(!$user->isSuperAdmin(), function ($query) {
+            ->when(!$user->isSuperAdmin() || $user->isOperatingInTenantContext(), function ($query) {
                 $query->whereNotIn('name', ['admin', 'super-admin']);
             }, function ($query) {
                 $query->where('name', '!=', 'admin');
@@ -201,6 +202,10 @@ class UserController extends Controller
 
     protected function canManageUser(User $actor, User $subject): bool
     {
-        return $actor->isSuperAdmin() || !$subject->hasRole('super-admin');
+        if ($actor->isSuperAdmin() && !$actor->isOperatingInTenantContext()) {
+            return true;
+        }
+
+        return !$subject->hasRole('super-admin');
     }
 }

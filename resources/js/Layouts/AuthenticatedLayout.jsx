@@ -1,7 +1,7 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
-import { Link, usePage, Head } from "@inertiajs/react";
+import { Link, usePage, Head, router } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 import Sidebar from "./Sidebar";
 import Menu from "@/Components/Menu/Menu";
@@ -14,6 +14,11 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
     const user = usePage().props.auth.user;
     const { settings, company_name, flash, tenant, billing, subscription_access } = usePage().props;
     const { url } = usePage();
+    const exitTenantContext = () => {
+        router.get("/super-admin/tenants/exit", {
+            preserveScroll: true,
+        });
+    };
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -79,14 +84,13 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
 
                         <div className="flex items-center gap-2 lg:gap-3">
                             {tenant?.switched && (
-                                <Link
-                                    href={route("super-admin.tenants.clear-switch")}
-                                    method="delete"
-                                    as="button"
+                                <button
+                                    type="button"
+                                    onClick={exitTenantContext}
                                     className="hidden rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700 shadow-sm transition hover:bg-sky-100 lg:inline-flex"
                                 >
                                     Exit {tenant.name}
-                                </Link>
+                                </button>
                             )}
                             <button
                                 type="button"
@@ -169,25 +173,6 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         {header}
                     </div>
                 </header>
-            )}
-
-            {tenant?.switched && (
-                <div className="border-b border-sky-200 bg-sky-50/80 px-4 py-3 text-sm text-sky-900 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-100">
-                    <div className="mx-auto flex max-w-7xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            Viewing <span className="font-semibold">{tenant.name}</span> as super-admin.
-                            {tenant.home_tenant_name ? ` Home workspace: ${tenant.home_tenant_name}.` : ""}
-                        </div>
-                        <Link
-                            href={route("super-admin.tenants.clear-switch")}
-                            method="delete"
-                            as="button"
-                            className="inline-flex w-fit rounded-xl border border-sky-300 bg-white px-4 py-2 font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-800 dark:bg-slate-950 dark:text-sky-200 dark:hover:bg-slate-900"
-                        >
-                            Return to home workspace
-                        </Link>
-                    </div>
-                </div>
             )}
 
             {subscription_access?.read_only && !tenant?.switched && (

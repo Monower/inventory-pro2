@@ -8,6 +8,10 @@ Route::middleware(['auth'])->prefix('super-admin')->name('super-admin.')->group(
         ->name('tenants.index')
         ->middleware('permission:view tenant');
 
+    Route::get('/tenants/exit', [TenantController::class, 'clearSwitch'])
+        ->name('tenants.exit')
+        ->middleware('permission:edit tenant');
+
     Route::post('/tenants/{tenant}/switch', [TenantController::class, 'switch'])
         ->name('tenants.switch')
         ->middleware('permission:edit tenant');

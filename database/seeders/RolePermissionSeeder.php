@@ -17,6 +17,19 @@ class RolePermissionSeeder extends Seeder
         'delete plan',
     ];
 
+    protected array $superAdminPermissions = [
+        'can login',
+        'view dashboard',
+        'view tenant',
+        'edit tenant',
+        'view plan',
+        'create plan',
+        'edit plan',
+        'delete plan',
+        'view profile',
+        'edit profile',
+    ];
+
     public function run()
     {
         // Create roles
@@ -38,7 +51,9 @@ class RolePermissionSeeder extends Seeder
         $canLogin = Permission::firstOrCreate(['name' => 'can login']); // ✅ new permission
 
         $allPermissions = Permission::query()->get();
-        $superAdmin->syncPermissions($allPermissions);
+        $superAdmin->syncPermissions(
+            $allPermissions->whereIn('name', $this->superAdminPermissions)->values()
+        );
         $admin->syncPermissions(
             $allPermissions->whereNotIn('name', $this->platformOnlyPermissions)->values()
         );

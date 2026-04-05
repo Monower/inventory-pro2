@@ -42,6 +42,9 @@ class AppServiceProvider extends ServiceProvider
                         'email' => $user->email,
                         'avatar' => $user->avatar,
                         'phone' => $user->phone,
+                        'is_super_admin' => $user->isSuperAdmin(),
+                        'is_tenant_context' => $user->isOperatingInTenantContext(),
+                        'dashboard_route_name' => $user->dashboardRouteName(),
                         'roles' => $user->getRoleNames(),
                         'permissions' => $user->getAllPermissions()->pluck('name'),
                     ] : null,
@@ -148,7 +151,7 @@ class AppServiceProvider extends ServiceProvider
                     $user = Auth::user();
                     $tenant = app(CurrentTenant::class)->get();
 
-                    if (!$user || !$tenant || $user->isSuperAdmin()) {
+                    if (!$user || !$tenant || ($user->isSuperAdmin() && !$user->isOperatingInTenantContext())) {
                         return [
                             'read_only' => false,
                             'message' => null,
