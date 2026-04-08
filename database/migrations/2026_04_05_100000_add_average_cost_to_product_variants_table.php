@@ -9,9 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->decimal('average_cost', 10, 2)->nullable()->after('buying_price');
-        });
+        if (! Schema::hasColumn('product_variants', 'average_cost')) {
+            Schema::table('product_variants', function (Blueprint $table) {
+                $table->decimal('average_cost', 10, 2)->nullable()->after('buying_price');
+            });
+        }
 
         DB::table('product_variants')
             ->update([
@@ -21,8 +23,10 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->dropColumn('average_cost');
-        });
+        if (Schema::hasColumn('product_variants', 'average_cost')) {
+            Schema::table('product_variants', function (Blueprint $table) {
+                $table->dropColumn('average_cost');
+            });
+        }
     }
 };

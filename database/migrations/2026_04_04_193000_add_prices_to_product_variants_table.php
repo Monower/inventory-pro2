@@ -9,10 +9,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->decimal('buying_price', 10, 2)->nullable()->after('attribute_value_id');
-            $table->decimal('selling_price', 10, 2)->nullable()->after('buying_price');
-        });
+        $addBuyingPrice = ! Schema::hasColumn('product_variants', 'buying_price');
+        $addSellingPrice = ! Schema::hasColumn('product_variants', 'selling_price');
+
+        if ($addBuyingPrice || $addSellingPrice) {
+            Schema::table('product_variants', function (Blueprint $table) use ($addBuyingPrice, $addSellingPrice) {
+                if ($addBuyingPrice) {
+                    $table->decimal('buying_price', 10, 2)->nullable()->after('attribute_value_id');
+                }
+
+                if ($addSellingPrice) {
+                    $table->decimal('selling_price', 10, 2)->nullable()->after('buying_price');
+                }
+            });
+        }
 
         DB::table('product_variants')
             ->join('products', 'products.id', '=', 'product_variants.product_id')
@@ -24,8 +34,23 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->dropColumn(['buying_price', 'selling_price']);
-        });
+        $dropBuyingPrice = Schema::hasColumn('product_variants', 'buying_price');
+        $dropSellingPrice = Schema::hasColumn('product_variants', 'selling_price');
+
+        if ($dropBuyingPrice || $dropSellingPrice) {
+            Schema::table('product_variants', function (Blueprint $table) use ($dropBuyingPrice, $dropSellingPrice) {
+                $columns = [];
+
+                if ($dropBuyingPrice) {
+                    $columns[] = 'buying_price';
+                }
+
+                if ($dropSellingPrice) {
+                    $columns[] = 'selling_price';
+                }
+
+                $table->dropColumn($columns);
+            });
+        }
     }
 };
