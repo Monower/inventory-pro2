@@ -11,6 +11,7 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'attribute_id',
         'selling_price',
         'buying_price',
         'stock',
@@ -26,6 +27,11 @@ class Product extends Model
     public function subCategory()
     {
         return $this->belongsTo(SubCategory::class);
+    }
+
+    public function attribute()
+    {
+        return $this->belongsTo(Attribute::class);
     }
 
     public function attributeValue()
@@ -48,11 +54,33 @@ class Product extends Model
             ?? $this->variants()->orderBy('id')->first();
     }
 
+    public function ensureVariantlessVariant(array $attributes = []): ProductVariant
+    {
+        $variant = $this->variants()->whereNull('attribute_value_id')->first();
+
+        if ($variant) {
+            if ($attributes !== []) {
+                $variant->fill($attributes)->save();
+            }
+
+            return $variant;
+        }
+
+        return $this->variants()->create(array_merge([
+            'attribute_value_id' => null,
+            'buying_price' => $this->buying_price,
+            'average_cost' => $this->buying_price,
+            'selling_price' => $this->selling_price,
+            'stock' => 0,
+        ], $attributes));
+    }
+
     public function syncStockFromVariants(): void
     {
         $variants = $this->variants()->get();
         $totalStock = (int) $variants->sum('stock');
         $weightedBuyingPrice = null;
+        $defaultSellingPrice = null;
 
         if ($totalStock > 0) {
             $weightedCost = $variants->sum(function ($variant) {
@@ -67,23 +95,21 @@ class Product extends Model
             $weightedBuyingPrice = $firstVariant?->average_cost ?? $firstVariant?->buying_price;
         }
 
+        $defaultSellingPrice = $variants->firstWhere('attribute_value_id', null)?->selling_price
+            ?? $variants->first()?->selling_price
+            ?? $this->selling_price;
+
         $this->forceFill([
             'stock' => $totalStock,
             'attribute_value_id' => $this->variants()->value('attribute_value_id'),
             'buying_price' => $weightedBuyingPrice ?? $this->buying_price,
+            'selling_price' => $defaultSellingPrice,
         ])->save();
     }
 
     public function incrementVariantlessStock(int $quantity): void
     {
-        $variant = $this->resolveVariant();
-
-        if (!$variant) {
-            $variant = $this->variants()->create([
-                'attribute_value_id' => null,
-                'stock' => 0,
-            ]);
-        }
+        $variant = $this->ensureVariantlessVariant();
 
         $variant->increment('stock', $quantity);
         $this->syncStockFromVariants();

@@ -277,7 +277,6 @@ export default function Edit() {
                                         <tr>
                                             <th className="border p-2">Product</th>
                                             <th className="border p-2">Type</th>
-                                            <th className="border p-2">Buying Price</th>
                                             <th className="border p-2">Stock</th>
                                             <th className="border p-2"></th>
                                         </tr>
@@ -301,7 +300,6 @@ export default function Edit() {
                                                             ? `${getAvailableVariants(product).length} variants left`
                                                             : "Standard"}
                                                     </td>
-                                                    <td className="border p-2">{product.buying_price.toFixed(2)}</td>
                                                     <td className="border p-2">{product.stock} {product.unit || ""}</td>
                                                     <td className="border p-2 text-center">
                                                         <button

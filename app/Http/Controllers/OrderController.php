@@ -112,8 +112,8 @@ class OrderController extends Controller
                         'product_id' => $product->id,
                         'product_variant_id' => $item['variant']->id,
                         'quantity' => $item['quantity'],
-                        'price' => $product->selling_price,
-                        'cost_price' => $product->buying_price,
+                        'price' => $item['variant']->selling_price,
+                        'cost_price' => $item['variant']->average_cost ?? $item['variant']->buying_price,
                     ]);
 
                     $product->decrementStockForVariant($item['variant']->id, (int) $item['quantity']);
@@ -225,8 +225,8 @@ class OrderController extends Controller
                         'product_id' => $product->id,
                         'product_variant_id' => $item['variant']->id,
                         'quantity' => $item['quantity'],
-                        'price' => $product->selling_price,
-                        'cost_price' => $product->buying_price,
+                        'price' => $item['variant']->selling_price,
+                        'cost_price' => $item['variant']->average_cost ?? $item['variant']->buying_price,
                     ]);
 
                     $product->decrementStockForVariant($item['variant']->id, (int) $item['quantity']);

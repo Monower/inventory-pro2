@@ -31,8 +31,7 @@ const Index = () => {
                                 Browse and manage your catalog
                             </h3>
                             <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                Track stock, review pricing, and jump into product
-                                details or edits from one focused workspace.
+                                Manage your product catalog here, then set stock and pricing from the dedicated Product prices workspace.
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -49,6 +48,12 @@ const Index = () => {
                                 className="create-button"
                             >
                                 Add Product
+                            </Link>
+                            <Link
+                                href={route("product-prices.index")}
+                                className="edit-button"
+                            >
+                                Product prices
                             </Link>
                         </div>
                     </div>
@@ -72,10 +77,17 @@ const Index = () => {
                                         Image
                                     </th>
                                     <th className="custom-th">
+                                        Category
+                                    </th>
+                                    <th className="custom-th">
+                                        Attribute
+                                    </th>
+                                    <th className="custom-th">Unit</th>
+                                    <th className="custom-th">Pricing</th>
+                                    <th className="custom-th">Stock setup</th>
+                                    <th className="custom-th">
                                         Name
                                     </th>
-                                    <th className="custom-th">Selling price</th>
-                                    <th className="custom-th">Stock</th>
                                     <th className="custom-th">Created at</th>
                                     <th className="custom-th rounded-r-md">
                                         Actions
@@ -99,13 +111,22 @@ const Index = () => {
                                             />
                                         </td>
                                         <td className="custom-body-td">
+                                            {product.sub_category?.name || "N/A"}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {product.attribute?.name || "Standard"}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {product.unit || "N/A"}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {product.variants?.length ? "Configured" : "Pending"}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {product.variants?.length ? "Configured" : "Pending"}
+                                        </td>
+                                        <td className="custom-body-td">
                                             {product.name}
-                                        </td>
-                                        <td className="custom-body-td">
-                                            {product.selling_price}
-                                        </td>
-                                        <td className="custom-body-td">
-                                            {product.stock} {product.unit}
                                         </td>
                                         <td className="custom-body-td">
                                             {dateTimeFormater(product.created_at)}
@@ -119,6 +140,19 @@ const Index = () => {
                                                 className="show-button"
                                             >
                                                 <EyeIcon className="w-4 h-4 inline" />
+                                            </Link>
+                                            <Link
+                                                href={route(
+                                                    product.variants?.length
+                                                        ? "product-prices.edit"
+                                                        : "product-prices.create",
+                                                    product.variants?.length
+                                                        ? product.id
+                                                        : { product: product.id }
+                                                )}
+                                                className="show-button"
+                                            >
+                                                Price
                                             </Link>
                                             <Link
                                                 href={route(

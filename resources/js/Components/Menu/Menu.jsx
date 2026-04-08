@@ -34,6 +34,7 @@ const Menu = ({ url }) => {
     const orderActive = isPathPrefix("/orders") || isPathPrefix("/banks");
     const productActive =
         isPathPrefix("/products") ||
+        isPathPrefix("/product-prices") ||
         isPathPrefix("/categories") ||
         isPathPrefix("/sub-categories") ||
         isPathPrefix("/attributes") ||
@@ -129,6 +130,16 @@ const Menu = ({ url }) => {
                                 )}
                             >
                                 Create product
+                            </Link>
+                        )}
+                        {permissions.includes("view product") && (
+                            <Link
+                                href="/product-prices"
+                                className={subLinkClass(
+                                    isPathPrefix("/product-prices")
+                                )}
+                            >
+                                Product prices
                             </Link>
                         )}
                         {permissions.includes("view category") && (

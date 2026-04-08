@@ -42,7 +42,7 @@ const buildSaleOptions = (products = []) =>
                 name: product.name,
                 variant_name: "",
                 display_name: product.name,
-                selling_price: Number(product.selling_price),
+                selling_price: Number(simpleVariant?.selling_price ?? product.selling_price ?? 0),
                 stock: Number(simpleVariant?.stock ?? product.stock ?? 0),
                 unit: product.unit,
             },

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductPriceController;
 
 
 Route::middleware(['auth'])->group(function () {
@@ -13,5 +14,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit')->middleware('permission:edit product');
         Route::put('/{product}', [ProductController::class, 'update'])->name('update')->middleware('permission:edit product');
         Route::delete('/delete/{id}', [ProductController::class, 'destroy'])->name('destroy')->middleware('permission:delete product');
+    });
+
+    Route::prefix('product-prices')->name('product-prices.')->middleware('auth')->group(function () {
+        Route::get('/', [ProductPriceController::class, 'index'])->name('index')->middleware('permission:view product');
+        Route::get('/create', [ProductPriceController::class, 'create'])->name('create')->middleware('permission:create product');
+        Route::post('/', [ProductPriceController::class, 'store'])->name('store')->middleware('permission:create product');
+        Route::get('/{product}/edit', [ProductPriceController::class, 'edit'])->name('edit')->middleware('permission:edit product');
+        Route::put('/{product}', [ProductPriceController::class, 'update'])->name('update')->middleware('permission:edit product');
     });
 });

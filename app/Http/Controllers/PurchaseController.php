@@ -291,6 +291,13 @@ class PurchaseController extends Controller
                 }
             } else {
                 $variant = $product->resolveVariant();
+
+                if (!$variant && empty($product->attribute_id)) {
+                    $variant = $product->ensureVariantlessVariant([
+                        'buying_price' => (float) $item['buying_price'],
+                        'average_cost' => (float) $item['buying_price'],
+                    ]);
+                }
             }
 
             if (!$variant) {

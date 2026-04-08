@@ -20,16 +20,26 @@ const Show = ({ product }) => {
                         <BackButton url={"products.index"} />
                         <div>
                             <h3 className="text-3xl font-semibold text-slate-900 dark:text-slate-100">Product details: {product?.name}</h3>
-                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Review category, pricing, stock, attributes, and media in one place.</p>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Review catalog details here and manage stock or pricing from the Product prices page.</p>
                         </div>
                     </div>
-
-                    <Link
-                        href={route("products.edit", product.id)}
-                        className="edit-button"
-                    >
-                        Edit product
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <Link
+                            href={route("products.edit", product.id)}
+                            className="edit-button"
+                        >
+                            Edit product
+                        </Link>
+                        <Link
+                            href={route(
+                                product?.variants?.length ? "product-prices.edit" : "product-prices.create",
+                                product?.variants?.length ? product.id : { product: product.id }
+                            )}
+                            className="show-button"
+                        >
+                            Product prices
+                        </Link>
+                    </div>
                     </div>
                 </div>
 
@@ -63,11 +73,7 @@ const Show = ({ product }) => {
                             </p>
                             <p>
                                 <strong>Attribute:</strong>{" "}
-                                {product?.attribute_value?.attribute?.name || "N/A"}
-                            </p>
-                            <p>
-                                <strong>Attribute value:</strong>{" "}
-                                {product?.attribute_value?.name || "N/A"}
+                                {product?.attribute?.name || "Standard"}
                             </p>
                             <p>
                                 <strong>Buying price:</strong>{" "}
@@ -105,7 +111,7 @@ const Show = ({ product }) => {
                     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                         <div className="mb-4">
                             <h4 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                                Stock by attribute
+                                Product prices
                             </h4>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
                                 Each attribute value keeps its own stock, and the product total is summed from these rows.

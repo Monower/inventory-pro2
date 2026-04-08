@@ -10,13 +10,14 @@ use App\Models\Staff;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
+use App\Models\ProductVariant;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $total_product_count = Product::count();
-        $total_product_price = Product::select(DB::raw('SUM(selling_price * stock) as total'))->value('total');
+        $total_product_price = ProductVariant::select(DB::raw('SUM(COALESCE(selling_price, 0) * stock) as total'))->value('total');
         $total_customer_count = Customer::count();
         $total_staff_count = Staff::count();
         $total_added_money = Transaction::where(['transaction_type' => 'add_money'])->sum('amount');
