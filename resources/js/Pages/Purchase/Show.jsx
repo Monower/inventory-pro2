@@ -91,8 +91,10 @@ export default function Show({ purchase }) {
                                 <tr>
                                     <th className="custom-th rounded-l-md">SI</th>
                                     <th className="custom-th">Product</th>
+                                    <th className="custom-th">Variant</th>
                                     <th className="custom-th">Quantity</th>
                                     <th className="custom-th">Unit Price</th>
+                                    <th className="custom-th">Current Avg Cost</th>
                                     <th className="custom-th rounded-r-md">Total</th>
                                 </tr>
                             </thead>
@@ -106,10 +108,16 @@ export default function Show({ purchase }) {
                                             {item?.product?.name || "N/A"}
                                         </td>
                                         <td className="custom-body-td">
+                                            {item?.product_variant?.attribute_value?.name || "Standard"}
+                                        </td>
+                                        <td className="custom-body-td">
                                             {item?.quantity}
                                         </td>
                                         <td className="custom-body-td">
                                             ৳ {money(item?.buying_price)}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            ৳ {money(item?.product_variant?.average_cost)}
                                         </td>
                                         <td className="custom-body-td">
                                             ৳ {money(item?.total)}
@@ -119,7 +127,7 @@ export default function Show({ purchase }) {
                             </tbody>
                             <tfoot>
                                 <tr className="custom-body-tr">
-                                    <td className="custom-body-td text-right" colSpan={4}>
+                                    <td className="custom-body-td text-right" colSpan={6}>
                                         Total:
                                     </td>
                                     <td className="custom-body-td">

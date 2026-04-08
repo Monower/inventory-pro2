@@ -62,15 +62,20 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'selling_price' => 'required|numeric|min:0',
             'buying_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'stock' => 'nullable|integer|min:0',
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
             'product_image' => 'nullable|image|max:2048',
             'sub_category_id' => 'required|exists:sub_categories,id',
             'attribute_id' => 'nullable|exists:attributes,id',
-            'attribute_value_ids' => 'nullable|array',
-            'attribute_value_ids.*' => 'exists:attribute_values,id',
+            'attribute_stocks' => 'nullable|array',
+            'attribute_stocks.*.attribute_value_id' => 'required|exists:attribute_values,id',
+            'attribute_stocks.*.buying_price' => 'nullable|numeric|min:0',
+            'attribute_stocks.*.selling_price' => 'nullable|numeric|min:0',
+            'attribute_stocks.*.stock' => 'required|integer|min:0',
         ]);
+
+        $this->validateStockPayload($validated, $request);
 
         if ($request->hasFile('product_image')) {
             $path = $request->file('product_image')->store('product_images', 'public');
@@ -81,15 +86,15 @@ class ProductController extends Controller
             'name' => $validated['name'],
             'selling_price' => $validated['selling_price'],
             'buying_price' => $validated['buying_price'],
-            'stock' => $validated['stock'],
+            'stock' => 0,
             'unit' => $validated['unit'],
             'description' => $validated['description'] ?? null,
             'product_image' => $validated['product_image'] ?? null,
             'sub_category_id' => $validated['sub_category_id'],
-            'attribute_value_id' => $validated['attribute_value_ids'][0] ?? null,
+            'attribute_value_id' => null,
         ]);
 
-        // You can handle attaching multiple attribute values if needed here
+        $this->syncProductVariants($product, $validated);
 
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
@@ -98,7 +103,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         return Inertia::render('products/show', [
-            'product' => $product->load(['subCategory.category', 'attributeValue.attribute']),
+            'product' => $product->load(['subCategory.category', 'attributeValue.attribute', 'variants.attributeValue.attribute']),
         ]);
     }
 
@@ -109,7 +114,7 @@ class ProductController extends Controller
         $attributes = Attribute::with('values')->get();
 
         return Inertia::render('products/edit', [
-            'product' => $product->load(['subCategory.category', 'attributeValue.attribute']),
+            'product' => $product->load(['subCategory.category', 'attributeValue.attribute', 'variants.attributeValue.attribute']),
             'categories' => $categories,
             'attributes' => $attributes,
         ]);
@@ -122,15 +127,20 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'selling_price' => 'required|numeric|min:0',
             'buying_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'stock' => 'nullable|integer|min:0',
             'unit' => 'required|string|max:50',
             'description' => 'nullable|string',
             'product_image' => 'nullable|image|max:2048',
             'sub_category_id' => 'required|exists:sub_categories,id',
             'attribute_id' => 'nullable|exists:attributes,id',
-            'attribute_value_ids' => 'nullable|array',
-            'attribute_value_ids.*' => 'exists:attribute_values,id',
+            'attribute_stocks' => 'nullable|array',
+            'attribute_stocks.*.attribute_value_id' => 'required|exists:attribute_values,id',
+            'attribute_stocks.*.buying_price' => 'nullable|numeric|min:0',
+            'attribute_stocks.*.selling_price' => 'nullable|numeric|min:0',
+            'attribute_stocks.*.stock' => 'required|integer|min:0',
         ]);
+
+        $this->validateStockPayload($validated, $request);
 
         if ($request->hasFile('product_image')) {
             if ($product->product_image) {
@@ -140,21 +150,19 @@ class ProductController extends Controller
             $validated['product_image'] = $path;
         }
 
-        $attributeValueId = !empty($validated['attribute_value_ids'])
-            ? $validated['attribute_value_ids'][0]
-            : $product->attribute_value_id;
-
         $product->update([
             'name' => $validated['name'],
             'selling_price' => $validated['selling_price'],
             'buying_price' => $validated['buying_price'],
-            'stock' => $validated['stock'],
+            'stock' => $product->stock,
             'unit' => $validated['unit'],
             'description' => $validated['description'] ?? null,
             'product_image' => $validated['product_image'] ?? $product->product_image,
             'sub_category_id' => $validated['sub_category_id'],
-            'attribute_value_id' => $attributeValueId,
+            'attribute_value_id' => null,
         ]);
+
+        $this->syncProductVariants($product, $validated);
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
@@ -175,5 +183,72 @@ class ProductController extends Controller
         } else {
             return redirect()->route('products.index')->with('error', 'Product not found.');
         }
+    }
+
+    protected function validateStockPayload(array $validated, Request $request): void
+    {
+        $hasAttribute = !empty($validated['attribute_id']);
+        $attributeStocks = collect($validated['attribute_stocks'] ?? [])
+            ->filter(fn ($item) => isset($item['attribute_value_id']))
+            ->values();
+
+        if ($hasAttribute && $attributeStocks->isEmpty()) {
+            $request->validate([
+                'attribute_stocks' => 'required|array|min:1',
+            ]);
+        }
+
+        if (!$hasAttribute && !isset($validated['stock'])) {
+            $request->validate([
+                'stock' => 'required|integer|min:0',
+            ]);
+        }
+
+        if ($hasAttribute && $attributeStocks->isNotEmpty()) {
+            $invalidValueExists = AttributeValue::query()
+                ->whereIn('id', $attributeStocks->pluck('attribute_value_id'))
+                ->where('attribute_id', '!=', $validated['attribute_id'])
+                ->exists();
+
+            if ($invalidValueExists) {
+                $request->validate([
+                    'attribute_stocks' => 'prohibited',
+                ], [
+                    'attribute_stocks.prohibited' => 'Selected attribute values do not match the chosen attribute.',
+                ]);
+            }
+        }
+    }
+
+    protected function syncProductVariants(Product $product, array $validated): void
+    {
+        $attributeStocks = collect($validated['attribute_stocks'] ?? [])
+            ->map(fn ($item) => [
+                'attribute_value_id' => $item['attribute_value_id'],
+                'buying_price' => $item['buying_price'] ?? null,
+                'average_cost' => $item['buying_price'] ?? null,
+                'selling_price' => $item['selling_price'] ?? null,
+                'stock' => (int) $item['stock'],
+            ])
+            ->unique('attribute_value_id')
+            ->values();
+
+        $product->variants()->delete();
+
+        if ($attributeStocks->isNotEmpty()) {
+            foreach ($attributeStocks as $variant) {
+                $product->variants()->create($variant);
+            }
+        } else {
+            $product->variants()->create([
+                'attribute_value_id' => null,
+                'buying_price' => $validated['buying_price'],
+                'average_cost' => $validated['buying_price'],
+                'selling_price' => $validated['selling_price'],
+                'stock' => (int) ($validated['stock'] ?? 0),
+            ]);
+        }
+
+        $product->syncStockFromVariants();
     }
 }

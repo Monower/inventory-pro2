@@ -1,12 +1,72 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
+
+const getVariantName = (variant) => variant?.attribute_value?.name || "";
+
+const buildProductRows = (products = []) =>
+    products.map((product) => {
+        const variants = product.variants || [];
+        const attributedVariants = variants.filter(
+            (variant) => variant.attribute_value_id
+        );
+        const simpleVariant = variants.find((variant) => !variant.attribute_value_id);
+
+        const orderableVariants = attributedVariants
+            .map((variant) => ({
+                line_key: `variant-${variant.id}`,
+                product_id: product.id,
+                product_variant_id: variant.id,
+                name: product.name,
+                variant_name: getVariantName(variant),
+                display_name: `${product.name} - ${getVariantName(variant)}`,
+                buying_price: Number(variant.buying_price ?? product.buying_price ?? 0),
+                selling_price:
+                    variant.selling_price !== null && variant.selling_price !== undefined
+                        ? Number(variant.selling_price)
+                        : null,
+                stock: Number(variant.stock || 0),
+                unit: product.unit,
+            }))
+            .filter((variant) => variant.selling_price !== null);
+
+        return {
+            id: product.id,
+            name: product.name,
+            selling_price: Number(product.selling_price),
+            buying_price: Number(product.buying_price),
+            has_attributes: attributedVariants.length > 0,
+            stock: orderableVariants.length
+                ? orderableVariants.reduce(
+                      (sum, variant) => sum + Number(variant.stock || 0),
+                      0
+                  )
+                : Number(simpleVariant?.stock ?? product.stock ?? 0),
+            unit: product.unit,
+            variants: orderableVariants,
+            simple_option: {
+                line_key: simpleVariant
+                    ? `variant-${simpleVariant.id}`
+                    : `product-${product.id}`,
+                product_id: product.id,
+                product_variant_id: simpleVariant?.id || null,
+                name: product.name,
+                variant_name: "",
+                display_name: product.name,
+                buying_price: Number(product.buying_price),
+                selling_price: Number(product.selling_price),
+                stock: Number(simpleVariant?.stock ?? product.stock ?? 0),
+                unit: product.unit,
+            },
+        };
+    });
 
 const Create = ({ customers, products, banks }) => {
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
+    const [variantModalProduct, setVariantModalProduct] = useState(null);
 
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
@@ -19,36 +79,81 @@ const Create = ({ customers, products, banks }) => {
     });
 
     const allErrors = Object.values(errors);
+    const productRows = useMemo(() => buildProductRows(products), [products]);
+    const selectedLineKeys = useMemo(
+        () => new Set(cart.map((item) => item.line_key)),
+        [cart]
+    );
 
     // Add product to cart
-    const addToCart = (product) => {
+    const addCartOption = (option) => {
+        if (option.stock < 1) {
+            setClientError(`No stock available for ${option.display_name}.`);
+            return;
+        }
+
+        let nextError = "";
+
         setCart((prevCart) => {
-            const existing = prevCart.find((item) => item.id === product.id);
+            const existing = prevCart.find(
+                (item) => item.line_key === option.line_key
+            );
+
             if (existing) {
+                if (existing.quantity >= option.stock) {
+                    nextError = `Only ${option.stock} ${option.unit || "units"} available for ${option.display_name}.`;
+                    return prevCart;
+                }
+
                 return prevCart.map((item) =>
-                    item.id === product.id
+                    item.line_key === option.line_key
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
-            } else {
-                return [...prevCart, { ...product, quantity: 1 }];
             }
+
+            return [...prevCart, { ...option, quantity: 1 }];
         });
+
+        setClientError(nextError);
     };
 
+    const handleAddProduct = (productRow) => {
+        if (productRow.has_attributes) {
+            setVariantModalProduct(productRow);
+            return;
+        }
+
+        addCartOption(productRow.simple_option);
+    };
+
+    const getAvailableVariants = (productRow) =>
+        productRow.variants.filter(
+            (variant) => !selectedLineKeys.has(variant.line_key)
+        );
+
     // Update quantity
-    const updateQuantity = (id, quantity) => {
-        if (quantity < 1) return;
+    const updateQuantity = (lineKey, quantity) => {
         setCart((prevCart) =>
             prevCart.map((item) =>
-                item.id === id ? { ...item, quantity: Number(quantity) } : item
+                item.line_key === lineKey
+                    ? {
+                          ...item,
+                          quantity: Math.max(
+                              1,
+                              Math.min(Number(quantity) || 1, item.stock)
+                          ),
+                      }
+                    : item
             )
         );
     };
 
     // Remove item
-    const removeFromCart = (id) => {
-        setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+    const removeFromCart = (lineKey) => {
+        setCart((prevCart) =>
+            prevCart.filter((item) => item.line_key !== lineKey)
+        );
     };
 
     // Totals
@@ -62,9 +167,13 @@ const Create = ({ customers, products, banks }) => {
     useEffect(() => {
         setData(
             "cart",
-            cart.map((item) => ({ id: item.id, quantity: item.quantity }))
+            cart.map((item) => ({
+                product_id: item.product_id,
+                product_variant_id: item.product_variant_id,
+                quantity: item.quantity,
+            }))
         );
-    }, [cart]);
+    }, [cart, setData]);
 
     // Submit form
     const handleSubmit = (e) => {
@@ -74,7 +183,7 @@ const Create = ({ customers, products, banks }) => {
             return;
         }
         setClientError("");
-        post("/orders");
+        post(route("orders.store"));
     };
 
     return (
@@ -92,7 +201,7 @@ const Create = ({ customers, products, banks }) => {
                                     Build a new customer order
                                 </h3>
                                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                    Manage products, customers and checkout below.
+                                    Add a product once, then choose its variant from a modal when needed.
                                 </p>
                             </div>
                         </div>
@@ -103,7 +212,7 @@ const Create = ({ customers, products, banks }) => {
                                     Products
                                 </p>
                                 <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                                    {products?.length ?? 0}
+                                    {productRows.length}
                                 </p>
                             </div>
                             <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
@@ -145,38 +254,31 @@ const Create = ({ customers, products, banks }) => {
                                     Products list
                                 </h3>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    Add available products to the current order.
+                                    Products with attributes will open a variant picker before they are added.
                                 </p>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="custom-table">
                                     <thead className="custom-thead">
                                         <tr>
-                                            <th className="custom-th rounded-l-md">
-                                                Name
-                                            </th>
-                                            <th className="custom-th">
-                                                Buying price
-                                            </th>
-                                            <th className="custom-th">
-                                                Selling price
-                                            </th>
+                                            <th className="custom-th rounded-l-md">Product</th>
+                                            <th className="custom-th">Type</th>
+                                            <th className="custom-th">Selling price</th>
                                             <th className="custom-th">Stock</th>
-                                            <th className="custom-th rounded-r-md">
-                                                Actions
-                                            </th>
+                                            <th className="custom-th rounded-r-md">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {products
-                                            ?.filter(
-                                                (product) =>
-                                                    !cart.find(
-                                                        (item) =>
-                                                            item.id ===
-                                                            product.id
-                                                    )
-                                            )
+                                        {productRows
+                                            .filter((product) => {
+                                                if (!product.has_attributes) {
+                                                    return !selectedLineKeys.has(
+                                                        product.simple_option.line_key
+                                                    );
+                                                }
+
+                                                return getAvailableVariants(product).length > 0;
+                                            })
                                             .map((product) => (
                                                 <tr
                                                     key={product.id}
@@ -186,23 +288,24 @@ const Create = ({ customers, products, banks }) => {
                                                         {product.name}
                                                     </td>
                                                     <td className="custom-body-td">
-                                                        {product.buying_price}
+                                                        {product.has_attributes
+                                                            ? `${getAvailableVariants(product).length} variants left`
+                                                            : "Standard"}
                                                     </td>
                                                     <td className="custom-body-td">
                                                         {product.selling_price}
                                                     </td>
                                                     <td className="custom-body-td">
-                                                        {product.stock}
+                                                        {product.stock} {product.unit || ""}
                                                     </td>
                                                     <td className="custom-body-td">
                                                         <button
                                                             type="button"
                                                             onClick={() =>
-                                                                addToCart(
-                                                                    product
-                                                                )
+                                                                handleAddProduct(product)
                                                             }
-                                                            className="create-button"
+                                                            disabled={product.stock < 1}
+                                                            className="create-button disabled:cursor-not-allowed disabled:opacity-50"
                                                         >
                                                             Add to cart
                                                         </button>
@@ -222,7 +325,7 @@ const Create = ({ customers, products, banks }) => {
                                         Cart list
                                     </h3>
                                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                                        Review quantity and remove items before checkout.
+                                        Review variants, quantities, and line totals before checkout.
                                     </p>
                                 </div>
                                 <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
@@ -238,31 +341,25 @@ const Create = ({ customers, products, banks }) => {
                                     <table className="custom-table">
                                         <thead className="custom-thead">
                                             <tr>
-                                                <th className="custom-th rounded-l-md">
-                                                    Name
-                                                </th>
-                                                <th className="custom-th">
-                                                    Selling price
-                                                </th>
-                                                <th className="custom-th">
-                                                    Qty
-                                                </th>
-                                                <th className="custom-th">
-                                                    Total
-                                                </th>
-                                                <th className="custom-th rounded-r-md">
-                                                    Actions
-                                                </th>
+                                                <th className="custom-th rounded-l-md">Product</th>
+                                                <th className="custom-th">Variant</th>
+                                                <th className="custom-th">Price</th>
+                                                <th className="custom-th">Qty</th>
+                                                <th className="custom-th">Total</th>
+                                                <th className="custom-th rounded-r-md">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {cart.map((item) => (
                                                 <tr
-                                                    key={item.id}
+                                                    key={item.line_key}
                                                     className="custom-body-tr"
                                                 >
                                                     <td className="custom-body-td">
                                                         {item.name}
+                                                    </td>
+                                                    <td className="custom-body-td">
+                                                        {item.variant_name || "Standard"}
                                                     </td>
                                                     <td className="custom-body-td">
                                                         {item.selling_price}
@@ -274,9 +371,10 @@ const Create = ({ customers, products, banks }) => {
                                                                 item.quantity
                                                             }
                                                             min="1"
+                                                            max={item.stock}
                                                             onChange={(e) =>
                                                                 updateQuantity(
-                                                                    item.id,
+                                                                    item.line_key,
                                                                     e.target
                                                                         .value
                                                                 )
@@ -293,7 +391,7 @@ const Create = ({ customers, products, banks }) => {
                                                             type="button"
                                                             onClick={() =>
                                                                 removeFromCart(
-                                                                    item.id
+                                                                    item.line_key
                                                                 )
                                                             }
                                                             className="rounded-lg bg-red-600 px-3 py-1 text-white transition hover:bg-red-700"
@@ -527,6 +625,91 @@ const Create = ({ customers, products, banks }) => {
                         </div>
                     </div>
                 </form>
+
+                {variantModalProduct && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
+                        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+                            <div className="mb-4 flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
+                                        Select Variant
+                                    </p>
+                                    <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                        {variantModalProduct.name}
+                                    </h3>
+                                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                        Choose which variant to add to the cart.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setVariantModalProduct(null)}
+                                    className="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                                >
+                                    Close
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {getAvailableVariants(variantModalProduct).map((variant) => (
+                                    <div
+                                        key={variant.line_key}
+                                        className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:flex-row md:items-center md:justify-between dark:border-slate-700 dark:bg-slate-800/60"
+                                    >
+                                        <div>
+                                            <p className="font-medium text-slate-900 dark:text-slate-100">
+                                                {variant.variant_name}
+                                            </p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                                Stock: {variant.stock} {variant.unit || ""}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-right">
+                                                <p className="text-xs uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+                                                    Price
+                                                </p>
+                                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                                    {variant.selling_price}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    addCartOption(variant);
+                                                    const remainingVariants =
+                                                        getAvailableVariants(
+                                                            variantModalProduct
+                                                        ).filter(
+                                                            (item) =>
+                                                                item.line_key !==
+                                                                variant.line_key
+                                                        );
+
+                                                    if (
+                                                        remainingVariants.length ===
+                                                        0
+                                                    ) {
+                                                        setVariantModalProduct(null);
+                                                    }
+                                                }}
+                                                disabled={variant.stock < 1}
+                                                className="create-button disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {getAvailableVariants(variantModalProduct).length === 0 && (
+                                    <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-400">
+                                        All variants for this product are already selected.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </section>
         </AuthenticatedLayout>
     );

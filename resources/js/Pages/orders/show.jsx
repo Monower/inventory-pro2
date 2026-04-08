@@ -3,6 +3,9 @@ import BackButton from "@/Components/BackButton/BackButton";
 import { Head, usePage, Link } from "@inertiajs/react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
+const getVariantName = (item) =>
+    item?.product_variant?.attribute_value?.name || "Standard";
+
 const Show = ({ order }) => {
     const { company_name } = usePage().props;
     const totalPrice = order?.items.reduce(
@@ -110,6 +113,7 @@ const Show = ({ order }) => {
                                     <th className="custom-th rounded-l-md">
                                         Product name
                                     </th>
+                                    <th className="custom-th">Variant</th>
                                     <th className="custom-th">Unit price</th>
                                     <th className="custom-th">Quantity</th>
                                     <th className="custom-th rounded-r-md">
@@ -122,6 +126,9 @@ const Show = ({ order }) => {
                                     <tr key={item.id} className="custom-body-tr">
                                         <td className="custom-body-td">
                                             {item?.product?.name}
+                                        </td>
+                                        <td className="custom-body-td">
+                                            {getVariantName(item)}
                                         </td>
                                         <td className="custom-body-td">
                                             {item?.price}
@@ -139,7 +146,7 @@ const Show = ({ order }) => {
                                 <tr className="custom-body-tr">
                                     <td
                                         className="custom-body-td text-right"
-                                        colSpan={3}
+                                        colSpan={4}
                                     >
                                         Total:
                                     </td>

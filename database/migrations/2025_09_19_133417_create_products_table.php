@@ -21,12 +21,12 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('product_image')->nullable();
             $table->unsignedBigInteger('sub_category_id');
-            $table->unsignedBigInteger('attribute_value_id');
+            $table->unsignedBigInteger('attribute_value_id')->nullable();
             $table->timestamps();
 
             // Add foreign key constraints for existing tables
             $table->foreign('sub_category_id')->references('id')->on('sub_categories')->onDelete('cascade');
-            $table->foreign('attribute_value_id')->references('id')->on('attribute_values')->onDelete('cascade');
+            $table->foreign('attribute_value_id')->references('id')->on('attribute_values')->nullOnDelete();
         });
     }
 

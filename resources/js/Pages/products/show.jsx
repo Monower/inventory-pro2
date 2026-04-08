@@ -1,10 +1,15 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
-import { Head, Link, usePage } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { dateTimeFormater } from "@/util/DateFormater";
 
 const Show = ({ product }) => {
-    const { company_name } = usePage().props;
+    const variants = (product?.variants || []).filter(
+        (variant) => variant.attribute_value_id
+    );
+    const simpleVariant = (product?.variants || []).find(
+        (variant) => !variant.attribute_value_id
+    );
 
     return (
         <AuthenticatedLayout title="View product">
@@ -73,8 +78,13 @@ const Show = ({ product }) => {
                                 {product?.selling_price ?? "0"}
                             </p>
                             <p>
-                                <strong>Stock:</strong> {product?.stock ?? 0} {product?.unit || ""}
+                                <strong>Total stock:</strong> {product?.stock ?? 0} {product?.unit || ""}
                             </p>
+                            {simpleVariant && (
+                                <p>
+                                    <strong>Base stock:</strong> {simpleVariant.stock ?? 0} {product?.unit || ""}
+                                </p>
+                            )}
                             <p>
                                 <strong>Description:</strong>{" "}
                                 {product?.description || "N/A"}
@@ -90,6 +100,58 @@ const Show = ({ product }) => {
                         </div>
                     </div>
                 </div>
+
+                {variants.length > 0 && (
+                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                        <div className="mb-4">
+                            <h4 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                                Stock by attribute
+                            </h4>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Each attribute value keeps its own stock, and the product total is summed from these rows.
+                            </p>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="custom-table">
+                                <thead className="custom-thead">
+                                    <tr>
+                                        <th className="custom-th rounded-l-md">Attribute</th>
+                                        <th className="custom-th">Value</th>
+                                        <th className="custom-th">Buying price</th>
+                                        <th className="custom-th">Average cost</th>
+                                        <th className="custom-th">Selling price</th>
+                                        <th className="custom-th rounded-r-md">Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {variants.map((variant) => (
+                                        <tr key={variant.id} className="custom-body-tr">
+                                            <td className="custom-body-td">
+                                                {variant.attribute_value?.attribute?.name || "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.attribute_value?.name || "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.buying_price ?? "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.average_cost ?? "N/A"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.selling_price ?? "Not set"}
+                                            </td>
+                                            <td className="custom-body-td">
+                                                {variant.stock} {product?.unit || ""}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </section>
         </AuthenticatedLayout>
     );

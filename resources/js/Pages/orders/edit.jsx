@@ -1,16 +1,58 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import Alert from "@/Components/Alert/Alert";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm, usePage, Link } from "@inertiajs/react";
+
+const getVariantName = (variant) => variant?.attribute_value?.name || "";
+
+const buildSaleOptions = (products = []) =>
+    products.flatMap((product) => {
+        const variants = product.variants || [];
+        const attributedVariants = variants.filter(
+            (variant) => variant.attribute_value_id
+        );
+
+        if (attributedVariants.length > 0) {
+            return attributedVariants.map((variant) => ({
+                line_key: `variant-${variant.id}`,
+                product_id: product.id,
+                product_variant_id: variant.id,
+                name: product.name,
+                variant_name: getVariantName(variant),
+                display_name: `${product.name} - ${getVariantName(variant)}`,
+                selling_price:
+                    variant.selling_price !== null && variant.selling_price !== undefined
+                        ? Number(variant.selling_price)
+                        : null,
+                stock: Number(variant.stock || 0),
+                unit: product.unit,
+            })).filter((variant) => variant.selling_price !== null);
+        }
+
+        const simpleVariant = variants.find((variant) => !variant.attribute_value_id);
+
+        return [
+            {
+                line_key: simpleVariant
+                    ? `variant-${simpleVariant.id}`
+                    : `product-${product.id}`,
+                product_id: product.id,
+                product_variant_id: simpleVariant?.id || null,
+                name: product.name,
+                variant_name: "",
+                display_name: product.name,
+                selling_price: Number(product.selling_price),
+                stock: Number(simpleVariant?.stock ?? product.stock ?? 0),
+                unit: product.unit,
+            },
+        ];
+    });
 
 const Edit = ({ order, customers, products, banks }) => {
     const { company_name } = usePage().props;
     const [clientError, setClientError] = useState("");
 
-    /* -----------------------------
-        Form
-    ------------------------------ */
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id,
         payment_amount:
@@ -24,35 +66,35 @@ const Edit = ({ order, customers, products, banks }) => {
     });
 
     const allErrors = Object.values(errors);
+    const saleOptions = useMemo(() => buildSaleOptions(products), [products]);
 
-    /* -----------------------------
-        Cart State
-    ------------------------------ */
     const [cart, setCart] = useState(
-        order.items.map((i) => ({
-            id: i.product.id,
-            name: i.product.name,
-            selling_price: i.price,
-            quantity: i.quantity,
+        order.items.map((item) => ({
+            line_key: item.product_variant_id
+                ? `variant-${item.product_variant_id}`
+                : `product-${item.product.id}`,
+            product_id: item.product.id,
+            product_variant_id: item.product_variant_id || null,
+            name: item.product.name,
+            variant_name: getVariantName(item.product_variant),
+            selling_price: Number(item.price),
+            stock: Number(item.product_variant?.stock ?? item.product.stock ?? 0),
+            unit: item.product.unit,
+            quantity: item.quantity,
         }))
     );
 
-    /* -----------------------------
-        Sync Cart → Form (FIXED)
-    ------------------------------ */
     useEffect(() => {
         setData(
             "cart",
             cart.map((item) => ({
-                product_id: item.id, // ✅ backend expects this
+                product_id: item.product_id,
+                product_variant_id: item.product_variant_id,
                 quantity: item.quantity,
             }))
         );
-    }, [cart]);
+    }, [cart, setData]);
 
-    /* -----------------------------
-        Reset Conditional Fields
-    ------------------------------ */
     useEffect(() => {
         if (data.payment_method !== "bank") {
             setData("bank_id", "");
@@ -61,58 +103,67 @@ const Edit = ({ order, customers, products, banks }) => {
         if (data.payment_method !== "mobile") {
             setData("mfs", "");
         }
-    }, [data.payment_method]);
+    }, [data.payment_method, setData]);
 
-    /* -----------------------------
-        Cart Actions
-    ------------------------------ */
-    const addToCart = (product) => {
+    const addToCart = (option) => {
+        if (option.stock < 1) {
+            setClientError(`No stock available for ${option.display_name}.`);
+            return;
+        }
+
+        let nextError = "";
+
         setCart((prev) => {
-            const existing = prev.find((i) => i.id === product.id);
+            const existing = prev.find((item) => item.line_key === option.line_key);
+
             if (existing) {
-                return prev.map((i) =>
-                    i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+                if (existing.quantity >= option.stock) {
+                    nextError = `Only ${option.stock} ${option.unit || "units"} available for ${option.display_name}.`;
+                    return prev;
+                }
+
+                return prev.map((item) =>
+                    item.line_key === option.line_key
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
                 );
             }
 
-            return [
-                ...prev,
-                {
-                    id: product.id,
-                    name: product.name,
-                    selling_price: product.selling_price,
-                    quantity: 1,
-                },
-            ];
+            return [...prev, { ...option, quantity: 1 }];
         });
+
+        setClientError(nextError);
     };
 
-    const updateQuantity = (id, qty) => {
-        const quantity = Math.max(Number(qty), 1);
+    const updateQuantity = (lineKey, qty) => {
         setCart((prev) =>
-            prev.map((i) => (i.id === id ? { ...i, quantity } : i))
+            prev.map((item) =>
+                item.line_key === lineKey
+                    ? {
+                          ...item,
+                          quantity: Math.max(
+                              1,
+                              Math.min(Number(qty) || 1, item.stock)
+                          ),
+                      }
+                    : item
+            )
         );
     };
 
-    const removeFromCart = (id) => {
-        setCart((prev) => prev.filter((i) => i.id !== id));
+    const removeFromCart = (lineKey) => {
+        setCart((prev) => prev.filter((item) => item.line_key !== lineKey));
     };
 
-    /* -----------------------------
-        Totals
-    ------------------------------ */
-    const totalQuantity = cart.reduce((sum, i) => sum + i.quantity, 0);
+    const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = cart.reduce(
-        (sum, i) => sum + i.selling_price * i.quantity,
+        (sum, item) => sum + item.selling_price * item.quantity,
         0
     );
 
     const paidAmount = Number(data.payment_amount) || 0;
     const dueAmount = Math.max(totalPrice - paidAmount, 0);
 
-    /* -----------------------------
-        Submit (BLOCK OVERPAY)
-    ------------------------------ */
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -145,7 +196,7 @@ const Edit = ({ order, customers, products, banks }) => {
                                     Edit order: {order.order_number}
                                 </h3>
                                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                    Manage products, customers and checkout below.
+                                    Update order lines by product variant and review stock-aware quantities.
                                 </p>
                             </div>
                         </div>
@@ -171,7 +222,6 @@ const Edit = ({ order, customers, products, banks }) => {
                     </div>
                 </div>
 
-                {/* Errors */}
                 {allErrors.length > 0 && (
                     <Alert
                         flash={{
@@ -189,52 +239,53 @@ const Edit = ({ order, customers, products, banks }) => {
                     <Alert flash={{ error: clientError }} autoHideMs={3000} />
                 )}
 
-                {/* Products & Cart */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Products */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
                     <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                         <div className="mb-4">
                             <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                                 Products list
                             </h3>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                                Add more products that are not already in this order.
+                                Add more product variants that are not already in this order.
                             </p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="custom-table min-w-[640px]">
                                 <thead className="custom-thead">
                                     <tr>
-                                        <th className="custom-th">Name</th>
+                                        <th className="custom-th">Product</th>
+                                        <th className="custom-th">Variant</th>
                                         <th className="custom-th">Price</th>
                                         <th className="custom-th">Stock</th>
                                         <th className="custom-th">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {products
+                                    {saleOptions
                                         .filter(
-                                            (p) =>
-                                                !cart.find((c) => c.id === p.id)
+                                            (option) =>
+                                                !cart.find(
+                                                    (item) => item.line_key === option.line_key
+                                                )
                                         )
-                                        .map((product) => (
-                                            <tr key={product.id}>
+                                        .map((option) => (
+                                            <tr key={option.line_key}>
+                                                <td className="custom-body-td">{option.name}</td>
                                                 <td className="custom-body-td">
-                                                    {product.name}
+                                                    {option.variant_name || "Standard"}
                                                 </td>
                                                 <td className="custom-body-td">
-                                                    {product.selling_price}
+                                                    {option.selling_price}
                                                 </td>
                                                 <td className="custom-body-td">
-                                                    {product.stock}
+                                                    {option.stock} {option.unit || ""}
                                                 </td>
                                                 <td className="custom-body-td">
                                                     <button
                                                         type="button"
-                                                        onClick={() =>
-                                                            addToCart(product)
-                                                        }
-                                                        className="create-button"
+                                                        onClick={() => addToCart(option)}
+                                                        disabled={option.stock < 1}
+                                                        className="create-button disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         Add
                                                     </button>
@@ -246,7 +297,6 @@ const Edit = ({ order, customers, products, banks }) => {
                         </div>
                     </div>
 
-                    {/* Cart */}
                     <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                         <div className="mb-4 flex items-center justify-between gap-4">
                             <div>
@@ -254,7 +304,7 @@ const Edit = ({ order, customers, products, banks }) => {
                                     Cart
                                 </h3>
                                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    Update quantities, review totals, and remove items if needed.
+                                    Update variant quantities, review totals, and remove items if needed.
                                 </p>
                             </div>
                             <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
@@ -269,20 +319,20 @@ const Edit = ({ order, customers, products, banks }) => {
                                 <table className="custom-table min-w-[640px]">
                                     <thead className="custom-thead">
                                         <tr>
-                                            <th className="custom-th">Name</th>
+                                            <th className="custom-th">Product</th>
+                                            <th className="custom-th">Variant</th>
                                             <th className="custom-th">Price</th>
                                             <th className="custom-th">Qty</th>
                                             <th className="custom-th">Total</th>
-                                            <th className="custom-th">
-                                                Action
-                                            </th>
+                                            <th className="custom-th">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {cart.map((item) => (
-                                            <tr key={item.id}>
+                                            <tr key={item.line_key}>
+                                                <td className="custom-body-td">{item.name}</td>
                                                 <td className="custom-body-td">
-                                                    {item.name}
+                                                    {item.variant_name || "Standard"}
                                                 </td>
                                                 <td className="custom-body-td">
                                                     {item.selling_price}
@@ -291,27 +341,25 @@ const Edit = ({ order, customers, products, banks }) => {
                                                     <input
                                                         type="number"
                                                         min="1"
+                                                        max={item.stock}
                                                         value={item.quantity}
                                                         onChange={(e) =>
                                                             updateQuantity(
-                                                                item.id,
+                                                                item.line_key,
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className="w-16 custom-input"
+                                                        className="w-20 custom-input"
                                                     />
                                                 </td>
                                                 <td className="custom-body-td">
-                                                    {item.selling_price *
-                                                        item.quantity}
+                                                    {item.selling_price * item.quantity}
                                                 </td>
                                                 <td className="custom-body-td">
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            removeFromCart(
-                                                                item.id
-                                                            )
+                                                            removeFromCart(item.line_key)
                                                         }
                                                         className="rounded-lg bg-red-600 px-3 py-1 text-white transition hover:bg-red-700"
                                                     >
@@ -327,7 +375,6 @@ const Edit = ({ order, customers, products, banks }) => {
                     </div>
                 </div>
 
-                {/* Checkout */}
                 <form
                     onSubmit={handleSubmit}
                     className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
@@ -360,7 +407,6 @@ const Edit = ({ order, customers, products, banks }) => {
                         </div>
                     </div>
 
-                    {/* Customer */}
                     <div>
                         <label className="required-label mb-1">
                             Select customer
@@ -381,7 +427,6 @@ const Edit = ({ order, customers, products, banks }) => {
                         </select>
                     </div>
 
-                    {/* Payment */}
                     <div>
                         <label className="required-label mb-2">
                             Payment method
@@ -451,7 +496,6 @@ const Edit = ({ order, customers, products, banks }) => {
                         </div>
                     )}
 
-                    {/* PAYMENT INPUT (CLAMPED) */}
                     <div>
                         <label className="required-label mb-1">
                             Payment amount
