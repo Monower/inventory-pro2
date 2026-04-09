@@ -58,11 +58,11 @@ export default function Index() {
                                 <tr>
                                     <th className="custom-th rounded-l-md">SI</th>
                                     <th className="custom-th">Invoice</th>
-                                    <th className="custom-th">Product</th>
+                                    {/* <th className="custom-th">Product</th>
                                     <th className="custom-th">Variant</th>
                                     <th className="custom-th">Supplier</th>
                                     <th className="custom-th">Quantity</th>
-                                    <th className="custom-th">Unit Price</th>
+                                    <th className="custom-th">Unit Price</th> */}
                                     <th className="custom-th">Total</th>
                                     <th className="custom-th">Paid</th>
                                     <th className="custom-th">Payment Status</th>
@@ -81,7 +81,7 @@ export default function Index() {
                                         <td className="custom-body-td">
                                             {item.purchase?.invoice_no}
                                         </td>
-                                        <td className="custom-body-td">
+                                        {/* <td className="custom-body-td">
                                             {item.product?.name}
                                         </td>
                                         <td className="custom-body-td">
@@ -95,7 +95,7 @@ export default function Index() {
                                         </td>
                                         <td className="custom-body-td">
                                             {item.buying_price}
-                                        </td>
+                                        </td> */}
                                         <td className="custom-body-td">
                                             {item.purchase?.total_amount}
                                         </td>

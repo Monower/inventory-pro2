@@ -2,6 +2,7 @@ import { Head, Link, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import { EyeIcon } from "lucide-react";
 
 const money = (value) => {
     if (value === null || value === undefined || value === "") {
@@ -71,7 +72,14 @@ const ProductPricesIndex = () => {
                                 return (
                                     <tr key={product.id} className="custom-body-tr">
                                         <td className="custom-body-td">{index + 1}</td>
-                                        <td className="custom-body-td">{product.name}</td>
+                                        <td className="custom-body-td">
+                                            <Link
+                                                href={route("product-prices.show", product.id)}
+                                                className="font-medium text-slate-900 transition hover:text-amber-600 dark:text-slate-100 dark:hover:text-amber-300"
+                                            >
+                                                {product.name}
+                                            </Link>
+                                        </td>
                                         {/* <td className="custom-body-td">{product.attribute?.name || "Standard"}</td> */}
                                         {/* <td className="custom-body-td">{variants.length || 0}</td> */}
                                         <td className="custom-body-td">{money(sellingPrice)}</td>
@@ -82,7 +90,14 @@ const ProductPricesIndex = () => {
                                         {/* <td className="custom-body-td">
                                             {hasPricing ? "Configured" : "Pending"}
                                         </td> */}
-                                        <td className="custom-body-td">
+                                        <td className="custom-body-td flex items-center gap-2">
+                                            <Link
+                                                href={route("product-prices.show", product.id)}
+                                                className="show-button"
+                                                title="View"
+                                            >
+                                                <EyeIcon className="inline h-4 w-4" />
+                                            </Link>
                                             <Link
                                                 href={
                                                     hasPricing

@@ -20,6 +20,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [ProductPriceController::class, 'index'])->name('index')->middleware('permission:view product');
         Route::get('/create', [ProductPriceController::class, 'create'])->name('create')->middleware('permission:create product');
         Route::post('/', [ProductPriceController::class, 'store'])->name('store')->middleware('permission:create product');
+        Route::get('/{product}', [ProductPriceController::class, 'show'])->name('show')->middleware('permission:view product');
         Route::get('/{product}/edit', [ProductPriceController::class, 'edit'])->name('edit')->middleware('permission:edit product');
         Route::put('/{product}', [ProductPriceController::class, 'update'])->name('update')->middleware('permission:edit product');
     });

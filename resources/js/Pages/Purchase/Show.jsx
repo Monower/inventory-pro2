@@ -1,6 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 import { Head, Link, usePage } from "@inertiajs/react";
+import { dateTimeFormater } from "@/util/DateFormater";
 
 const money = (value) => Number(value || 0).toFixed(2);
 
@@ -72,7 +73,7 @@ export default function Show({ purchase }) {
                         </p>
                         <p>
                             <strong>Created at:</strong>{" "}
-                            {purchase?.created_at || "N/A"}
+                            {dateTimeFormater(purchase?.created_at) || "N/A"}
                         </p>
                     </div>
                     <p className="mt-3">
@@ -86,7 +87,7 @@ export default function Show({ purchase }) {
                     </h4>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[700px] text-sm border border-gray-200 rounded-lg">
+                        <table className="w-full min-w-[700px] text-sm border border-gray-200 rounded-lg [&_tbody_tr>td:nth-child(6)]:hidden">
                             <thead className="custom-thead">
                                 <tr>
                                     <th className="custom-th rounded-l-md">SI</th>
@@ -94,7 +95,6 @@ export default function Show({ purchase }) {
                                     <th className="custom-th">Variant</th>
                                     <th className="custom-th">Quantity</th>
                                     <th className="custom-th">Unit Price</th>
-                                    <th className="custom-th">Current Avg Cost</th>
                                     <th className="custom-th rounded-r-md">Total</th>
                                 </tr>
                             </thead>
@@ -127,7 +127,7 @@ export default function Show({ purchase }) {
                             </tbody>
                             <tfoot>
                                 <tr className="custom-body-tr">
-                                    <td className="custom-body-td text-right" colSpan={6}>
+                                    <td className="custom-body-td text-right" colSpan={5}>
                                         Total:
                                     </td>
                                     <td className="custom-body-td">

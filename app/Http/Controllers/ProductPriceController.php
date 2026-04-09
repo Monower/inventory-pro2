@@ -97,6 +97,17 @@ class ProductPriceController extends Controller
         ]);
     }
 
+    public function show(Product $product)
+    {
+        return Inertia::render('product-prices/show', [
+            'product' => $product->load([
+                'subCategory.category',
+                'attribute',
+                'variants.attributeValue.attribute',
+            ]),
+        ]);
+    }
+
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
