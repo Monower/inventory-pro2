@@ -27,16 +27,10 @@ const ProductPricesIndex = () => {
                                 Product Prices
                             </p>
                             <h3 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
-                                Manage pricing and stock separately
+                                Manage product prices
                             </h3>
-                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                Keep catalog information in Products, then configure selling price, buying price, stock, and variant rows here.
-                            </p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link href={route("products.index")} className="show-button">
-                                Product catalog
-                            </Link>
                             <Link href={route("product-prices.create")} className="create-button">
                                 Add product prices
                             </Link>
@@ -55,18 +49,19 @@ const ProductPricesIndex = () => {
                     <table className="custom-table">
                         <thead className="custom-thead">
                             <tr>
-                                <th className="custom-th rounded-l-md">Product</th>
-                                <th className="custom-th">Attribute</th>
-                                <th className="custom-th">Variants</th>
+                                <th className="custom-th rounded-l-md">SI</th>
+                                <th className="custom-th">Product</th>
+                                {/* <th className="custom-th">Attribute</th> */}
+                                {/* <th className="custom-th">Variants</th> */}
                                 <th className="custom-th">Selling price</th>
-                                <th className="custom-th">Buying price</th>
+                                {/* <th className="custom-th">Buying price</th> */}
                                 <th className="custom-th">Stock</th>
-                                <th className="custom-th">Status</th>
+                                {/* <th className="custom-th">Status</th> */}
                                 <th className="custom-th rounded-r-md">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {list.map((product) => {
+                            {list.map((product, index) => {
                                 const variants = product.variants || [];
                                 const baseVariant = variants.find((variant) => !variant.attribute_value_id);
                                 const hasPricing = variants.length > 0;
@@ -75,17 +70,18 @@ const ProductPricesIndex = () => {
 
                                 return (
                                     <tr key={product.id} className="custom-body-tr">
+                                        <td className="custom-body-td">{index + 1}</td>
                                         <td className="custom-body-td">{product.name}</td>
-                                        <td className="custom-body-td">{product.attribute?.name || "Standard"}</td>
-                                        <td className="custom-body-td">{variants.length || 0}</td>
+                                        {/* <td className="custom-body-td">{product.attribute?.name || "Standard"}</td> */}
+                                        {/* <td className="custom-body-td">{variants.length || 0}</td> */}
                                         <td className="custom-body-td">{money(sellingPrice)}</td>
-                                        <td className="custom-body-td">{money(buyingPrice)}</td>
+                                        {/* <td className="custom-body-td">{money(buyingPrice)}</td> */}
                                         <td className="custom-body-td">
                                             {product.stock || 0} {product.unit || ""}
                                         </td>
-                                        <td className="custom-body-td">
+                                        {/* <td className="custom-body-td">
                                             {hasPricing ? "Configured" : "Pending"}
-                                        </td>
+                                        </td> */}
                                         <td className="custom-body-td">
                                             <Link
                                                 href={

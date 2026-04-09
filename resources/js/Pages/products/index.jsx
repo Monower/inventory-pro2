@@ -28,32 +28,26 @@ const Index = () => {
                                 Product Module
                             </p>
                             <h3 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">
-                                Browse and manage your catalog
+                                Browse and manage your products
                             </h3>
-                            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                            {/* <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                                 Manage your product catalog here, then set stock and pricing from the dedicated Product prices workspace.
-                            </p>
+                            </p> */}
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
                                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    Visible products
+                                    Visible products: <span className="font-semibold text-slate-900 dark:text-slate-100">{list.length}</span>
                                 </p>
-                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                {/* <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100 text-center">
                                     {list.length}
-                                </p>
+                                </p> */}
                             </div>
                             <Link
                                 href={route("products.create")}
                                 className="create-button"
                             >
                                 Add Product
-                            </Link>
-                            <Link
-                                href={route("product-prices.index")}
-                                className="edit-button"
-                            >
-                                Product prices
                             </Link>
                         </div>
                     </div>
@@ -76,15 +70,15 @@ const Index = () => {
                                     <th className="custom-th">
                                         Image
                                     </th>
-                                    <th className="custom-th">
+                                    {/* <th className="custom-th">
                                         Category
-                                    </th>
-                                    <th className="custom-th">
+                                    </th> */}
+                                    {/* <th className="custom-th">
                                         Attribute
-                                    </th>
-                                    <th className="custom-th">Unit</th>
-                                    <th className="custom-th">Pricing</th>
-                                    <th className="custom-th">Stock setup</th>
+                                    </th> */}
+                                    {/* <th className="custom-th">Unit</th> */}
+                                    {/* <th className="custom-th">Pricing</th> */}
+                                    {/* <th className="custom-th">Stock setup</th> */}
                                     <th className="custom-th">
                                         Name
                                     </th>
@@ -110,10 +104,10 @@ const Index = () => {
                                                 className="w-16 h-16 object-cover rounded"
                                             />
                                         </td>
-                                        <td className="custom-body-td">
+                                        {/* <td className="custom-body-td">
                                             {product.sub_category?.name || "N/A"}
-                                        </td>
-                                        <td className="custom-body-td">
+                                        </td> */}
+                                        {/* <td className="custom-body-td">
                                             {product.attribute?.name || "Standard"}
                                         </td>
                                         <td className="custom-body-td">
@@ -124,7 +118,7 @@ const Index = () => {
                                         </td>
                                         <td className="custom-body-td">
                                             {product.variants?.length ? "Configured" : "Pending"}
-                                        </td>
+                                        </td> */}
                                         <td className="custom-body-td">
                                             {product.name}
                                         </td>
@@ -141,7 +135,7 @@ const Index = () => {
                                             >
                                                 <EyeIcon className="w-4 h-4 inline" />
                                             </Link>
-                                            <Link
+                                            {/* <Link
                                                 href={route(
                                                     product.variants?.length
                                                         ? "product-prices.edit"
@@ -153,7 +147,7 @@ const Index = () => {
                                                 className="show-button"
                                             >
                                                 Price
-                                            </Link>
+                                            </Link> */}
                                             <Link
                                                 href={route(
                                                     "products.edit",
