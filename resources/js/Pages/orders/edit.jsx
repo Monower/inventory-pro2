@@ -52,6 +52,7 @@ const buildSaleOptions = (products = []) =>
 const Edit = ({ order, customers, products, banks }) => {
     const { company_name } = usePage().props;
     const [clientError, setClientError] = useState("");
+    const [productSearch, setProductSearch] = useState("");
 
     const { data, setData, put, processing, errors } = useForm({
         customer_id: order.customer_id,
@@ -67,6 +68,22 @@ const Edit = ({ order, customers, products, banks }) => {
 
     const allErrors = Object.values(errors);
     const saleOptions = useMemo(() => buildSaleOptions(products), [products]);
+    const filteredSaleOptions = useMemo(() => {
+        const search = productSearch.trim().toLowerCase();
+
+        return saleOptions.filter((option) => {
+            const matchesSearch =
+                search === "" ||
+                option.name.toLowerCase().includes(search) ||
+                option.display_name.toLowerCase().includes(search) ||
+                option.variant_name.toLowerCase().includes(search);
+
+            return (
+                matchesSearch &&
+                !cart.find((item) => item.line_key === option.line_key)
+            );
+        });
+    }, [cart, productSearch, saleOptions]);
 
     const [cart, setCart] = useState(
         order.items.map((item) => ({
@@ -249,7 +266,18 @@ const Edit = ({ order, customers, products, banks }) => {
                                 Add more product variants that are not already in this order.
                             </p>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={productSearch}
+                                onChange={(e) =>
+                                    setProductSearch(e.target.value)
+                                }
+                                placeholder="Search products or variants..."
+                                className="custom-input"
+                            />
+                        </div>
+                        <div className="h-[420px] overflow-auto">
                             <table className="custom-table min-w-[640px]">
                                 <thead className="custom-thead">
                                     <tr>
@@ -261,14 +289,17 @@ const Edit = ({ order, customers, products, banks }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {saleOptions
-                                        .filter(
-                                            (option) =>
-                                                !cart.find(
-                                                    (item) => item.line_key === option.line_key
-                                                )
-                                        )
-                                        .map((option) => (
+                                    {filteredSaleOptions.length === 0 ? (
+                                        <tr>
+                                            <td
+                                                className="custom-body-td text-center text-slate-500 dark:text-slate-400"
+                                                colSpan={5}
+                                            >
+                                                No matching products available.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredSaleOptions.map((option) => (
                                             <tr key={option.line_key}>
                                                 <td className="custom-body-td">{option.name}</td>
                                                 <td className="custom-body-td">
@@ -291,7 +322,8 @@ const Edit = ({ order, customers, products, banks }) => {
                                                     </button>
                                                 </td>
                                             </tr>
-                                        ))}
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

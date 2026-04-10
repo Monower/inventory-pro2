@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
+use App\Models\Setting;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class PurchaseController extends Controller
 {
@@ -56,6 +59,7 @@ class PurchaseController extends Controller
         // dd($request->all());
 
         $validated = $request->validate([
+            'invoice_no' => 'nullable|string|max:255|unique:purchases,invoice_no',
             'supplier_name' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:255',
             'purchase_date' => 'required|date',
@@ -71,7 +75,8 @@ class PurchaseController extends Controller
         DB::transaction(function () use ($validated) {
             $items = $this->preparePurchaseItems(collect($validated['items']));
             $affectedVariantIds = [];
-            $invoice = 'INV-' . time();
+            $manualInvoiceNumber = trim((string) ($validated['invoice_no'] ?? ''));
+            $invoice = $manualInvoiceNumber !== '' ? $manualInvoiceNumber : $this->generateUniquePurchaseInvoiceNumber();
 
             $purchase = Purchase::create([
                 'invoice_no' => $invoice,
@@ -150,6 +155,20 @@ class PurchaseController extends Controller
         return Inertia::render('Purchase/Show', [
             'purchase' => $purchase->load('items.product', 'items.productVariant.attributeValue.attribute'),
         ]);
+    }
+
+    public function downloadInvoicePdf(Purchase $purchase)
+    {
+        $purchase->load('items.product', 'items.productVariant.attributeValue.attribute');
+
+        $pdf = Pdf::loadView('pdf.purchase-invoice', [
+            'purchase' => $purchase,
+            'company' => $this->companyDetails(),
+            'generatedAt' => now($this->localTimezone()),
+            'displayTimezone' => $this->localTimezone(),
+        ])->setPaper('a4');
+
+        return $pdf->download("purchase-invoice-{$purchase->invoice_no}.pdf");
     }
 
     public function update(Request $request, Purchase $purchase)
@@ -311,5 +330,39 @@ class PurchaseController extends Controller
                 'buying_price' => (float) $item['buying_price'],
             ];
         });
+    }
+
+    protected function generateUniquePurchaseInvoiceNumber(): string
+    {
+        do {
+            $invoice = 'INV-' . Str::upper(Str::random(6));
+        } while (Purchase::where('invoice_no', $invoice)->exists());
+
+        return $invoice;
+    }
+
+    protected function companyDetails(): array
+    {
+        $settings = Setting::whereIn('name', ['company_name', 'logo'])
+            ->get()
+            ->keyBy('name');
+
+        $logoPath = null;
+        if (!empty($settings['logo']?->value)) {
+            $candidate = storage_path('app/public/' . $settings['logo']->value);
+            if (file_exists($candidate)) {
+                $logoPath = $candidate;
+            }
+        }
+
+        return [
+            'name' => $settings['company_name']?->value ?? config('app.name'),
+            'logo_path' => $logoPath,
+        ];
+    }
+
+    protected function localTimezone(): string
+    {
+        return 'Asia/Dhaka';
     }
 }

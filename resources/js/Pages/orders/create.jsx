@@ -6,6 +6,9 @@ import Alert from "@/Components/Alert/Alert";
 
 const getVariantName = (variant) => variant?.attribute_value?.name || "";
 
+const clampQuantity = (value, stock) =>
+    Math.max(1, Math.min(Number(value) || 1, stock));
+
 const buildProductRows = (products = []) =>
     products.map((product) => {
         const variants = product.variants || [];
@@ -67,6 +70,7 @@ const Create = ({ customers, products, banks }) => {
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
     const [variantModalProduct, setVariantModalProduct] = useState(null);
+    const [productSearch, setProductSearch] = useState("");
 
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
@@ -84,6 +88,29 @@ const Create = ({ customers, products, banks }) => {
         () => new Set(cart.map((item) => item.line_key)),
         [cart]
     );
+    const filteredProductRows = useMemo(() => {
+        const search = productSearch.trim().toLowerCase();
+
+        return productRows.filter((product) => {
+            const matchesSearch =
+                search === "" ||
+                product.name.toLowerCase().includes(search) ||
+                product.variants.some((variant) =>
+                    variant.display_name.toLowerCase().includes(search)
+                ) ||
+                product.simple_option.display_name.toLowerCase().includes(search);
+
+            if (!matchesSearch) {
+                return false;
+            }
+
+            if (!product.has_attributes) {
+                return !selectedLineKeys.has(product.simple_option.line_key);
+            }
+
+            return getAvailableVariants(product).length > 0;
+        });
+    }, [productRows, productSearch, selectedLineKeys]);
 
     // Add product to cart
     const addCartOption = (option) => {
@@ -107,12 +134,19 @@ const Create = ({ customers, products, banks }) => {
 
                 return prevCart.map((item) =>
                     item.line_key === option.line_key
-                        ? { ...item, quantity: item.quantity + 1 }
+                        ? {
+                              ...item,
+                              quantity: item.quantity + 1,
+                              quantity_input: String(item.quantity + 1),
+                          }
                         : item
                 );
             }
 
-            return [...prevCart, { ...option, quantity: 1 }];
+            return [
+                ...prevCart,
+                { ...option, quantity: 1, quantity_input: "1" },
+            ];
         });
 
         setClientError(nextError);
@@ -134,14 +168,35 @@ const Create = ({ customers, products, banks }) => {
 
     // Update quantity
     const updateQuantity = (lineKey, quantity) => {
+        const digitsOnly = String(quantity).replace(/\D/g, "");
+
         setCart((prevCart) =>
             prevCart.map((item) =>
                 item.line_key === lineKey
                     ? {
                           ...item,
-                          quantity: Math.max(
-                              1,
-                              Math.min(Number(quantity) || 1, item.stock)
+                          quantity_input: digitsOnly,
+                          quantity: digitsOnly
+                              ? clampQuantity(digitsOnly, item.stock)
+                              : item.quantity,
+                      }
+                    : item
+            )
+        );
+    };
+
+    const normalizeQuantityInput = (lineKey) => {
+        setCart((prevCart) =>
+            prevCart.map((item) =>
+                item.line_key === lineKey
+                    ? {
+                          ...item,
+                          quantity: clampQuantity(
+                              item.quantity_input,
+                              item.stock
+                          ),
+                          quantity_input: String(
+                              clampQuantity(item.quantity_input, item.stock)
                           ),
                       }
                     : item
@@ -257,7 +312,18 @@ const Create = ({ customers, products, banks }) => {
                                     Products with attributes will open a variant picker before they are added.
                                 </p>
                             </div>
-                            <div className="overflow-x-auto">
+                            <div className="mb-4">
+                                <input
+                                    type="text"
+                                    value={productSearch}
+                                    onChange={(e) =>
+                                        setProductSearch(e.target.value)
+                                    }
+                                    placeholder="Search products or variants..."
+                                    className="custom-input"
+                                />
+                            </div>
+                            <div className="h-[420px] overflow-auto">
                                 <table className="custom-table">
                                     <thead className="custom-thead">
                                         <tr>
@@ -269,17 +335,17 @@ const Create = ({ customers, products, banks }) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {productRows
-                                            .filter((product) => {
-                                                if (!product.has_attributes) {
-                                                    return !selectedLineKeys.has(
-                                                        product.simple_option.line_key
-                                                    );
-                                                }
-
-                                                return getAvailableVariants(product).length > 0;
-                                            })
-                                            .map((product) => (
+                                        {filteredProductRows.length === 0 ? (
+                                            <tr className="custom-body-tr">
+                                                <td
+                                                    className="custom-body-td text-center text-slate-500 dark:text-slate-400"
+                                                    colSpan={5}
+                                                >
+                                                    No matching products available.
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredProductRows.map((product) => (
                                                 <tr
                                                     key={product.id}
                                                     className="custom-body-tr"
@@ -311,7 +377,8 @@ const Create = ({ customers, products, banks }) => {
                                                         </button>
                                                     </td>
                                                 </tr>
-                                            ))}
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -366,17 +433,23 @@ const Create = ({ customers, products, banks }) => {
                                                     </td>
                                                     <td className="custom-body-td">
                                                         <input
-                                                            type="number"
+                                                            type="text"
                                                             value={
-                                                                item.quantity
+                                                                item.quantity_input ??
+                                                                String(item.quantity)
                                                             }
-                                                            min="1"
-                                                            max={item.stock}
+                                                            inputMode="numeric"
+                                                            pattern="[0-9]*"
                                                             onChange={(e) =>
                                                                 updateQuantity(
                                                                     item.line_key,
                                                                     e.target
                                                                         .value
+                                                                )
+                                                            }
+                                                            onBlur={() =>
+                                                                normalizeQuantityInput(
+                                                                    item.line_key
                                                                 )
                                                             }
                                                             className="w-16 rounded-md custom-input border border-ring"

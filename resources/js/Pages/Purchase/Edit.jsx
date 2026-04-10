@@ -73,7 +73,7 @@ export default function Edit() {
         notes: purchase.notes ?? "",
         purchase_date: purchase.purchase_date,
         payment_status: purchase.payment_status,
-        new_paid: 0,
+        new_paid: "",
         items: purchase.items.map((item) => ({
             line_key: item.product_variant_id
                 ? `variant-${item.product_variant_id}`
@@ -163,10 +163,11 @@ export default function Edit() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const newPaidAmount = Number(form.new_paid || 0);
 
-        const cumulativePaid = previousPaid + Number(form.new_paid);
+        const cumulativePaid = previousPaid + newPaidAmount;
 
-        if (form.new_paid < 0) {
+        if (newPaidAmount < 0) {
             setClientError("Payment cannot be negative.");
             return;
         }
@@ -185,7 +186,7 @@ export default function Edit() {
             notes: form.notes,
             purchase_date: form.purchase_date,
             payment_status: form.payment_status,
-            paid_amount: form.new_paid,
+            paid_amount: newPaidAmount,
             items: form.items.map((item) => ({
                 product_id: item.product_id,
                 product_variant_id: item.product_variant_id,
@@ -350,6 +351,7 @@ export default function Edit() {
                                                             placeholder="Qty"
                                                             value={item.quantity}
                                                             min={1}
+                                                            step="1"
                                                             onChange={(e) =>
                                                                 updateItem(
                                                                     item.line_key,
@@ -366,6 +368,7 @@ export default function Edit() {
                                                             placeholder="Buying Price"
                                                             value={item.buying_price}
                                                             min={0}
+                                                            step="0.001"
                                                             onChange={(e) =>
                                                                 updateItem(
                                                                     item.line_key,
@@ -423,11 +426,13 @@ export default function Edit() {
                                         className="w-full"
                                         value={form.new_paid}
                                         min={0}
+                                        step="0.001"
                                         placeholder={`Max: ${remainingAmount}`}
                                         onChange={(e) => {
-                                            let val = Number(e.target.value);
-                                            if (isNaN(val)) val = 0;
-                                            setForm({ ...form, new_paid: val });
+                                            setForm({
+                                                ...form,
+                                                new_paid: e.target.value,
+                                            });
                                         }}
                                     />
                                 </div>

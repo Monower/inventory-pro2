@@ -26,12 +26,20 @@ export default function Show({ purchase }) {
                         </div>
                     </div>
 
-                    <Link
-                        href={route("purchases.edit", purchase.id)}
-                        className="edit-button"
-                    >
-                        Edit purchase
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={route("purchases.invoice.pdf", purchase.id)}
+                            className="create-button"
+                        >
+                            Download Invoice
+                        </a>
+                        <Link
+                            href={route("purchases.edit", purchase.id)}
+                            className="edit-button"
+                        >
+                            Edit purchase
+                        </Link>
+                    </div>
                     </div>
                 </div>
 

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Bank;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -53,6 +55,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'order_number' => 'nullable|string|max:255|unique:orders,order_number',
             'customer_id' => 'required|exists:customers,id',
             'cart' => 'required|array|min:1',
             'cart.*.product_id' => 'required|exists:products,id',
@@ -76,7 +79,8 @@ class OrderController extends Controller
         try {
             DB::transaction(function () use ($validated) {
                 $cartItems = $this->prepareCartItems(collect($validated['cart']));
-                $orderNumber = 'ORD-' . Str::upper(Str::random(6));
+                $manualOrderNumber = trim((string) ($validated['order_number'] ?? ''));
+                $orderNumber = $manualOrderNumber !== '' ? $manualOrderNumber : $this->generateUniqueOrderNumber();
                 $totalAmount = 0;
 
                 foreach ($cartItems as $item) {
@@ -264,6 +268,20 @@ class OrderController extends Controller
         }
     }
 
+    public function downloadInvoicePdf(Order $order)
+    {
+        $order->load('customer', 'items.product', 'items.productVariant.attributeValue.attribute');
+
+        $pdf = Pdf::loadView('pdf.order-invoice', [
+            'order' => $order,
+            'company' => $this->companyDetails(),
+            'generatedAt' => now($this->localTimezone()),
+            'displayTimezone' => $this->localTimezone(),
+        ])->setPaper('a4');
+
+        return $pdf->download("order-invoice-{$order->order_number}.pdf");
+    }
+
 
     public function destroy($id)
     {
@@ -341,5 +359,39 @@ class OrderController extends Controller
         $valueName = $variant->attributeValue?->name;
 
         return $valueName ? "{$product->name} ({$valueName})" : $product->name;
+    }
+
+    protected function generateUniqueOrderNumber(): string
+    {
+        do {
+            $orderNumber = 'ORD-' . Str::upper(Str::random(6));
+        } while (Order::where('order_number', $orderNumber)->exists());
+
+        return $orderNumber;
+    }
+
+    protected function companyDetails(): array
+    {
+        $settings = Setting::whereIn('name', ['company_name', 'logo'])
+            ->get()
+            ->keyBy('name');
+
+        $logoPath = null;
+        if (!empty($settings['logo']?->value)) {
+            $candidate = storage_path('app/public/' . $settings['logo']->value);
+            if (file_exists($candidate)) {
+                $logoPath = $candidate;
+            }
+        }
+
+        return [
+            'name' => $settings['company_name']?->value ?? config('app.name'),
+            'logo_path' => $logoPath,
+        ];
+    }
+
+    protected function localTimezone(): string
+    {
+        return 'Asia/Dhaka';
     }
 }

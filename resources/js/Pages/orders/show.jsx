@@ -24,13 +24,21 @@ const Show = ({ order }) => {
                             Order details of: {order?.order_number}
                         </h3>
                     </div>
-                    <Link
-                        href={route("orders.edit", order.id)}
-                        className="edit-button"
-                        title="Edit"
-                    >
-                        Edit order
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href={route("orders.invoice.pdf", order.id)}
+                            className="create-button"
+                        >
+                            Download Invoice
+                        </a>
+                        <Link
+                            href={route("orders.edit", order.id)}
+                            className="edit-button"
+                            title="Edit"
+                        >
+                            Edit order
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Order info */}

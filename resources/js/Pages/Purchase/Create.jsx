@@ -65,7 +65,8 @@ export default function Create({ products }) {
     const [rows, setRows] = useState([]);
     const [variantModalProduct, setVariantModalProduct] = useState(null);
 
-    const { data, setData, post, processing } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
+        invoice_no: "",
         supplier_name: "",
         notes: "",
         purchase_date: "",
@@ -188,6 +189,24 @@ export default function Create({ products }) {
                 <form onSubmit={submit} className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
+                            <label>Invoice No</label>
+                            <input
+                                type="text"
+                                className="w-full"
+                                value={data.invoice_no}
+                                onChange={(e) =>
+                                    setData("invoice_no", e.target.value)
+                                }
+                                placeholder="Leave blank to auto generate"
+                            />
+                            {errors.invoice_no && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.invoice_no}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
                             <label>Supplier Name</label>
                             <input
                                 type="text"
@@ -199,7 +218,7 @@ export default function Create({ products }) {
                             />
                         </div>
 
-                        <div>
+                        <div className="md:col-start-2">
                             <label>Purchase Date</label>
                             <input
                                 type="date"
@@ -317,6 +336,7 @@ export default function Create({ products }) {
                                                         <input
                                                             type="number"
                                                             min="1"
+                                                            step="1"
                                                             className="w-full py-1"
                                                             value={row.quantity}
                                                             onChange={(e) =>
@@ -332,6 +352,7 @@ export default function Create({ products }) {
                                                         <input
                                                             type="number"
                                                             min="0"
+                                                            step="0.001"
                                                             className="w-full py-1"
                                                             value={row.buying_price}
                                                             onChange={(e) =>
@@ -377,6 +398,7 @@ export default function Create({ products }) {
                             <input
                                 type="number"
                                 min="0"
+                                step="0.001"
                                 className="w-full"
                                 value={data.paid_amount}
                                 onChange={(e) => {
