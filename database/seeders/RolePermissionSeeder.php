@@ -26,6 +26,8 @@ class RolePermissionSeeder extends Seeder
         'create plan',
         'edit plan',
         'delete plan',
+        'view settings',
+        'edit settings',
         'view profile',
         'edit profile',
     ];

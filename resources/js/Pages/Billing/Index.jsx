@@ -9,6 +9,7 @@ const featuresForPlan = (plan) => Array.isArray(plan?.modules) ? plan.modules : 
 export default function Index({ subscription, changes }) {
     const { company_name, billing, billing_plans, auth } = usePage().props;
     const canManageBilling = auth.user?.permissions?.includes("manage billing");
+    const isTrial = subscription?.status === "trial" || billing?.status === "trial";
     const [actionModal, setActionModal] = useState(null);
     const { data, setData, put, post, processing } = useForm({
         plan_id: subscription?.plan_id ?? billing_plans?.[0]?.id ?? "",
@@ -39,6 +40,13 @@ export default function Index({ subscription, changes }) {
     const getPlanAction = (plan, index) => {
         if (!subscription) {
             return { type: "subscribe", label: "Subscribe" };
+        }
+
+        if (isTrial) {
+            return {
+                type: "trial_convert",
+                label: plan.slug === "scale" ? "Upgrade now" : "Start plan",
+            };
         }
 
         const exactCurrentChoice = isCurrentChoice(plan.id, data.billing_cycle);
@@ -81,7 +89,7 @@ export default function Index({ subscription, changes }) {
             onSuccess: () => closeActionModal(),
         };
 
-        if (actionModal.type === "subscribe" || actionModal.type === "upgrade" || actionModal.type === "downgrade" || actionModal.type === "change") {
+        if (actionModal.type === "subscribe" || actionModal.type === "upgrade" || actionModal.type === "downgrade" || actionModal.type === "change" || actionModal.type === "trial_convert") {
             put(route("billing.update"), options);
             return;
         }
@@ -106,6 +114,11 @@ export default function Index({ subscription, changes }) {
             title: `Subscribe to ${actionModal.plan.name}?`,
             description: `Your workspace will start on the ${actionModal.plan.name} ${data.billing_cycle} plan as soon as you confirm.`,
             confirmLabel: "Start subscription",
+        },
+        trial_convert: {
+            title: `Start the ${actionModal.plan.name} plan?`,
+            description: `This ends your trial and starts the ${actionModal.plan.name} ${data.billing_cycle} plan now. If this plan has fewer features than Scale, higher-plan features will be locked after the change.`,
+            confirmLabel: actionModal.plan.slug === "scale" ? "Upgrade now" : "Start plan",
         },
         upgrade: {
             title: `Upgrade to ${actionModal.plan.name}?`,
@@ -151,13 +164,47 @@ export default function Index({ subscription, changes }) {
                     </p>
                 </div>
 
-                {billing?.alert && (
+                {billing?.alert && !isTrial && (
                     <div className={`rounded-2xl border px-5 py-4 ${billing.alert.type === "error" ? "border-red-200 bg-red-50 text-red-800" : billing.alert.type === "warning" ? "border-amber-200 bg-amber-50 text-amber-800" : "border-sky-200 bg-sky-50 text-sky-800"}`}>
                         <p className="font-semibold">{billing.alert.title}</p>
                         <p className="mt-1 text-sm">{billing.alert.message}</p>
                     </div>
                 )}
 
+                {isTrial && (
+                    <div className="rounded-3xl border border-sky-200 bg-white p-6 shadow-sm dark:border-sky-900/50 dark:bg-slate-900">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700 dark:text-sky-300">Trial period</p>
+                                <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">Your workspace is on Trial</h2>
+                                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+                                    You can use every Scale feature during the trial. When the trial ends, access will follow the plan you purchase.
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sky-950 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100">
+                                <p className="text-sm font-medium">Plan</p>
+                                <p className="mt-1 text-2xl font-semibold">Trial</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 grid gap-4 md:grid-cols-3">
+                            <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Status</p>
+                                <p className="mt-1 text-lg font-semibold capitalize">{subscription?.status || "trial"}</p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Days remaining</p>
+                                <p className="mt-1 text-lg font-semibold">{billing?.days_remaining ?? "N/A"}</p>
+                            </div>
+                            <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Trial ends</p>
+                                <p className="mt-1 text-lg font-semibold">{billing?.trial_ends_at || billing?.current_period_end || "N/A"}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {!isTrial && (
                 <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
                     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                         <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Current subscription</h2>
@@ -228,12 +275,17 @@ export default function Index({ subscription, changes }) {
                         <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Monthly renews every month. Yearly renews every 12 months. Upgrades start immediately with prorated credit. Downgrades and cancellations are scheduled for the end of the active period.</p>
                     </div>
                 </div>
+                )}
 
                 {canManageBilling && (
                     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-                        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Manage subscription</h2>
+                        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                            {isTrial ? "Choose a plan" : "Manage subscription"}
+                        </h2>
                         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                            Pick a billing cycle, then use the action button on the plan card to subscribe, upgrade, downgrade, cancel, or resume.
+                            {isTrial
+                                ? "Pick a billing cycle, then choose the plan you want to use after your trial. Choosing now starts that paid plan immediately."
+                                : "Pick a billing cycle, then use the action button on the plan card to subscribe, upgrade, downgrade, cancel, or resume."}
                         </p>
 
                         <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800">
@@ -272,7 +324,8 @@ export default function Index({ subscription, changes }) {
 
                         <div className="mt-6 grid gap-5 xl:grid-cols-3">
                             {billing_plans?.map((plan, index) => {
-                                const isCurrentPlan = isCurrentChoice(plan.id, data.billing_cycle);
+                                const isCurrentPlan = !isTrial && isCurrentChoice(plan.id, data.billing_cycle);
+                                const isTrialScalePlan = isTrial && plan.slug === "scale";
                                 const displayPrice = data.billing_cycle === "yearly"
                                     ? Number(plan.yearly_price ?? 0) / 12
                                     : Number(plan.monthly_price ?? 0);
@@ -312,6 +365,11 @@ export default function Index({ subscription, changes }) {
                                                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{billedLabel}</p>
                                             </div>
                                             <div className="flex flex-col items-end gap-2">
+                                                {isTrialScalePlan && (
+                                                    <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                                                        Trial access
+                                                    </span>
+                                                )}
                                                 {isCurrentPlan && (
                                                     <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                                                         Current plan
@@ -406,7 +464,7 @@ export default function Index({ subscription, changes }) {
                             {modalConfig.description}
                         </p>
 
-                        {(actionModal.type === "subscribe" || actionModal.type === "upgrade" || actionModal.type === "downgrade" || actionModal.type === "change") && (
+                        {(actionModal.type === "subscribe" || actionModal.type === "upgrade" || actionModal.type === "downgrade" || actionModal.type === "change" || actionModal.type === "trial_convert") && (
                             <div className="mt-5 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
                                 <div className="flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-300">
                                     {subscription && (

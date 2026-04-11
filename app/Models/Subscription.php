@@ -25,6 +25,8 @@ class Subscription extends Model
         'next_plan_id',
         'next_billing_cycle',
         'scheduled_change_type',
+        'scale_data_retention_started_at',
+        'scale_data_retained_until',
     ];
 
     protected function casts(): array
@@ -36,6 +38,8 @@ class Subscription extends Model
             'expired_at' => 'datetime',
             'cancel_at_period_end' => 'boolean',
             'cancelled_at' => 'datetime',
+            'scale_data_retention_started_at' => 'datetime',
+            'scale_data_retained_until' => 'datetime',
         ];
     }
 

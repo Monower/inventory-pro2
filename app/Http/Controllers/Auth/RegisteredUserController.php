@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\BillingService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +33,7 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, BillingService $billingService): RedirectResponse
     {
         $request->validate([
             'company_name' => 'required|string|max:255',
@@ -66,6 +68,15 @@ class RegisteredUserController extends Controller
 
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $user->assignRole($adminRole);
+
+        $scalePlan = Plan::query()
+            ->where('slug', 'scale')
+            ->where('is_active', true)
+            ->first();
+
+        if ($scalePlan) {
+            $billingService->provisionTrial($tenant, $scalePlan);
+        }
 
         event(new Registered($user));
 

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Plan;
 use App\Support\CurrentTenant;
 use App\Services\BillingService;
+use App\Services\PlanFeatureService;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -186,6 +187,42 @@ class AppServiceProvider extends ServiceProvider
                     return [
                         'read_only' => false,
                         'message' => null,
+                    ];
+                }
+            },
+
+            'feature_access' => function () {
+                try {
+                    $user = Auth::user();
+                    $tenant = app(CurrentTenant::class)->get();
+
+                    if (!$user || !$tenant || ($user->isSuperAdmin() && !$user->isOperatingInTenantContext())) {
+                        return [
+                            'access_plan' => 'scale',
+                            'locked' => [],
+                        ];
+                    }
+
+                    $subscription = $tenant->currentSubscription;
+                    $planFeatures = app(PlanFeatureService::class);
+                    $subscription = $subscription ? app(BillingService::class)->sync($subscription) : null;
+                    $accessPlan = $planFeatures->accessPlanSlug($subscription);
+                    $locked = [];
+
+                    foreach (['growth', 'scale'] as $minimumPlan) {
+                        $locked[$minimumPlan] = !$planFeatures->canAccess($subscription, $minimumPlan);
+                    }
+
+                    return [
+                        'access_plan' => $accessPlan,
+                        'locked' => $locked,
+                    ];
+                } catch (Throwable $e) {
+                    report($e);
+
+                    return [
+                        'access_plan' => null,
+                        'locked' => [],
                     ];
                 }
             },

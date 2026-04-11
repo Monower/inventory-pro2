@@ -12,6 +12,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\Setting;
+use App\Services\BillingService;
+use App\Services\PlanFeatureService;
 use App\Support\CurrentTenant;
 
 class OrderController extends Controller
@@ -371,8 +373,9 @@ class OrderController extends Controller
         }
 
         $tenant = app(CurrentTenant::class)->get();
-        $planSlug = strtolower((string) $tenant?->currentSubscription?->plan?->slug);
+        $subscription = $tenant?->currentSubscription?->load('plan');
+        $subscription = $subscription ? app(BillingService::class)->sync($subscription) : null;
 
-        return in_array($planSlug, ['growth', 'scale'], true);
+        return app(PlanFeatureService::class)->canAccess($subscription, 'growth');
     }
 }

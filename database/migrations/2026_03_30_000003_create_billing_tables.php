@@ -15,7 +15,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('monthly_price', 10, 2);
             $table->decimal('yearly_price', 10, 2);
-            $table->unsignedInteger('trial_days')->default(14);
+            $table->unsignedInteger('trial_days')->default(3);
             $table->boolean('is_active')->default(true);
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();

@@ -31,6 +31,8 @@ class PermissionSeeder extends Seeder
         'create plan',
         'edit plan',
         'delete plan',
+        'view settings',
+        'edit settings',
         'view profile',
         'edit profile',
     ];
@@ -187,7 +189,7 @@ class PermissionSeeder extends Seeder
                 'description' => Config::get('plan_features.starter.description', 'For small businesses that need core inventory, sales, customer, and workspace management.'),
                 'monthly_price' => 990,
                 'yearly_price' => 9900,
-                'trial_days' => 14,
+                'trial_days' => 3,
                 'sort_order' => 1,
             ],
             [
@@ -196,7 +198,7 @@ class PermissionSeeder extends Seeder
                 'description' => Config::get('plan_features.growth.description', 'For growing teams that need purchasing, finance controls, and multi-user operations.'),
                 'monthly_price' => 1990,
                 'yearly_price' => 19900,
-                'trial_days' => 14,
+                'trial_days' => 3,
                 'sort_order' => 2,
             ],
             [
@@ -205,7 +207,7 @@ class PermissionSeeder extends Seeder
                 'description' => Config::get('plan_features.scale.description', 'For mature operations that need governance, payroll workflows, and broader operational control.'),
                 'monthly_price' => 3490,
                 'yearly_price' => 34900,
-                'trial_days' => 14,
+                'trial_days' => 3,
                 'sort_order' => 3,
             ],
         ];

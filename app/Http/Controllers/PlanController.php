@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -16,6 +18,7 @@ class PlanController extends Controller
 
         return Inertia::render('SuperAdmin/Plans/Index', [
             'plans' => $plans,
+            'trial_notice_message' => $this->trialNoticeMessage(),
         ]);
     }
 
@@ -60,6 +63,51 @@ class PlanController extends Controller
         $plan->delete();
 
         return redirect()->route('super-admin.plans.index')->with('success', 'Plan deleted successfully.');
+    }
+
+    public function updateTrialNotice(Request $request)
+    {
+        $validated = $request->validate([
+            'trial_notice_message' => 'required|string|max:255',
+        ]);
+
+        $now = now();
+        $updated = DB::table('settings')
+            ->whereNull('tenant_id')
+            ->where('name', 'trial_notice_message')
+            ->update([
+                'value' => $validated['trial_notice_message'],
+                'updated_at' => $now,
+            ]);
+
+        if (!$updated) {
+            DB::table('settings')->insert([
+                'tenant_id' => null,
+                'name' => 'trial_notice_message',
+                'value' => $validated['trial_notice_message'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
+        return back()->with('success', 'Trial warning message updated successfully.');
+    }
+
+    protected function trialNoticeMessage(): string
+    {
+        $message = Setting::withoutGlobalScopes()
+            ->whereNull('tenant_id')
+            ->where('name', 'trial_notice_message')
+            ->value('value');
+
+        if ($message) {
+            return $message;
+        }
+
+        return Setting::withoutGlobalScopes()
+            ->where('name', 'trial_notice_message')
+            ->latest('updated_at')
+            ->value('value') ?: config('billing.trial_notice_message');
     }
 
     protected function validatedData(Request $request, ?Plan $plan = null): array

@@ -13,6 +13,9 @@ Route::middleware(['auth'])->prefix('super-admin/plans')->name('super-admin.plan
     Route::post('/', [PlanController::class, 'store'])
         ->name('store')
         ->middleware('permission:create plan');
+    Route::put('/trial-notice', [PlanController::class, 'updateTrialNotice'])
+        ->name('trial-notice.update')
+        ->middleware('permission:edit plan');
     Route::get('/{plan}/edit', [PlanController::class, 'edit'])
         ->name('edit')
         ->middleware('permission:edit plan');

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\BillingService;
+use App\Services\PlanFeatureService;
 use App\Support\CurrentTenant;
 use Closure;
 use Illuminate\Http\Request;
@@ -10,6 +11,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureTenantSubscriptionAccess
 {
+    public function __construct(protected PlanFeatureService $planFeatures)
+    {
+    }
+
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
@@ -24,7 +29,10 @@ class EnsureTenantSubscriptionAccess
             return $next($request);
         }
 
-        if ($request->isMethodSafe(false)) {
+        $routeName = $request->route()?->getName();
+        $minimumPlan = $this->planFeatures->minimumPlanForRoute($routeName);
+
+        if ($request->isMethodSafe(false) && !$minimumPlan) {
             return $next($request);
         }
 
@@ -40,11 +48,15 @@ class EnsureTenantSubscriptionAccess
 
         $subscription = app(BillingService::class)->sync($subscription);
 
-        if (!in_array($subscription->status, ['expired', 'cancelled'], true)) {
-            return $next($request);
+        if (in_array($subscription->status, ['expired', 'cancelled'], true)) {
+            return $this->denyWriteAccess($request);
         }
 
-        return $this->denyWriteAccess($request);
+        if (!$this->planFeatures->canAccess($subscription, $minimumPlan)) {
+            return $this->denyPlanFeatureAccess($request, $this->planFeatures->upgradeMessage($minimumPlan));
+        }
+
+        return $next($request);
     }
 
     protected function routeAllowsWriteWithoutSubscription(Request $request): bool
@@ -67,5 +79,14 @@ class EnsureTenantSubscriptionAccess
             'error',
             'Your workspace is in read-only mode. Purchase a plan to create, update, or delete records.'
         );
+    }
+
+    protected function denyPlanFeatureAccess(Request $request, string $message): Response
+    {
+        if ($request->isMethodSafe(false)) {
+            return redirect()->route('billing.index')->with('error', $message);
+        }
+
+        return back()->with('error', $message);
     }
 }

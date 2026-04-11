@@ -42,7 +42,9 @@ class BillingController extends Controller
 
         $message = match ($result['mode']) {
             'upgraded' => 'Plan upgraded immediately with prorated credit applied.',
+            'downgraded_after_trial' => 'Plan started successfully. Scale-only features are now locked, and Scale-only data will be retained for 30 days.',
             'downgrade_scheduled' => 'Downgrade scheduled for the next renewal date.',
+            'reactivated_downgraded' => 'Subscription renewed on the selected plan. Scale-only features are now locked, and Scale-only data will be retained for 30 days.',
             'reactivated' => 'Subscription renewed and workspace access restored.',
             default => 'Billing updated successfully.',
         };

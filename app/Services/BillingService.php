@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Plan;
+use App\Models\Setting;
 use App\Models\Subscription;
 use App\Models\SubscriptionChange;
 use App\Models\Tenant;
@@ -11,13 +12,18 @@ use Illuminate\Support\Facades\DB;
 
 class BillingService
 {
+    public function __construct(protected PlanFeatureService $planFeatures)
+    {
+    }
+
     public function startSubscription(Tenant $tenant, Plan $plan, string $cycle = 'monthly', ?string $notes = null): Subscription
     {
         return DB::transaction(function () use ($tenant, $plan, $cycle, $notes) {
             $now = now();
+            $retentionAttributes = $this->retentionAttributesForPlan($plan);
             $subscription = Subscription::updateOrCreate(
                 ['tenant_id' => $tenant->id],
-                [
+                array_merge([
                     'plan_id' => $plan->id,
                     'status' => 'active',
                     'billing_cycle' => $cycle,
@@ -30,7 +36,7 @@ class BillingService
                     'next_plan_id' => null,
                     'next_billing_cycle' => null,
                     'scheduled_change_type' => null,
-                ]
+                ], $retentionAttributes)
             );
 
             $this->recordChange($subscription, [
@@ -69,6 +75,8 @@ class BillingService
                 'next_plan_id' => null,
                 'next_billing_cycle' => null,
                 'scheduled_change_type' => null,
+                'scale_data_retention_started_at' => null,
+                'scale_data_retained_until' => null,
             ]
         );
     }
@@ -100,6 +108,7 @@ class BillingService
         return DB::transaction(function () use ($subscription, $notes) {
             $subscription = $subscription->fresh(['plan', 'nextPlan']);
             $now = now();
+            $oldPlan = $subscription->plan;
 
             if ($subscription->nextPlan && $subscription->scheduled_change_type === 'downgrade') {
                 $subscription->plan_id = $subscription->nextPlan->id;
@@ -108,13 +117,14 @@ class BillingService
 
             $plan = $subscription->plan()->firstOrFail();
             $cycle = $subscription->billing_cycle;
+            $retentionAttributes = $this->retentionAttributesForPlan($plan, $oldPlan);
             $base = $subscription->current_period_end && $subscription->current_period_end->isFuture()
                 ? $subscription->current_period_end->copy()
                 : $now->copy();
 
             $nextEnd = $this->periodEnd($base, $cycle);
 
-            $subscription->update([
+            $subscription->update(array_merge([
                 'status' => 'active',
                 'current_period_start' => $base,
                 'current_period_end' => $nextEnd,
@@ -125,11 +135,11 @@ class BillingService
                 'next_plan_id' => null,
                 'next_billing_cycle' => null,
                 'scheduled_change_type' => null,
-            ]);
+            ], $retentionAttributes));
 
             $this->recordChange($subscription, [
                 'event_type' => 'renewal',
-                'old_plan_id' => $plan->id,
+                'old_plan_id' => $oldPlan?->id,
                 'new_plan_id' => $plan->id,
                 'old_billing_cycle' => $cycle,
                 'new_billing_cycle' => $cycle,
@@ -153,9 +163,11 @@ class BillingService
             $currentCycle = $subscription->billing_cycle;
             $currentPrice = $currentPlan->priceForCycle($currentCycle);
             $targetPrice = $targetPlan->priceForCycle($targetCycle);
+            $isDowngrade = $this->planFeatures->isDowngrade($currentPlan->slug, $targetPlan->slug);
+            $retentionAttributes = $this->retentionAttributesForPlan($targetPlan, $currentPlan);
 
             if (in_array($subscription->status, ['expired', 'cancelled'], true)) {
-                $subscription->update([
+                $subscription->update(array_merge([
                     'plan_id' => $targetPlan->id,
                     'billing_cycle' => $targetCycle,
                     'status' => 'active',
@@ -168,24 +180,29 @@ class BillingService
                     'next_plan_id' => null,
                     'next_billing_cycle' => null,
                     'scheduled_change_type' => null,
-                ]);
+                ], $retentionAttributes));
 
                 $this->recordChange($subscription, [
-                    'event_type' => 'reactivation',
+                    'event_type' => $isDowngrade ? 'reactivation_downgrade' : 'reactivation',
                     'old_plan_id' => $currentPlan->id,
                     'new_plan_id' => $targetPlan->id,
                     'old_billing_cycle' => $currentCycle,
                     'new_billing_cycle' => $targetCycle,
                     'amount' => $targetPrice,
                     'credit_amount' => 0,
-                    'notes' => $notes ?: 'Subscription reactivated.',
+                    'notes' => $notes ?: ($isDowngrade
+                        ? 'Subscription reactivated on a lower plan; Scale-only data retention started.'
+                        : 'Subscription reactivated.'),
                     'effective_at' => now(),
                 ]);
 
-                return ['mode' => 'reactivated', 'subscription' => $subscription->fresh(['plan', 'nextPlan'])];
+                return [
+                    'mode' => $isDowngrade ? 'reactivated_downgraded' : 'reactivated',
+                    'subscription' => $subscription->fresh(['plan', 'nextPlan']),
+                ];
             }
 
-            if ($targetPrice > $currentPrice || $subscription->status === 'trial') {
+            if (!$isDowngrade || $subscription->status === 'trial') {
                 $periodStart = $subscription->current_period_start ?? now();
                 $periodEnd = $subscription->current_period_end ?? now();
                 $now = now();
@@ -199,7 +216,7 @@ class BillingService
                     : round(min($currentPrice, $currentPrice * $remainingRatio), 2);
                 $amount = round(max($targetPrice - $credit, 0), 2);
 
-                $subscription->update([
+                $subscription->update(array_merge([
                     'plan_id' => $targetPlan->id,
                     'billing_cycle' => $targetCycle,
                     'status' => 'active',
@@ -212,22 +229,24 @@ class BillingService
                     'next_plan_id' => null,
                     'next_billing_cycle' => null,
                     'scheduled_change_type' => null,
-                ]);
+                ], $retentionAttributes));
 
                 $this->recordChange($subscription, [
-                    'event_type' => 'upgrade',
+                    'event_type' => $isDowngrade ? 'downgrade_after_trial' : 'upgrade',
                     'old_plan_id' => $currentPlan->id,
                     'new_plan_id' => $targetPlan->id,
                     'old_billing_cycle' => $currentCycle,
                     'new_billing_cycle' => $targetCycle,
                     'amount' => $amount,
                     'credit_amount' => $credit,
-                    'notes' => $notes ?: 'Upgrade applied immediately with prorated credit.',
+                    'notes' => $notes ?: ($isDowngrade
+                        ? 'Trial converted to a lower plan; Scale-only data retention started.'
+                        : 'Upgrade applied immediately with prorated credit.'),
                     'effective_at' => $now,
                 ]);
 
                 return [
-                    'mode' => 'upgraded',
+                    'mode' => $isDowngrade ? 'downgraded_after_trial' : 'upgraded',
                     'amount' => $amount,
                     'credit' => $credit,
                     'subscription' => $subscription->fresh(['plan', 'nextPlan']),
@@ -324,6 +343,14 @@ class BillingService
             : null;
 
         $alert = null;
+        $trialNotice = null;
+
+        if ($subscription->status === 'trial') {
+            $trialNotice = [
+                'title' => 'Trial access active',
+                'message' => $this->trialNoticeMessage(),
+            ];
+        }
 
         if (in_array($subscription->status, ['expired', 'cancelled'], true)) {
             $alert = [
@@ -331,7 +358,7 @@ class BillingService
                 'title' => $subscription->status === 'cancelled' ? 'Subscription cancelled' : 'Subscription expired',
                 'message' => 'Renew your subscription to restore full workspace access.',
             ];
-        } elseif ($daysRemaining !== null && in_array($daysRemaining, [14, 7, 3, 1, 0], true)) {
+        } elseif ($subscription->status !== 'trial' && $daysRemaining !== null && in_array($daysRemaining, [14, 7, 3, 1, 0], true)) {
             $alert = [
                 'type' => $subscription->status === 'trial' ? 'warning' : 'info',
                 'title' => $subscription->status === 'trial' ? 'Trial ending soon' : 'Subscription renewal coming up',
@@ -355,6 +382,19 @@ class BillingService
             ];
         }
 
+        if ($subscription->scale_data_retained_until && $subscription->scale_data_retained_until->isFuture()) {
+            $retentionDaysRemaining = max(
+                0,
+                now()->startOfDay()->diffInDays($subscription->scale_data_retained_until->copy()->startOfDay(), false)
+            );
+
+            $alert = [
+                'type' => 'warning',
+                'title' => 'Scale data retained',
+                'message' => "Your Scale-only data will be deleted in {$retentionDaysRemaining} day" . ($retentionDaysRemaining === 1 ? '' : 's') . " if you don't upgrade to Scale.",
+            ];
+        }
+
         return [
             'subscription_id' => $subscription->id,
             'status' => $subscription->status,
@@ -365,10 +405,14 @@ class BillingService
             'expired_at' => $subscription->expired_at?->toDateString(),
             'cancel_at_period_end' => $subscription->cancel_at_period_end,
             'cancelled_at' => $subscription->cancelled_at?->toDateString(),
+            'scale_data_retained_until' => $subscription->scale_data_retained_until?->toDateString(),
+            'scale_data_retention_days_remaining' => isset($retentionDaysRemaining) ? $retentionDaysRemaining : null,
             'days_remaining' => $daysRemaining,
+            'trial_notice' => $trialNotice,
             'plan' => $subscription->plan ? [
                 'id' => $subscription->plan->id,
                 'name' => $subscription->plan->name,
+                'slug' => $subscription->plan->slug,
                 'monthly_price' => (float) $subscription->plan->monthly_price,
                 'yearly_price' => (float) $subscription->plan->yearly_price,
             ] : null,
@@ -394,5 +438,43 @@ class BillingService
         return $cycle === 'yearly'
             ? $start->copy()->addYear()
             : $start->copy()->addMonth();
+    }
+
+    protected function retentionAttributesForPlan(Plan $newPlan, ?Plan $oldPlan = null): array
+    {
+        if ($newPlan->slug === 'scale') {
+            return [
+                'scale_data_retention_started_at' => null,
+                'scale_data_retained_until' => null,
+            ];
+        }
+
+        if ($oldPlan && $oldPlan->slug === 'scale') {
+            $now = now();
+
+            return [
+                'scale_data_retention_started_at' => $now,
+                'scale_data_retained_until' => $now->copy()->addDays(PlanFeatureService::RETENTION_DAYS),
+            ];
+        }
+
+        return [];
+    }
+
+    protected function trialNoticeMessage(): string
+    {
+        $message = Setting::withoutGlobalScopes()
+            ->whereNull('tenant_id')
+            ->where('name', 'trial_notice_message')
+            ->value('value');
+
+        if ($message) {
+            return $message;
+        }
+
+        return Setting::withoutGlobalScopes()
+            ->where('name', 'trial_notice_message')
+            ->latest('updated_at')
+            ->value('value') ?: config('billing.trial_notice_message');
     }
 }

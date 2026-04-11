@@ -22,6 +22,7 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [dismissedTrialBanner, setDismissedTrialBanner] = useState(false);
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -41,6 +42,12 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
 
         return () => document.body.classList.remove("overflow-hidden");
     }, [showingNavigationDropdown]);
+
+    const dismissTrialBanner = () => {
+        setDismissedTrialBanner(true);
+    };
+
+    const showTrialBanner = billing?.trial_notice && !dismissedTrialBanner && !tenant?.switched;
 
     return (
         <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -91,6 +98,11 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                                 >
                                     Exit {tenant.name}
                                 </button>
+                            )}
+                            {billing?.status === "trial" && !tenant?.switched && (
+                                <span className="inline-flex h-11 items-center rounded-xl border border-amber-300 bg-amber-50 px-3 text-xs font-semibold uppercase tracking-[0.18em] text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+                                    Trail
+                                </span>
                             )}
                             <button
                                 type="button"
@@ -188,6 +200,33 @@ export default function AuthenticatedLayout({ header, children, title = "" }) {
                         >
                             View plans
                         </Link>
+                    </div>
+                </div>
+            )}
+
+            {showTrialBanner && (
+                <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+                    <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <span className="font-semibold">{billing.trial_notice.title}:</span>{" "}
+                            {billing.trial_notice.message}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Link
+                                href={route("billing.index")}
+                                className="inline-flex w-fit rounded-xl border border-amber-300 bg-white px-4 py-2 font-medium text-amber-900 transition hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-950/60 dark:text-amber-100 dark:hover:bg-slate-950"
+                            >
+                                Review billing
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={dismissTrialBanner}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-amber-300 bg-white text-amber-900 transition hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-950/60 dark:text-amber-100 dark:hover:bg-slate-950"
+                                title="Dismiss trial notice"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

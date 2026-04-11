@@ -1,14 +1,30 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 
-export default function Index({ plans }) {
+export default function Index({ plans, trial_notice_message }) {
     const { company_name } = usePage().props;
-    const { delete: destroy, processing } = useForm();
+    const { delete: destroy, processing: deleteProcessing } = useForm();
+    const {
+        data: noticeData,
+        setData: setNoticeData,
+        put: putNotice,
+        processing: noticeProcessing,
+        errors: noticeErrors,
+    } = useForm({
+        trial_notice_message: trial_notice_message || "",
+    });
 
     const removePlan = (planId) => {
         if (confirm("Delete this plan?")) {
             destroy(route("super-admin.plans.destroy", planId));
         }
+    };
+
+    const saveTrialNotice = (e) => {
+        e.preventDefault();
+        putNotice(route("super-admin.plans.trial-notice.update"), {
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -23,6 +39,36 @@ export default function Index({ plans }) {
                     </div>
                     <Link href={route("super-admin.plans.create")} className="create-button">Create plan</Link>
                 </div>
+
+                <form onSubmit={saveTrialNotice} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                            <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Trial warning message</h2>
+                            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                                This message appears in the dismissible trial banner for tenants during their trial period.
+                            </p>
+                        </div>
+                        <button type="submit" disabled={noticeProcessing} className="create-button px-5 py-2">
+                            {noticeProcessing ? "Saving..." : "Save message"}
+                        </button>
+                    </div>
+                    <textarea
+                        className="mt-5 min-h-28 w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                        value={noticeData.trial_notice_message}
+                        onChange={(e) => setNoticeData("trial_notice_message", e.target.value)}
+                        maxLength={255}
+                    />
+                    <div className="mt-2 flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between">
+                        {noticeErrors.trial_notice_message ? (
+                            <p className="text-red-600">{noticeErrors.trial_notice_message}</p>
+                        ) : (
+                            <p className="text-slate-500 dark:text-slate-400">Keep it short and clear for all trial users.</p>
+                        )}
+                        <p className="text-slate-500 dark:text-slate-400">
+                            {noticeData.trial_notice_message.length}/255
+                        </p>
+                    </div>
+                </form>
 
                 <div className="grid gap-4 lg:grid-cols-3">
                     {plans.map((plan) => (
@@ -49,8 +95,8 @@ export default function Index({ plans }) {
                             <div className="mt-4 text-sm text-slate-500 dark:text-slate-400">Trial: {plan.trial_days} days</div>
                             <div className="mt-6 flex gap-2">
                                 <Link href={route("super-admin.plans.edit", plan.id)} className="edit-button">Edit</Link>
-                                <button type="button" disabled={processing} onClick={() => removePlan(plan.id)} className="delete-button">
-                                    {processing ? "Deleting..." : "Delete"}
+                                <button type="button" disabled={deleteProcessing} onClick={() => removePlan(plan.id)} className="delete-button">
+                                    {deleteProcessing ? "Deleting..." : "Delete"}
                                 </button>
                             </div>
                         </div>
