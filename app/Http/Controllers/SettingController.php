@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Models\Attribute;
+use App\Models\Unit;
 use App\Support\CurrentTenant;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
 {
@@ -34,6 +37,162 @@ class SettingController extends Controller
                     : null,
             ],
         ]);
+    }
+
+    public function attributes()
+    {
+        $attributes = Attribute::query()
+            ->latest()
+            ->paginate(10)
+            ->through(fn (Attribute $attribute) => [
+                'id' => $attribute->id,
+                'name' => $attribute->name,
+                'values' => $attribute->values ?: [],
+                'status' => $attribute->is_active ? 'Active' : 'Inactive',
+                'is_active' => $attribute->is_active,
+            ]);
+
+        return Inertia::render('settings/Attributes', [
+            'attributes' => $attributes,
+        ]);
+    }
+
+    public function storeAttribute(Request $request)
+    {
+        $tenantId = app(CurrentTenant::class)->id();
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('attributes', 'name')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+            ],
+            'values' => ['nullable', 'array'],
+            'values.*' => ['required', 'string', 'max:100'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        Attribute::create([
+            'name' => $validated['name'],
+            'values' => array_values(array_unique($validated['values'] ?? [])),
+            'is_active' => $validated['is_active'],
+        ]);
+
+        return redirect()
+            ->route('settings.attributes')
+            ->with('success', 'Attribute created successfully.');
+    }
+
+    public function updateAttribute(Request $request, Attribute $attribute)
+    {
+        $tenantId = app(CurrentTenant::class)->id();
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('attributes', 'name')
+                    ->where(fn ($query) => $query->where('tenant_id', $tenantId))
+                    ->ignore($attribute->id),
+            ],
+            'values' => ['nullable', 'array'],
+            'values.*' => ['required', 'string', 'max:100'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $attribute->update([
+            'name' => $validated['name'],
+            'values' => array_values(array_unique($validated['values'] ?? [])),
+            'is_active' => $validated['is_active'],
+        ]);
+
+        return redirect()
+            ->route('settings.attributes')
+            ->with('success', 'Attribute updated successfully.');
+    }
+
+    public function destroyAttribute(Attribute $attribute)
+    {
+        $attribute->delete();
+
+        return redirect()
+            ->route('settings.attributes')
+            ->with('success', 'Attribute deleted successfully.');
+    }
+
+    public function units()
+    {
+        $units = Unit::query()
+            ->latest()
+            ->paginate(10)
+            ->through(fn (Unit $unit) => [
+                'id' => $unit->id,
+                'name' => $unit->name,
+                'symbol' => $unit->symbol,
+                'status' => $unit->is_active ? 'Active' : 'Inactive',
+                'is_active' => $unit->is_active,
+            ]);
+
+        return Inertia::render('settings/Units', [
+            'units' => $units,
+        ]);
+    }
+
+    public function storeUnit(Request $request)
+    {
+        $tenantId = app(CurrentTenant::class)->id();
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('units', 'name')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+            ],
+            'symbol' => ['nullable', 'string', 'max:50'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        Unit::create($validated);
+
+        return redirect()
+            ->route('settings.units')
+            ->with('success', 'Unit created successfully.');
+    }
+
+    public function updateUnit(Request $request, Unit $unit)
+    {
+        $tenantId = app(CurrentTenant::class)->id();
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('units', 'name')
+                    ->where(fn ($query) => $query->where('tenant_id', $tenantId))
+                    ->ignore($unit->id),
+            ],
+            'symbol' => ['nullable', 'string', 'max:50'],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $unit->update($validated);
+
+        return redirect()
+            ->route('settings.units')
+            ->with('success', 'Unit updated successfully.');
+    }
+
+    public function destroyUnit(Unit $unit)
+    {
+        $unit->delete();
+
+        return redirect()
+            ->route('settings.units')
+            ->with('success', 'Unit deleted successfully.');
     }
 
     /**

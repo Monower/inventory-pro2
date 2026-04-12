@@ -3,6 +3,7 @@ import SidebarDropdown from "@/Components/SidebarDropdown";
 import { MdOutlineDashboard } from "react-icons/md";
 import { BsShieldLock } from "react-icons/bs";
 import { PiGearSixLight } from "react-icons/pi";
+import { Package } from "lucide-react";
 
 const Menu = ({ url }) => {
     const { auth, tenant } = usePage().props;
@@ -30,6 +31,7 @@ const Menu = ({ url }) => {
 
     const dashboardActive =
         isPath("/dashboard") || isPath("/super-admin/dashboard");
+    const productsActive = isPathPrefix("/products");
     const settingsActive =
         isPathPrefix("/profile") || isPathPrefix("/settings") || isPathPrefix("/billing");
     const superAdminActive = isPathPrefix("/super-admin");
@@ -43,6 +45,39 @@ const Menu = ({ url }) => {
                     </span>
                     <span>Dashboard</span>
                 </Link>
+            )}
+
+            {(permissions.includes("view product") ||
+                permissions.includes("view category")) && (
+                <SidebarDropdown
+                    title="Products"
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <Package className="h-4 w-4" />
+                        </span>
+                    }
+                    active={productsActive}
+                    defaultOpen={productsActive}
+                >
+                    <div className="flex flex-col mt-2 space-y-2">
+                        {permissions.includes("view product") && (
+                            <Link
+                                href="/products"
+                                className={subLinkClass(isPath("/products"))}
+                            >
+                                Product list
+                            </Link>
+                        )}
+                        {permissions.includes("view category") && (
+                            <Link
+                                href="/products/categories"
+                                className={subLinkClass(isPathPrefix("/products/categories"))}
+                            >
+                                Categories
+                            </Link>
+                        )}
+                    </div>
+                </SidebarDropdown>
             )}
 
             {!tenant?.switched && permissions.includes("view tenant") && (
@@ -70,7 +105,10 @@ const Menu = ({ url }) => {
             )}
 
             {(permissions.includes("view settings") ||
-                permissions.includes("view profile")) && (
+                permissions.includes("view profile") ||
+                permissions.includes("view attribute") ||
+                permissions.includes("view unit") ||
+                permissions.includes("view billing")) && (
                 <SidebarDropdown
                     title="Settings"
                     icon={
@@ -90,10 +128,26 @@ const Menu = ({ url }) => {
                         </Link>
                         <Link
                             href="/settings"
-                            className={subLinkClass(isPathPrefix("/settings"))}
+                            className={subLinkClass(isPath("/settings"))}
                         >
                             General settings
                         </Link>
+                        {permissions.includes("view attribute") && (
+                            <Link
+                                href="/settings/attributes"
+                                className={subLinkClass(isPathPrefix("/settings/attributes"))}
+                            >
+                                Attributes
+                            </Link>
+                        )}
+                        {permissions.includes("view unit") && (
+                            <Link
+                                href="/settings/units"
+                                className={subLinkClass(isPathPrefix("/settings/units"))}
+                            >
+                                Units
+                            </Link>
+                        )}
                         {permissions.includes("view billing") && (
                             <Link
                                 href="/billing"

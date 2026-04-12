@@ -18,6 +18,7 @@ Route::get('/clear', function () {
 require __DIR__ . '/auth.php';
 require __DIR__ . '/modules/ProfileRoutes.php';
 require __DIR__ . '/modules/DashboardRoutes.php';
+require __DIR__ . '/modules/ProductRoutes.php';
 require __DIR__ . '/modules/SettingRoutes.php';
 require __DIR__ . '/modules/TenantRoutes.php';
 require __DIR__ . '/modules/PlanRoutes.php';

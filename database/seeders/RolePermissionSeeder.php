@@ -49,6 +49,22 @@ class RolePermissionSeeder extends Seeder
         $deletePlan = Permission::firstOrCreate(['name' => 'delete plan']);
         $viewBilling = Permission::firstOrCreate(['name' => 'view billing']);
         $manageBilling = Permission::firstOrCreate(['name' => 'manage billing']);
+        $viewProduct = Permission::firstOrCreate(['name' => 'view product']);
+        $createProduct = Permission::firstOrCreate(['name' => 'create product']);
+        $editProduct = Permission::firstOrCreate(['name' => 'edit product']);
+        $deleteProduct = Permission::firstOrCreate(['name' => 'delete product']);
+        $viewCategory = Permission::firstOrCreate(['name' => 'view category']);
+        $createCategory = Permission::firstOrCreate(['name' => 'create category']);
+        $editCategory = Permission::firstOrCreate(['name' => 'edit category']);
+        $deleteCategory = Permission::firstOrCreate(['name' => 'delete category']);
+        $viewAttribute = Permission::firstOrCreate(['name' => 'view attribute']);
+        $createAttribute = Permission::firstOrCreate(['name' => 'create attribute']);
+        $editAttribute = Permission::firstOrCreate(['name' => 'edit attribute']);
+        $deleteAttribute = Permission::firstOrCreate(['name' => 'delete attribute']);
+        $viewUnit = Permission::firstOrCreate(['name' => 'view unit']);
+        $createUnit = Permission::firstOrCreate(['name' => 'create unit']);
+        $editUnit = Permission::firstOrCreate(['name' => 'edit unit']);
+        $deleteUnit = Permission::firstOrCreate(['name' => 'delete unit']);
         $canLogin = Permission::firstOrCreate(['name' => 'can login']);
 
         $allPermissions = Permission::query()->get();
