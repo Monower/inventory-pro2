@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Product;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -59,17 +56,6 @@ class TenantController extends Controller
                     ->whereHas('roles', fn ($roleQuery) => $roleQuery->where('name', 'admin')),
             ])
             ->with(['currentSubscription.plan'])
-            ->addSelect([
-                'products_count' => Product::withoutGlobalScopes()
-                    ->selectRaw('count(*)')
-                    ->whereColumn('tenant_id', 'tenants.id'),
-                'customers_count' => Customer::withoutGlobalScopes()
-                    ->selectRaw('count(*)')
-                    ->whereColumn('tenant_id', 'tenants.id'),
-                'orders_count' => Order::withoutGlobalScopes()
-                    ->selectRaw('count(*)')
-                    ->whereColumn('tenant_id', 'tenants.id'),
-            ])
             ->latest()
             ->paginate(10)
             ->withQueryString();

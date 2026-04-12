@@ -121,9 +121,6 @@ export default function Index({ tenants, summary, context }) {
                                             </td>
                                             <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-300">
                                                 <div>{tenant.users_count} users</div>
-                                                <div>{tenant.products_count} products</div>
-                                                <div>{tenant.customers_count} customers</div>
-                                                <div>{tenant.orders_count} orders</div>
                                                 <div className="mt-2 font-medium text-slate-900 dark:text-slate-100">
                                                     {tenant.current_subscription?.plan?.name || "No plan"} {tenant.current_subscription ? `(${tenant.current_subscription.billing_cycle})` : ""}
                                                 </div>

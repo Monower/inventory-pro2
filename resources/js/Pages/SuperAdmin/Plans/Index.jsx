@@ -34,7 +34,7 @@ export default function Index({ plans, trial_notice_message }) {
                 <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-gradient-to-r from-sky-50 via-white to-amber-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 lg:flex-row lg:items-end lg:justify-between">
                     <div>
                         <p className="text-sm font-semibold uppercase tracking-[0.25em] text-sky-700 dark:text-sky-300">Billing Plans</p>
-                        <h1 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">Manage monthly and yearly products</h1>
+                        <h1 className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">Manage monthly and yearly plans</h1>
                         <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">Plans define the billing cycle options, trial window, and prices used for renewals and prorated upgrades.</p>
                     </div>
                     <Link href={route("super-admin.plans.create")} className="create-button">Create plan</Link>

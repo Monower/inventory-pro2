@@ -49,8 +49,7 @@ class RolePermissionSeeder extends Seeder
         $deletePlan = Permission::firstOrCreate(['name' => 'delete plan']);
         $viewBilling = Permission::firstOrCreate(['name' => 'view billing']);
         $manageBilling = Permission::firstOrCreate(['name' => 'manage billing']);
-        $editUser = Permission::firstOrCreate(['name' => 'edit user']);
-        $canLogin = Permission::firstOrCreate(['name' => 'can login']); // ✅ new permission
+        $canLogin = Permission::firstOrCreate(['name' => 'can login']);
 
         $allPermissions = Permission::query()->get();
         $superAdmin->syncPermissions(

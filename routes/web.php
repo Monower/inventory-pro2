@@ -16,22 +16,9 @@ Route::get('/clear', function () {
 });
 
 require __DIR__ . '/auth.php';
-require __DIR__ . '/modules/BankRoutes.php';
 require __DIR__ . '/modules/ProfileRoutes.php';
 require __DIR__ . '/modules/DashboardRoutes.php';
-require __DIR__ . '/modules/RoleRoutes.php';
-require __DIR__ . '/modules/CategoryRoutes.php';
-require __DIR__ . '/modules/SubCategoryRoutes.php';
-require __DIR__ . '/modules/CustomerRoutes.php';
-require __DIR__ . '/modules/UserRoutes.php';
-require __DIR__ . '/modules/StaffRoutes.php';
-require __DIR__ . '/modules/TransactionRoutes.php';
-require __DIR__ . '/modules/ProductRoutes.php';
-require __DIR__ . '/modules/AttributeRoutes.php';
-require __DIR__ . '/modules/OrderRoutes.php';
 require __DIR__ . '/modules/SettingRoutes.php';
-require __DIR__ . '/modules/PurchaseRoutes.php';
-require __DIR__ . '/modules/SalaryRoutes.php';
 require __DIR__ . '/modules/TenantRoutes.php';
 require __DIR__ . '/modules/PlanRoutes.php';
 require __DIR__ . '/modules/BillingRoutes.php';

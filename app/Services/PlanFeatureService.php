@@ -15,24 +15,7 @@ class PlanFeatureService
         'scale' => 3,
     ];
 
-    protected array $minimumPlanByRoute = [
-        'attributes.*' => 'growth',
-        'banks.*' => 'growth',
-        'orders.invoice' => 'growth',
-        'orders.receipt' => 'growth',
-        'purchases.*' => 'growth',
-        'staff.*' => 'growth',
-        'staffs.*' => 'growth',
-        'transactions.*' => 'growth',
-        'transaction.*' => 'growth',
-        'user.*' => 'growth',
-        'users.*' => 'growth',
-
-        'advance-salaries.*' => 'scale',
-        'role.*' => 'scale',
-        'roles.*' => 'scale',
-        'salaries.*' => 'scale',
-    ];
+    protected array $minimumPlanByRoute = [];
 
     public function minimumPlanForRoute(?string $routeName): ?string
     {
