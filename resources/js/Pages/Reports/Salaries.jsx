@@ -130,6 +130,10 @@ const Salaries = ({ salaries, staff, filters, summary }) => {
                         value={currency(summary.total_deductions)}
                     />
                     <SummaryCard
+                        label="Advance recovered"
+                        value={currency(summary.total_advance_deductions)}
+                    />
+                    <SummaryCard
                         label="Net salary"
                         value={currency(summary.net_salary)}
                     />
@@ -146,6 +150,7 @@ const Salaries = ({ salaries, staff, filters, summary }) => {
                                         "Basic",
                                         "Bonus",
                                         "Deductions",
+                                        "Advance Deduction",
                                         "Net",
                                         "Status",
                                         "Paid at",
@@ -176,6 +181,9 @@ const Salaries = ({ salaries, staff, filters, summary }) => {
                                         </td>
                                         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                                             {currency(salary.deductions)}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                                            {currency(salary.advance_deduction || 0)}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                                             {currency(salary.net_salary)}

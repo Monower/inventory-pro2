@@ -161,7 +161,8 @@ class ReportController extends Controller
                 'total_rows' => (clone $summaryQuery)->count(),
                 'gross_salary' => round((float) (clone $summaryQuery)->sum('basic_salary'), 2),
                 'total_bonus' => round((float) (clone $summaryQuery)->sum('bonus'), 2),
-                'total_deductions' => round((float) (clone $summaryQuery)->sum('deductions'), 2),
+                'total_deductions' => round((float) ((clone $summaryQuery)->sum('deductions') + (clone $summaryQuery)->sum('advance_deduction')), 2),
+                'total_advance_deductions' => round((float) (clone $summaryQuery)->sum('advance_deduction'), 2),
                 'net_salary' => round((float) (clone $summaryQuery)->sum('net_salary'), 2),
             ],
             'filters' => [
@@ -247,6 +248,7 @@ class ReportController extends Controller
                 (float) $salary->basic_salary,
                 (float) $salary->bonus,
                 (float) $salary->deductions,
+                (float) $salary->advance_deduction,
                 (float) $salary->net_salary,
                 $salary->is_paid ? 'Paid' : 'Unpaid',
                 $salary->paid_at,

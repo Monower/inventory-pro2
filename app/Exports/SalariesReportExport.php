@@ -26,6 +26,7 @@ class SalariesReportExport implements FromCollection, WithHeadings, ShouldAutoSi
             'Basic Salary',
             'Bonus',
             'Deductions',
+            'Advance Deduction',
             'Net Salary',
             'Paid Status',
             'Paid At',

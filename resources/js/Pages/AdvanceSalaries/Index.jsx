@@ -1,13 +1,24 @@
 import React from "react";
-import { Link, usePage, Head } from "@inertiajs/react";
+import { Link, usePage, Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import NoDataFound from "@/Components/NoDataFound/NoDataFound";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
+import { EditIcon, Trash2Icon } from "lucide-react";
 
 export default function AdvanceIndex() {
-    const { advances, company_name, filters } = usePage().props;
+    const { advances, company_name, filters, auth } = usePage().props;
     const list = advances?.data ?? [];
+    const permissions = auth.user?.permissions || [];
+    const { delete: destroy, processing } = useForm();
+
+    const handleDelete = (id) => {
+        if (confirm("Are you sure you want to delete this advance salary?")) {
+            destroy(route("advance-salaries.destroy", id), {
+                preserveScroll: true,
+            });
+        }
+    };
 
     return (
         <AuthenticatedLayout>
@@ -23,8 +34,9 @@ export default function AdvanceIndex() {
                                 Monitor staff advances and loans
                             </h1>
                             <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                                Keep track of outstanding balances, repayment
-                                progress, and active employee advance records.
+                                Keep track of outstanding balances and active
+                                employee advance records while salary recovery
+                                is entered manually each month.
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -62,9 +74,9 @@ export default function AdvanceIndex() {
                                     <th className="custom-th rounded-l-md">SI</th>
                                     <th className="custom-th">Staff</th>
                                     <th className="custom-th">Amount</th>
-                                    <th className="custom-th">Installments</th>
                                     <th className="custom-th">Remaining</th>
-                                    <th className="py-2 px-3 text-center rounded-r-md">Status</th>
+                                    <th className="custom-th">Status</th>
+                                    <th className="py-2 px-3 text-center rounded-r-md">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -73,9 +85,6 @@ export default function AdvanceIndex() {
                                         <td className="custom-body-td">{(advances.current_page - 1) * advances.per_page + index + 1}</td>
                                         <td className="custom-body-td">{a.staff.name}</td>
                                         <td className="custom-body-td">{a.amount}</td>
-                                        <td className="custom-body-td">
-                                            {a.installments}
-                                        </td>
                                         <td className="custom-body-td">
                                             {a.remaining_amount}
                                         </td>
@@ -88,6 +97,27 @@ export default function AdvanceIndex() {
                                                 <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-700 dark:bg-green-500/15 dark:text-green-300">
                                                     Completed
                                                 </span>
+                                            )}
+                                        </td>
+                                        <td className="custom-body-td flex items-center gap-2">
+                                            {permissions.includes("edit advance salary") && (
+                                                <Link
+                                                    href={route("advance-salaries.edit", a.id)}
+                                                    className="edit-button"
+                                                    title="Edit"
+                                                >
+                                                    <EditIcon className="w-4 h-4 inline" />
+                                                </Link>
+                                            )}
+                                            {permissions.includes("delete advance salary") && (
+                                                <button
+                                                    onClick={() => handleDelete(a.id)}
+                                                    className="delete-button"
+                                                    disabled={processing}
+                                                    title="Delete"
+                                                >
+                                                    <Trash2Icon className="w-4 h-4 inline" />
+                                                </button>
                                             )}
                                         </td>
                                     </tr>

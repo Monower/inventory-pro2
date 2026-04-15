@@ -49,21 +49,75 @@ class AdvanceSalaryController extends Controller
         $request->validate([
             'staff_id' => 'required|exists:staff,id',
             'amount' => 'required|numeric|min:1',
-            'installments' => 'required|integer|min:1',
-            'start_month' => 'required|string',
         ]);
-
-        $installmentAmount = round($request->amount / $request->installments, 2);
 
         AdvanceSalary::create([
             'staff_id' => $request->staff_id,
             'amount' => $request->amount,
-            'installments' => $request->installments,
-            'installment_amount' => $installmentAmount,
             'remaining_amount' => $request->amount,
-            'start_month' => $request->start_month,
         ]);
 
         return redirect()->route('advance-salaries.index')->with('success', 'Advance salary added successfully');
+    }
+
+    public function edit(AdvanceSalary $advanceSalary)
+    {
+        return Inertia::render('AdvanceSalaries/Edit', [
+            'advanceSalary' => $advanceSalary->load('staff'),
+            'staff' => Staff::all(),
+        ]);
+    }
+
+    public function update(Request $request, AdvanceSalary $advanceSalary)
+    {
+        $request->validate([
+            'staff_id' => 'required|exists:staff,id',
+            'amount' => 'required|numeric|min:1',
+        ]);
+
+        $recoveredAmount = (float) $advanceSalary->amount - (float) $advanceSalary->remaining_amount;
+        $newAmount = (float) $request->amount;
+
+        if ($newAmount < $recoveredAmount) {
+            return back()
+                ->withErrors([
+                    'amount' => 'Amount cannot be less than the already recovered advance.',
+                ])
+                ->withInput();
+        }
+
+        if ($recoveredAmount > 0 && (int) $request->staff_id !== (int) $advanceSalary->staff_id) {
+            return back()
+                ->withErrors([
+                    'staff_id' => 'You cannot change the employee after advance recovery has started.',
+                ])
+                ->withInput();
+        }
+
+        $remainingAmount = round($newAmount - $recoveredAmount, 2);
+
+        $advanceSalary->update([
+            'staff_id' => $request->staff_id,
+            'amount' => $newAmount,
+            'remaining_amount' => $remainingAmount,
+            'status' => $remainingAmount > 0 ? 'active' : 'completed',
+        ]);
+
+        return redirect()->route('advance-salaries.index')->with('success', 'Advance salary updated successfully');
+    }
+
+    public function destroy(AdvanceSalary $advanceSalary)
+    {
+        $recoveredAmount = (float) $advanceSalary->amount - (float) $advanceSalary->remaining_amount;
+
+        if ($recoveredAmount > 0) {
+            return redirect()
+                ->route('advance-salaries.index')
+                ->with('error', 'This advance salary cannot be deleted because recovery has already started.');
+        }
+
+        $advanceSalary->delete();
+
+        return redirect()->route('advance-salaries.index')->with('success', 'Advance salary deleted successfully');
     }
 }

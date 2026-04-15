@@ -88,6 +88,8 @@ class PermissionSeeder extends Seeder
             'delete salary',
             'view advance salary',
             'create advance salary',
+            'edit advance salary',
+            'delete advance salary',
         ];
 
         // Create permissions if they don't exist

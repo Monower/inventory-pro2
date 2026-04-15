@@ -84,6 +84,7 @@ export default function SalaryIndex() {
                                 <tr>
                                     <th className="custom-th rounded-l-md">Employee</th>
                                     <th className="custom-th">Month</th>
+                                    <th className="custom-th">Deductions</th>
                                     <th className="custom-th">Net Salary</th>
                                     <th className="custom-th">Status</th>
                                     <th className="custom-th rounded-r-md">Action</th>
@@ -97,6 +98,9 @@ export default function SalaryIndex() {
                                     >
                                         <td className="custom-body-td">{s.staff.name}</td>
                                         <td className="custom-body-td">{s.month}</td>
+                                        <td className="custom-body-td">
+                                            {Number(s.deductions || 0) + Number(s.advance_deduction || 0)}
+                                        </td>
                                         <td className="custom-body-td">{s.net_salary}</td>
                                         <td className="custom-body-td">
                                             {s.is_paid ? (

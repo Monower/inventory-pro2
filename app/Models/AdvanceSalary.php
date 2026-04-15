@@ -10,8 +10,7 @@ class AdvanceSalary extends Model
     use HasFactory;
 
     protected $fillable = [
-        'staff_id', 'amount', 'installments', 'installment_amount',
-        'remaining_amount', 'start_month', 'months_adjusted', 'status'
+        'staff_id', 'amount', 'remaining_amount', 'status'
     ];
 
     public function staff()
@@ -19,4 +18,3 @@ class AdvanceSalary extends Model
         return $this->belongsTo(Staff::class);
     }
 }
-

@@ -2,14 +2,19 @@ import { useForm, Head, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
 
-export default function SalaryCreate({ staff }) {
+export default function SalaryCreate({ staff, activeAdvanceBalances = {} }) {
     const { company_name } = usePage().props;
     const { data, setData, post, processing, errors } = useForm({
         staff_id: "",
         month: "",
         bonus: "",
         deductions: "",
+        advance_deduction: "",
     });
+
+    const selectedAdvanceBalance = Number(
+        activeAdvanceBalances[data.staff_id] || 0
+    );
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -29,7 +34,8 @@ export default function SalaryCreate({ staff }) {
                             </h3>
                             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
                                 Create a salary sheet for a selected employee,
-                                including bonus and deduction adjustments.
+                                including bonus, manual deductions, and flexible
+                                advance recovery.
                             </p>
                         </div>
                     </div>
@@ -115,6 +121,35 @@ export default function SalaryCreate({ staff }) {
                                     }
                                     className="custom-input"
                                 />
+                            </fieldset>
+
+                            <fieldset className="custom-fieldset">
+                                <legend className="text-sm mx-2">
+                                    <label>Advance deduction</label>
+                                </legend>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={data.advance_deduction}
+                                    onChange={(e) =>
+                                        setData(
+                                            "advance_deduction",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="custom-input"
+                                    placeholder="Enter manual advance deduction"
+                                />
+                                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                    Remaining advance balance: {selectedAdvanceBalance.toFixed(2)}
+                                </p>
+                                {errors.advance_deduction && (
+                                    <p className="text-red-600">
+                                        {errors.advance_deduction}
+                                    </p>
+                                )}
                             </fieldset>
                         </div>
 

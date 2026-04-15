@@ -7,7 +7,9 @@ use App\Models\Staff;
 use App\Models\AdvanceSalary;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Collection;
 
 class SalaryController extends Controller
 {
@@ -40,8 +42,15 @@ class SalaryController extends Controller
     public function create()
     {
         $staff = Staff::all();
+        $activeAdvanceBalances = AdvanceSalary::query()
+            ->selectRaw('staff_id, SUM(remaining_amount) as remaining_amount')
+            ->where('status', 'active')
+            ->groupBy('staff_id')
+            ->pluck('remaining_amount', 'staff_id');
+
         return Inertia::render('Salaries/Create', [
-            'staff' => $staff
+            'staff' => $staff,
+            'activeAdvanceBalances' => $activeAdvanceBalances,
         ]);
     }
 
@@ -50,44 +59,52 @@ class SalaryController extends Controller
         $request->validate([
             'staff_id' => 'required|exists:staff,id',
             'month' => 'required|string',
+            'bonus' => 'nullable|numeric|min:0',
+            'deductions' => 'nullable|numeric|min:0',
+            'advance_deduction' => 'nullable|numeric|min:0',
         ]);
 
         $staff = Staff::findOrFail($request->staff_id);
         $month = $request->month;
 
-        $basic = $staff->salary;
-        $bonus = $request->bonus ?? 0;
-        $deductions = $request->deductions ?? 0;
+        $basic = (float) $staff->salary;
+        $bonus = (float) ($request->bonus ?? 0);
+        $deductions = (float) ($request->deductions ?? 0);
+        $advanceDeduction = (float) ($request->advance_deduction ?? 0);
 
-        $advance = AdvanceSalary::where('staff_id', $staff->id)
+        $activeAdvances = AdvanceSalary::query()
+            ->where('staff_id', $staff->id)
             ->where('status', 'active')
-            ->first();
+            ->where('remaining_amount', '>', 0)
+            ->orderBy('id')
+            ->get();
 
-        $advanceDeduction = 0;
-        if ($advance) {
-            $advanceDeduction = $advance->installment_amount;
-            $advance->remaining_amount -= $advanceDeduction;
-            $advance->months_adjusted += 1;
+        $outstandingAdvanceBalance = (float) $activeAdvances->sum('remaining_amount');
 
-            if ($advance->remaining_amount <= 0 || $advance->months_adjusted >= $advance->installments) {
-                $advance->status = 'completed';
-                $advance->remaining_amount = 0;
-            }
-
-            $advance->save();
+        if ($advanceDeduction > $outstandingAdvanceBalance) {
+            return back()
+                ->withErrors([
+                    'advance_deduction' => 'Advance deduction cannot be greater than the remaining advance balance.',
+                ])
+                ->withInput();
         }
 
-        $netSalary = $basic + $bonus - ($deductions + $advanceDeduction);
+        DB::transaction(function () use ($activeAdvances, $advanceDeduction, $staff, $month, $basic, $bonus, $deductions) {
+            $this->applyAdvanceDeduction($activeAdvances, $advanceDeduction);
 
-        Salary::create([
-            'staff_id' => $staff->id,
-            'month' => $month,
-            'basic_salary' => $basic,
-            'bonus' => $bonus,
-            'deductions' => $deductions + $advanceDeduction,
-            'net_salary' => $netSalary,
-            'is_paid' => false,
-        ]);
+            $netSalary = $basic + $bonus - $deductions - $advanceDeduction;
+
+            Salary::create([
+                'staff_id' => $staff->id,
+                'month' => $month,
+                'basic_salary' => $basic,
+                'bonus' => $bonus,
+                'deductions' => $deductions,
+                'advance_deduction' => $advanceDeduction,
+                'net_salary' => $netSalary,
+                'is_paid' => false,
+            ]);
+        });
 
         return redirect()->route('salaries.index')->with('success', 'Salary generated successfully');
     }
@@ -118,5 +135,27 @@ class SalaryController extends Controller
         $salary->delete();
 
         return redirect()->route('salaries.index')->with('success', 'Salary deleted successfully!');
+    }
+
+    protected function applyAdvanceDeduction(Collection $activeAdvances, float $advanceDeduction): void
+    {
+        $remainingDeduction = $advanceDeduction;
+
+        foreach ($activeAdvances as $advance) {
+            if ($remainingDeduction <= 0) {
+                break;
+            }
+
+            $appliedAmount = min((float) $advance->remaining_amount, $remainingDeduction);
+            $advance->remaining_amount = round((float) $advance->remaining_amount - $appliedAmount, 2);
+
+            if ((float) $advance->remaining_amount <= 0) {
+                $advance->remaining_amount = 0;
+                $advance->status = 'completed';
+            }
+
+            $advance->save();
+            $remainingDeduction = round($remainingDeduction - $appliedAmount, 2);
+        }
     }
 }

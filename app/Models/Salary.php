@@ -11,7 +11,7 @@ class Salary extends Model
 
     protected $fillable = [
         'staff_id', 'month', 'basic_salary', 'bonus', 'deductions',
-        'net_salary', 'is_paid', 'paid_at'
+        'advance_deduction', 'net_salary', 'is_paid', 'paid_at'
     ];
 
     public function staff()
@@ -19,4 +19,3 @@ class Salary extends Model
         return $this->belongsTo(Staff::class);
     }
 }
-
