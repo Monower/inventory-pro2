@@ -31,23 +31,25 @@ const Menu = ({ url }) => {
             : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100");
 
     const dashboardActive = isPath("/dashboard");
-    const orderActive = isPathPrefix("/orders") || isPathPrefix("/banks");
+    const orderActive = isPathPrefix("/orders");
     const productActive =
         isPathPrefix("/products") ||
         isPathPrefix("/product-prices") ||
         isPathPrefix("/categories") ||
         isPathPrefix("/sub-categories") ||
         isPathPrefix("/attributes") ||
-        isPathPrefix("/attribute-values") ||
-        isPathPrefix("/purchases");
+        isPathPrefix("/attribute-values");
     const customerActive = isPathPrefix("/customers");
-    const employeeActive =
-        isPathPrefix("/staffs") ||
-        isPathPrefix("/salaries") ||
-        isPathPrefix("/advance-salaries");
+    const employeeActive = isPathPrefix("/staffs");
     const userManagementActive =
         isPathPrefix("/roles") || isPathPrefix("/users");
-    const transactionActive = isPathPrefix("/transactions");
+    const financeActive =
+        isPathPrefix("/banks") ||
+        isPathPrefix("/purchases") ||
+        isPathPrefix("/salaries") ||
+        isPathPrefix("/advance-salaries") ||
+        isPathPrefix("/transactions") ||
+        isPathPrefix("/transaction");
     const reportActive = isPathPrefix("/reports");
     const settingsActive =
         isPathPrefix("/profile") || isPathPrefix("/settings");
@@ -86,12 +88,6 @@ const Menu = ({ url }) => {
                             className={subLinkClass(isPath("/orders"))}
                         >
                             Order list
-                        </Link>
-                        <Link
-                            href="/banks"
-                            className={subLinkClass(isPathPrefix("/banks"))}
-                        >
-                            Bank list
                         </Link>
                     </div>
                 </SidebarDropdown>
@@ -173,14 +169,6 @@ const Menu = ({ url }) => {
                                 Attribute value list
                             </Link>
                         )} */}
-                        {permissions.includes("view purchase") && (
-                            <Link
-                                href="/purchases"
-                                className={subLinkClass(isPathPrefix("/purchases"))}
-                            >
-                                Purchases
-                            </Link>
-                        )}
                     </div>
                 </SidebarDropdown>
             )}
@@ -213,24 +201,6 @@ const Menu = ({ url }) => {
                                 className={subLinkClass(isPathPrefix("/staffs"))}
                             >
                                 Employees
-                            </Link>
-                        )}
-                        {permissions.includes("view staff") && (
-                            <Link
-                                href="/salaries"
-                                className={subLinkClass(isPathPrefix("/salaries"))}
-                            >
-                                Salaries
-                            </Link>
-                        )}
-                        {permissions.includes("view staff") && (
-                            <Link
-                                href="/advance-salaries"
-                                className={subLinkClass(
-                                    isPathPrefix("/advance-salaries")
-                                )}
-                            >
-                                Advance salaries
                             </Link>
                         )}
                     </div>
@@ -286,13 +256,69 @@ const Menu = ({ url }) => {
                 </SidebarDropdown>
             )}
 
-            {permissions.includes("view transaction") && (
-                <Link href="/transactions" className={linkClass(transactionActive)}>
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
-                        <CiDollar />
-                    </span>
-                    <span>Transaction tracker</span>
-                </Link>
+            {(permissions.includes("view bank") ||
+                permissions.includes("view purchase") ||
+                permissions.includes("view salary") ||
+                permissions.includes("view advance salary") ||
+                permissions.includes("view transaction")) && (
+                <SidebarDropdown
+                    title="Finances"
+                    icon={
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base dark:bg-slate-800">
+                            <CiDollar />
+                        </span>
+                    }
+                    active={financeActive}
+                    defaultOpen={financeActive}
+                >
+                    <div className="flex flex-col mt-2 space-y-2">
+                        {permissions.includes("view bank") && (
+                            <Link
+                                href="/banks"
+                                className={subLinkClass(isPathPrefix("/banks"))}
+                            >
+                                Bank list
+                            </Link>
+                        )}
+                        {permissions.includes("view purchase") && (
+                            <Link
+                                href="/purchases"
+                                className={subLinkClass(isPathPrefix("/purchases"))}
+                            >
+                                Purchases
+                            </Link>
+                        )}
+                        {permissions.includes("view salary") && (
+                            <Link
+                                href="/salaries"
+                                className={subLinkClass(isPathPrefix("/salaries"))}
+                            >
+                                Salaries
+                            </Link>
+                        )}
+                        {permissions.includes("view advance salary") && (
+                            <Link
+                                href="/advance-salaries"
+                                className={subLinkClass(
+                                    isPathPrefix("/advance-salaries")
+                                )}
+                            >
+                                Advance salaries
+                            </Link>
+                        )}
+                        {permissions.includes("view transaction") && (
+                            <Link
+                                href="/transactions"
+                                className={subLinkClass(
+                                    isPathPrefix("/transactions") ||
+                                        isPathPrefix("/transaction")
+                                )}
+                            >
+                                Transaction tracker
+                            </Link>
+                        )}
+                    </div>
+                </SidebarDropdown>
             )}
 
             {permissions.includes("view report") && (
