@@ -6,10 +6,14 @@ const Edit = ({ transaction }) => {
     const { company_name } = usePage();
     const { data, setData, post, errors, put } = useForm({
         name: transaction.name,
+        transaction_date: transaction.transaction_date || "",
         paymentMethod: transaction.payment_method,
         transaction_type: transaction.transaction_type,
         source: transaction.source,
         amount: transaction.amount,
+        bank_name: transaction.bank_name || "",
+        branch_name: transaction.branch_name || "",
+        transaction_id: transaction.transaction_id || "",
     });
 
     const handleSubmit = (e) => {
@@ -54,6 +58,20 @@ const Edit = ({ transaction }) => {
                                     }
                                     className="custom-input"
                                     placeholder="Enter transaction name"
+                                />
+                            </fieldset>
+                            <fieldset className="custom-fieldset p-2">
+                                <legend className="text-sm mx-2">
+                                    <label>Transaction date</label>
+                                </legend>
+                                <input
+                                    value={data.transaction_date}
+                                    type="date"
+                                    name="transaction_date"
+                                    onChange={(e) =>
+                                        setData("transaction_date", e.target.value)
+                                    }
+                                    className="custom-input"
                                 />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
@@ -121,6 +139,51 @@ const Edit = ({ transaction }) => {
                                     }
                                     className="custom-input"
                                     placeholder="Enter amount"
+                                />
+                            </fieldset>
+                            <fieldset className="custom-fieldset p-2">
+                                <legend className="text-sm mx-2">
+                                    <label>Bank name</label>
+                                </legend>
+                                <input
+                                    value={data.bank_name}
+                                    type="text"
+                                    name="bank_name"
+                                    onChange={(e) =>
+                                        setData("bank_name", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    placeholder="Enter bank name"
+                                />
+                            </fieldset>
+                            <fieldset className="custom-fieldset p-2">
+                                <legend className="text-sm mx-2">
+                                    <label>Branch name</label>
+                                </legend>
+                                <input
+                                    value={data.branch_name}
+                                    type="text"
+                                    name="branch_name"
+                                    onChange={(e) =>
+                                        setData("branch_name", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    placeholder="Enter branch name"
+                                />
+                            </fieldset>
+                            <fieldset className="custom-fieldset p-2">
+                                <legend className="text-sm mx-2">
+                                    <label>Transaction ID</label>
+                                </legend>
+                                <input
+                                    value={data.transaction_id}
+                                    type="text"
+                                    name="transaction_id"
+                                    onChange={(e) =>
+                                        setData("transaction_id", e.target.value)
+                                    }
+                                    className="custom-input"
+                                    placeholder="Enter transaction ID"
                                 />
                             </fieldset>
                         </div>

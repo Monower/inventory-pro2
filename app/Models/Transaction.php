@@ -8,9 +8,13 @@ class Transaction extends Model
 {
     protected $fillable = [
         'name',
+        'transaction_date',
         'payment_method',
         'transaction_type',
         'source',
-        'amount'
+        'amount',
+        'bank_name',
+        'branch_name',
+        'transaction_id',
     ];
 }
