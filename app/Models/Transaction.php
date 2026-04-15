@@ -12,6 +12,7 @@ class Transaction extends Model
         'payment_method',
         'transaction_type',
         'source',
+        'destination',
         'amount',
         'bank_name',
         'branch_name',

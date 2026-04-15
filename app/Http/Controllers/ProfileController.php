@@ -37,7 +37,7 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required',
+                'nullable',
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
@@ -59,6 +59,7 @@ class ProfileController extends Controller
         }
 
         // Update other validated fields
+        unset($validated['avatar']);
         $user->fill($validated);
 
         // Reset email verification if email changed

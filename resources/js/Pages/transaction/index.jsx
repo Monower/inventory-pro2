@@ -1,7 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Link, useForm, Head, usePage } from "@inertiajs/react";
 import DataTable from "@/Components/DataTable/DataTable";
-import { EditIcon, Trash2Icon } from "lucide-react";
+import { EditIcon, EyeIcon, Trash2Icon } from "lucide-react";
 import IndexFilters from "@/Components/IndexFilters";
 import Pagination from "@/Components/Pagination";
 
@@ -9,6 +9,9 @@ const Index = ({ transactions }) => {
     const { company_name, filters } = usePage().props;
     const list = transactions?.data ?? [];
     const { setData, delete: destroy } = useForm({ id: null });
+    const exportParams = {
+        q: filters?.q || undefined,
+    };
 
     const handleDelete = (id) => {
         if (confirm("Are you sure you want to delete this customer?")) {
@@ -22,7 +25,7 @@ const Index = ({ transactions }) => {
         { key: "name", label: "Name" },
         { key: "payment_method", label: "Payment Method" },
         { key: "transaction_type", label: "Transaction Type" },
-        { key: "source", label: "Source" },
+        { key: "bank_name", label: "Bank Name" },
         { key: "amount", label: "Amount" },
     ];
 
@@ -72,18 +75,29 @@ const Index = ({ transactions }) => {
                         </div>
                     </div>
                 </div>
-                <IndexFilters
-                    routeName="transactions.index"
-                    initialQuery={filters?.q || ""}
-                    placeholder="Search transactions..."
-                    className="mb-4"
-                />
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <IndexFilters
+                        routeName="transactions.index"
+                        initialQuery={filters?.q || ""}
+                        placeholder="Search transactions..."
+                    />
+                    <a
+                        href={route("transactions.export.excel", exportParams)}
+                        className="create-button text-center"
+                    >
+                        Export Excel
+                    </a>
+                </div>
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <DataTable
                         columns={columns}
                         data={formattedData}
                         renderCell={(col, row) => {
+                            if (col.key === "bank_name") {
+                                return row.bank_name || "N/A";
+                            }
+
                             if (col.key === "amount" || col.key === "si") {
                                 return row[col.key];
                             }
@@ -92,6 +106,14 @@ const Index = ({ transactions }) => {
                         }}
                         actions={(row) => (
                             <div className="flex justify-center items-center gap-2">
+                                <Link
+                                    href={route("transaction.show", row.id)}
+                                    className="view-button"
+                                    title="View"
+                                >
+                                    <EyeIcon className="w-4 h-4 inline" />
+                                </Link>
+
                                 <Link
                                     href={route("transaction.edit", row.id)}
                                     className="edit-button"

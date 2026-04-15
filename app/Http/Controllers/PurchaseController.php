@@ -129,7 +129,8 @@ class PurchaseController extends Controller
                 'name' => 'Product Purchase - ' . $purchase->invoice_no,
                 'payment_method' => 'cash',
                 'transaction_type' => 'expense',
-                'source' => $purchase->supplier_name,
+                'source' => '',
+                'destination' => $purchase->supplier_name,
                 'amount' => $purchase->paid_amount, // safe now
             ]);
         });
@@ -248,7 +249,8 @@ class PurchaseController extends Controller
                     'name' => 'Product Purchase - ' . $purchase->invoice_no,
                     'payment_method' => 'cash',
                     'transaction_type' => 'expense',
-                    'source' => $purchase->supplier_name,
+                    'source' => '',
+                    'destination' => $purchase->supplier_name,
                     'amount' => $newPaid,
                 ]);
             }

@@ -92,22 +92,26 @@
                 <div class="summary-value">{{ number_format($summary['cost_of_goods_sold'], 2) }}</div>
             </td>
             <td>
-                <div class="summary-label">Salary expense</div>
-                <div class="summary-value">{{ number_format($summary['salary_expense'], 2) }}</div>
+                <div class="summary-label">Added money</div>
+                <div class="summary-value">{{ number_format($summary['added_money'], 2) }}</div>
             </td>
         </tr>
         <tr>
+            <td>
+                <div class="summary-label">Salary expense</div>
+                <div class="summary-value">{{ number_format($summary['salary_expense'], 2) }}</div>
+            </td>
             <td>
                 <div class="summary-label">Other expense</div>
                 <div class="summary-value">{{ number_format($summary['other_expense'], 2) }}</div>
             </td>
+        </tr>
+        <tr>
             <td>
                 <div class="summary-label">Gross profit</div>
                 <div class="summary-value">{{ number_format($summary['gross_profit'], 2) }}</div>
             </td>
-        </tr>
-        <tr>
-            <td colspan="2">
+            <td>
                 <div class="summary-label">Net profit</div>
                 <div class="summary-value">{{ number_format($summary['net_profit'], 2) }}</div>
             </td>
@@ -121,6 +125,7 @@
             <tr>
                 <th>Month</th>
                 <th>Sales</th>
+                <th>Added Money</th>
                 <th>COGS</th>
                 <th>Salary</th>
                 <th>Other Expense</th>
@@ -132,6 +137,7 @@
                 <tr>
                     <td>{{ $row['month'] }}</td>
                     <td>{{ number_format($row['sales'], 2) }}</td>
+                    <td>{{ number_format($row['added_money'], 2) }}</td>
                     <td>{{ number_format($row['cogs'], 2) }}</td>
                     <td>{{ number_format($row['salary'], 2) }}</td>
                     <td>{{ number_format($row['other_expense'], 2) }}</td>

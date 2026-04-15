@@ -23,7 +23,7 @@ export default function UpdateProfileInformation({
         post,
     } = useForm({
         name: user.name,
-        email: user.email,
+        email: user.email || "",
         phone: user.phone || "",
         avatar: null, // for file upload
     });
@@ -105,14 +105,13 @@ export default function UpdateProfileInformation({
 
                 {/* Email */}
                 <div>
-                    <InputLabel htmlFor="email" value="Email" required />
+                    <InputLabel htmlFor="email" value="Email" />
                     <TextInput
                         id="email"
                         type="email"
                         className="mt-1 block w-full"
                         value={data.email}
                         onChange={(e) => setData("email", e.target.value)}
-                        required
                         autoComplete="username"
                     />
                     <InputError className="mt-2" message={errors.email} />

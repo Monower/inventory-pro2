@@ -54,6 +54,9 @@ class ReportController extends Controller
             ->whereDate('created_at', '>=', $fromDate)
             ->whereDate('created_at', '<=', $toDate)
             ->where('source', '!=', 'Salary')
+            ->where(function ($query) {
+                $query->whereNull('destination')->orWhere('destination', '!=', 'Salary');
+            })
             ->where('name', 'not like', 'Product Purchase - %')
             ->sum('amount');
 
@@ -264,6 +267,7 @@ class ReportController extends Controller
         $rows = collect($profitLoss['monthlyBreakdown'])->map(fn (array $row) => [
             $row['month'],
             (float) $row['sales'],
+            (float) $row['added_money'],
             (float) $row['cogs'],
             (float) $row['salary'],
             (float) $row['other_expense'],
@@ -388,11 +392,20 @@ class ReportController extends Controller
             ->whereDate('created_at', '>=', $fromDate)
             ->whereDate('created_at', '<=', $toDate)
             ->where('source', '!=', 'Salary')
+            ->where(function ($query) {
+                $query->whereNull('destination')->orWhere('destination', '!=', 'Salary');
+            })
             ->where('name', 'not like', 'Product Purchase - %')
             ->sum('amount');
 
+        $addedMoney = Transaction::query()
+            ->where('transaction_type', 'add_money')
+            ->whereDate('created_at', '>=', $fromDate)
+            ->whereDate('created_at', '<=', $toDate)
+            ->sum('amount');
+
         $grossProfit = $salesRevenue - $costOfGoodsSold;
-        $netProfit = $grossProfit - $salaryExpense - $otherExpense;
+        $netProfit = $grossProfit + $addedMoney - $salaryExpense - $otherExpense;
 
         $months = collect();
         $monthCursor = Carbon::parse($fromDate)->startOfMonth();
@@ -426,7 +439,16 @@ class ReportController extends Controller
             $monthlyExpense = Transaction::query()
                 ->where('transaction_type', 'expense')
                 ->where('source', '!=', 'Salary')
+                ->where(function ($query) {
+                    $query->whereNull('destination')->orWhere('destination', '!=', 'Salary');
+                })
                 ->where('name', 'not like', 'Product Purchase - %')
+                ->whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->sum('amount');
+
+            $monthlyAddedMoney = Transaction::query()
+                ->where('transaction_type', 'add_money')
                 ->whereYear('created_at', $month->year)
                 ->whereMonth('created_at', $month->month)
                 ->sum('amount');
@@ -434,10 +456,11 @@ class ReportController extends Controller
             return [
                 'month' => $monthKey,
                 'sales' => round((float) $monthlySales, 2),
+                'added_money' => round((float) $monthlyAddedMoney, 2),
                 'cogs' => round((float) $monthlyCogs, 2),
                 'salary' => round((float) $monthlySalary, 2),
                 'other_expense' => round((float) $monthlyExpense, 2),
-                'net_profit' => round((float) ($monthlySales - $monthlyCogs - $monthlySalary - $monthlyExpense), 2),
+                'net_profit' => round((float) ($monthlySales + $monthlyAddedMoney - $monthlyCogs - $monthlySalary - $monthlyExpense), 2),
             ];
         })->values()->all();
 
@@ -445,6 +468,7 @@ class ReportController extends Controller
             'summary' => [
                 'sales_revenue' => round((float) $salesRevenue, 2),
                 'sales_collected' => round((float) $salesCollected, 2),
+                'added_money' => round((float) $addedMoney, 2),
                 'cost_of_goods_sold' => round((float) $costOfGoodsSold, 2),
                 'salary_expense' => round((float) $salaryExpense, 2),
                 'other_expense' => round((float) $otherExpense, 2),

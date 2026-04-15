@@ -7,7 +7,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class ProfitLossReportExport implements FromCollection, WithHeadings, ShouldAutoSize
+class TransactionsExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
     public function __construct(protected Collection $rows)
     {
@@ -21,13 +21,18 @@ class ProfitLossReportExport implements FromCollection, WithHeadings, ShouldAuto
     public function headings(): array
     {
         return [
-            'Month',
-            'Sales',
-            'Added Money',
-            'Cost Of Goods Sold',
-            'Salary Expense',
-            'Other Expense',
-            'Net Profit',
+            'SI',
+            'Name',
+            'Transaction Date',
+            'Payment Method',
+            'Transaction Type',
+            'Source',
+            'Destination',
+            'Bank Name',
+            'Branch Name',
+            'Transaction ID',
+            'Amount',
+            'Created At',
         ];
     }
 }

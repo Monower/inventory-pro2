@@ -122,7 +122,8 @@ class SalaryController extends Controller
                 'name' => 'Salary Payment - ' . ($salary->staff?->name ?? 'Employee') . ' - ' . $salary->month,
                 'payment_method' => 'cash',
                 'transaction_type' => 'expense',
-                'source' => 'Salary',
+                'source' => '',
+                'destination' => 'Salary',
                 'amount' => $salary->net_salary,
             ]);
         }

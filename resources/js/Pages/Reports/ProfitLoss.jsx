@@ -56,6 +56,11 @@ const ProfitLoss = ({ filters, summary, monthlyBreakdown }) => {
                         value={currency(summary.sales_collected)}
                     />
                     <SummaryCard
+                        label="Added money"
+                        value={currency(summary.added_money)}
+                        tone="positive"
+                    />
+                    <SummaryCard
                         label="Cost of goods sold"
                         value={currency(summary.cost_of_goods_sold)}
                     />
@@ -92,6 +97,7 @@ const ProfitLoss = ({ filters, summary, monthlyBreakdown }) => {
                                     {[
                                         "Month",
                                         "Sales",
+                                        "Added money",
                                         "COGS",
                                         "Salary",
                                         "Other expense",
@@ -114,6 +120,9 @@ const ProfitLoss = ({ filters, summary, monthlyBreakdown }) => {
                                         </td>
                                         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                                             {currency(row.sales)}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+                                            {currency(row.added_money)}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
                                             {currency(row.cogs)}

@@ -1,16 +1,19 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
+import InputError from "@/Components/InputError";
 
 const Create = () => {
-    const { url, company_name } = usePage();
+    const { props, url } = usePage();
+    const { company_name } = props;
     const searchParams = new URLSearchParams(new URL(url, window.location.origin).search);
-    const { data, setData, post, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: "",
         transaction_date: "",
         paymentMethod: "cash",
-        transaction_type: searchParams.get("type") || "",
+        transaction_type: searchParams.get("type") || "add_money",
         source: "",
+        destination: "",
         amount: "",
         bank_name: "",
         branch_name: "",
@@ -21,6 +24,9 @@ const Create = () => {
         e.preventDefault();
         post(route("transaction.store"));
     };
+
+    const sourceLabel = data.transaction_type === "expense" ? "Destination" : "Source";
+    const sourceField = data.transaction_type === "expense" ? "destination" : "source";
 
     return (
         <AuthenticatedLayout>
@@ -34,7 +40,7 @@ const Create = () => {
                                 Add new transaction
                             </h3>
                             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                                Log a new {data.transaction_type === "expense" ? "business expense" : "money addition"} with payment method, source, and amount details.
+                                Log a new {data.transaction_type === "expense" ? "business expense" : "money addition"} with payment method, {sourceLabel.toLowerCase()}, and amount details.
                             </p>
                         </div>
                     </div>
@@ -50,6 +56,7 @@ const Create = () => {
                                     </label>
                                 </legend>
                                 <input
+                                    value={data.name}
                                     type="text"
                                     name="name"
                                     onChange={(e) =>
@@ -58,6 +65,7 @@ const Create = () => {
                                     className="custom-input"
                                     placeholder="Enter transaction name"
                                 />
+                                <InputError message={errors.name} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -72,6 +80,7 @@ const Create = () => {
                                     }
                                     className="custom-input"
                                 />
+                                <InputError message={errors.transaction_date} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -79,11 +88,17 @@ const Create = () => {
                                         Payment method
                                     </label>
                                 </legend>
-                                <select name="paymentMethod" onChange={(e) => setData("paymentMethod", e.target.value)} className="custom-input">
+                                <select
+                                    value={data.paymentMethod}
+                                    name="paymentMethod"
+                                    onChange={(e) => setData("paymentMethod", e.target.value)}
+                                    className="custom-input"
+                                >
                                     <option value="cash">Cash</option>
                                     <option value="bank">Bank</option>
                                     <option value="mobileBanking">Mobile banking</option>
                                 </select>
+                                <InputError message={errors.paymentMethod} className="mt-1" />
                                 {/* <input
                                     type="text"
                                     name="paymentMethod"
@@ -112,31 +127,39 @@ const Create = () => {
                             </fieldset> */}
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
-                                    <label>Source</label>
+                                    <label>{sourceLabel}</label>
                                 </legend>
                                 <input
+                                    value={data[sourceField]}
                                     type="text"
-                                    name="source"
+                                    name={sourceField}
                                     onChange={(e) =>
-                                        setData("source", e.target.value)
+                                        setData(sourceField, e.target.value)
                                     }
                                     className="custom-input"
-                                    placeholder="Enter source name"
+                                    placeholder={`Enter ${sourceLabel.toLowerCase()} name`}
                                 />
+                                <InputError message={errors[sourceField]} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
-                                    <label>Amount</label>
+                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        Amount
+                                    </label>
                                 </legend>
                                 <input
+                                    value={data.amount}
                                     type="number"
                                     name="amount"
+                                    step="0.01"
+                                    min="0"
                                     onChange={(e) =>
                                         setData("amount", e.target.value)
                                     }
                                     className="custom-input"
                                     placeholder="Enter amount"
                                 />
+                                <InputError message={errors.amount} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -152,6 +175,7 @@ const Create = () => {
                                     className="custom-input"
                                     placeholder="Enter bank name"
                                 />
+                                <InputError message={errors.bank_name} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -167,6 +191,7 @@ const Create = () => {
                                     className="custom-input"
                                     placeholder="Enter branch name"
                                 />
+                                <InputError message={errors.branch_name} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -182,12 +207,14 @@ const Create = () => {
                                     className="custom-input"
                                     placeholder="Enter transaction ID"
                                 />
+                                <InputError message={errors.transaction_id} className="mt-1" />
                             </fieldset>
                         </div>
+                        <InputError message={errors.transaction_type} className="mb-4" />
 
                         <div className="flex justify-end">
-                            <button className="create-button">
-                                Save
+                            <button className="create-button" disabled={processing}>
+                                {processing ? "Saving..." : "Save"}
                             </button>
                         </div>
                     </form>

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\TransactionsExport;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TransactionController extends Controller
 {
@@ -15,16 +17,7 @@ class TransactionController extends Controller
     {
         $q = trim((string) request()->query('q', ''));
 
-        $transactions = Transaction::query()
-            ->when($q !== '', function ($query) use ($q) {
-                $query->where(function ($subQuery) use ($q) {
-                    $subQuery->where('name', 'like', "%{$q}%")
-                        ->orWhere('payment_method', 'like', "%{$q}%")
-                        ->orWhere('transaction_type', 'like', "%{$q}%")
-                        ->orWhere('source', 'like', "%{$q}%")
-                        ->orWhere('amount', 'like', "%{$q}%");
-                });
-            })
+        $transactions = $this->filteredTransactionsQuery($q)
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -35,6 +28,32 @@ class TransactionController extends Controller
                 'q' => $q,
             ],
         ]);
+    }
+
+    public function exportExcel()
+    {
+        $q = trim((string) request()->query('q', ''));
+
+        $rows = $this->filteredTransactionsQuery($q)
+            ->latest()
+            ->get()
+            ->values()
+            ->map(fn (Transaction $transaction, int $index) => [
+                $index + 1,
+                $transaction->name,
+                $transaction->transaction_date,
+                $this->formatPaymentMethod($transaction->payment_method),
+                $this->formatTransactionType($transaction->transaction_type),
+                $transaction->source ?: 'N/A',
+                $transaction->destination ?: 'N/A',
+                $transaction->bank_name ?: 'N/A',
+                $transaction->branch_name ?: 'N/A',
+                $transaction->transaction_id ?: 'N/A',
+                (float) $transaction->amount,
+                optional($transaction->created_at)->format('Y-m-d H:i:s'),
+            ]);
+
+        return Excel::download(new TransactionsExport($rows), 'transactions.xlsx');
     }
 
     /**
@@ -56,6 +75,7 @@ class TransactionController extends Controller
             'paymentMethod' => ['required', 'string', 'max:255'],
             'transaction_type' => ['required', 'string', 'max:255'],
             'source' => ['nullable', 'string', 'max:255'],
+            'destination' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric'],
             'bank_name' => ['nullable', 'string', 'max:255'],
             'branch_name' => ['nullable', 'string', 'max:255'],
@@ -67,7 +87,8 @@ class TransactionController extends Controller
         $transaction->transaction_date = $validated['transaction_date'] ?? null;
         $transaction->payment_method = $validated['paymentMethod'];
         $transaction->transaction_type = $validated['transaction_type'];
-        $transaction->source = $validated['source'] ?? '';
+        $transaction->source = $validated['transaction_type'] === 'expense' ? '' : ($validated['source'] ?? '');
+        $transaction->destination = $validated['transaction_type'] === 'expense' ? ($validated['destination'] ?? null) : null;
         $transaction->amount = $validated['amount'];
         $transaction->bank_name = $validated['bank_name'] ?? null;
         $transaction->branch_name = $validated['branch_name'] ?? null;
@@ -79,9 +100,13 @@ class TransactionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Transaction $transaction)
+    public function show($transaction_id)
     {
-        //
+        $transaction = Transaction::findOrFail($transaction_id);
+
+        return Inertia::render('transaction/show', [
+            'transaction' => $transaction,
+        ]);
     }
 
     /**
@@ -104,6 +129,7 @@ class TransactionController extends Controller
             'paymentMethod' => ['required', 'string', 'max:255'],
             'transaction_type' => ['required', 'string', 'max:255'],
             'source' => ['nullable', 'string', 'max:255'],
+            'destination' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric'],
             'bank_name' => ['nullable', 'string', 'max:255'],
             'branch_name' => ['nullable', 'string', 'max:255'],
@@ -115,7 +141,8 @@ class TransactionController extends Controller
         $transaction->transaction_date = $validated['transaction_date'] ?? null;
         $transaction->payment_method = $validated['paymentMethod'];
         $transaction->transaction_type = $validated['transaction_type'];
-        $transaction->source = $validated['source'] ?? '';
+        $transaction->source = $validated['transaction_type'] === 'expense' ? '' : ($validated['source'] ?? '');
+        $transaction->destination = $validated['transaction_type'] === 'expense' ? ($validated['destination'] ?? null) : null;
         $transaction->amount = $validated['amount'];
         $transaction->bank_name = $validated['bank_name'] ?? null;
         $transaction->branch_name = $validated['branch_name'] ?? null;
@@ -132,5 +159,38 @@ class TransactionController extends Controller
         $transaction = Transaction::find($transaction_id);
         $transaction->delete();
         return to_route('transactions.index');
+    }
+
+    protected function filteredTransactionsQuery(string $q)
+    {
+        return Transaction::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', "%{$q}%")
+                        ->orWhere('payment_method', 'like', "%{$q}%")
+                        ->orWhere('transaction_type', 'like', "%{$q}%")
+                        ->orWhere('source', 'like', "%{$q}%")
+                        ->orWhere('destination', 'like', "%{$q}%")
+                        ->orWhere('bank_name', 'like', "%{$q}%")
+                        ->orWhere('amount', 'like', "%{$q}%");
+                });
+            });
+    }
+
+    protected function formatPaymentMethod(?string $value): string
+    {
+        return [
+            'cash' => 'Cash',
+            'bank' => 'Bank',
+            'mobileBanking' => 'Mobile banking',
+        ][$value] ?? ($value ?: 'N/A');
+    }
+
+    protected function formatTransactionType(?string $value): string
+    {
+        return [
+            'add_money' => 'Add money',
+            'expense' => 'Expense',
+        ][$value] ?? ($value ?: 'N/A');
     }
 }

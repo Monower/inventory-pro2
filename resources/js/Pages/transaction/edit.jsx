@@ -1,15 +1,17 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { useForm, usePage, Head } from "@inertiajs/react";
 import BackButton from "@/Components/BackButton/BackButton";
+import InputError from "@/Components/InputError";
 
 const Edit = ({ transaction }) => {
-    const { company_name } = usePage();
-    const { data, setData, post, errors, put } = useForm({
+    const { company_name } = usePage().props;
+    const { data, setData, errors, processing, put } = useForm({
         name: transaction.name,
         transaction_date: transaction.transaction_date || "",
         paymentMethod: transaction.payment_method,
         transaction_type: transaction.transaction_type,
         source: transaction.source,
+        destination: transaction.destination || (transaction.transaction_type === "expense" ? transaction.source : ""),
         amount: transaction.amount,
         bank_name: transaction.bank_name || "",
         branch_name: transaction.branch_name || "",
@@ -21,6 +23,8 @@ const Edit = ({ transaction }) => {
         put(route("transaction.update", transaction.id));
     };
 
+    const sourceLabel = data.transaction_type === "expense" ? "Destination" : "Source";
+    const sourceField = data.transaction_type === "expense" ? "destination" : "source";
 
     return (
         <AuthenticatedLayout>
@@ -59,6 +63,7 @@ const Edit = ({ transaction }) => {
                                     className="custom-input"
                                     placeholder="Enter transaction name"
                                 />
+                                <InputError message={errors.name} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -73,6 +78,7 @@ const Edit = ({ transaction }) => {
                                     }
                                     className="custom-input"
                                 />
+                                <InputError message={errors.transaction_date} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -85,6 +91,7 @@ const Edit = ({ transaction }) => {
                                     <option value="bank">Bank</option>
                                     <option value="mobileBanking">Mobile banking</option>
                                 </select>
+                                <InputError message={errors.paymentMethod} className="mt-1" />
                                 {/* <input
                                     type="text"
                                     name="paymentMethod"
@@ -113,33 +120,39 @@ const Edit = ({ transaction }) => {
                             </fieldset> */}
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
-                                    <label>Source</label>
+                                    <label>{sourceLabel}</label>
                                 </legend>
                                 <input
-                                    value={data.source}
+                                    value={data[sourceField]}
                                     type="text"
-                                    name="source"
+                                    name={sourceField}
                                     onChange={(e) =>
-                                        setData("source", e.target.value)
+                                        setData(sourceField, e.target.value)
                                     }
                                     className="custom-input"
-                                    placeholder="Enter source name"
+                                    placeholder={`Enter ${sourceLabel.toLowerCase()} name`}
                                 />
+                                <InputError message={errors[sourceField]} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
-                                    <label>Amount</label>
+                                    <label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                                        Amount
+                                    </label>
                                 </legend>
                                 <input
                                     value={data.amount}
                                     type="number"
                                     name="amount"
+                                    step="0.01"
+                                    min="0"
                                     onChange={(e) =>
                                         setData("amount", e.target.value)
                                     }
                                     className="custom-input"
                                     placeholder="Enter amount"
                                 />
+                                <InputError message={errors.amount} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -155,6 +168,7 @@ const Edit = ({ transaction }) => {
                                     className="custom-input"
                                     placeholder="Enter bank name"
                                 />
+                                <InputError message={errors.bank_name} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -170,6 +184,7 @@ const Edit = ({ transaction }) => {
                                     className="custom-input"
                                     placeholder="Enter branch name"
                                 />
+                                <InputError message={errors.branch_name} className="mt-1" />
                             </fieldset>
                             <fieldset className="custom-fieldset p-2">
                                 <legend className="text-sm mx-2">
@@ -185,12 +200,14 @@ const Edit = ({ transaction }) => {
                                     className="custom-input"
                                     placeholder="Enter transaction ID"
                                 />
+                                <InputError message={errors.transaction_id} className="mt-1" />
                             </fieldset>
                         </div>
+                        <InputError message={errors.transaction_type} className="mb-4" />
 
                         <div className="flex justify-end">
-                            <button className="edit-button">
-                                Update
+                            <button className="edit-button" disabled={processing}>
+                                {processing ? "Updating..." : "Update"}
                             </button>
                         </div>
                     </form>
