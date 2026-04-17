@@ -21,7 +21,7 @@ class SettingController extends Controller
             'settings' => [
                 'company_name' => $settings['company_name']->value ?? '',
                 'logo_url' => isset($settings['logo']) && $settings['logo']->value
-                    ? asset('storage/app/public/' . ltrim($settings['logo']->value, '/'))
+                    ? asset('storage/' . ltrim($settings['logo']->value, '/'))
                     : null,
             ],
         ]);
