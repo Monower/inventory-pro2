@@ -34,7 +34,7 @@ class ProductController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return Inertia::render('products/index', [
+        return Inertia::render('Products/index', [
             'products' => $products,
             'filters' => [
                 'q' => $q,
@@ -48,7 +48,7 @@ class ProductController extends Controller
         $categories = Category::with('subCategories')->get();
         $attributes = Attribute::with('values')->get();
 
-        return Inertia::render('products/create', [
+        return Inertia::render('Products/create', [
             'categories' => $categories,
             'attributes' => $attributes,
         ]);
@@ -95,7 +95,7 @@ class ProductController extends Controller
     // Display the specified product
     public function show(Product $product)
     {
-        return Inertia::render('products/show', [
+        return Inertia::render('Products/show', [
             'product' => $product->load(['subCategory.category', 'attribute', 'variants.attributeValue.attribute']),
         ]);
     }
@@ -106,7 +106,7 @@ class ProductController extends Controller
         $categories = Category::with('subCategories')->get();
         $attributes = Attribute::with('values')->get();
 
-        return Inertia::render('products/edit', [
+        return Inertia::render('Products/edit', [
             'product' => $product->load(['subCategory.category', 'attribute', 'variants.attributeValue.attribute']),
             'categories' => $categories,
             'attributes' => $attributes,
