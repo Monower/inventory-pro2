@@ -46,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
                 return [
                     'company_name' => $settings['company_name']->value ?? '',
                     'logo_url' => isset($settings['logo']) && $settings['logo']->value
-                        ? Storage::url($settings['logo']->value)
+                        ? asset('storage/app/public/' . ltrim($settings['logo']->value, '/'))
                         : null,
                 ];
             },
