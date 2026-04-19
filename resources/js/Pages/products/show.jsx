@@ -111,10 +111,10 @@ const Show = ({ product }) => {
                     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                         <div className="mb-4">
                             <h4 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                                Product prices
+                                Product variants
                             </h4>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                                Each attribute value keeps its own stock, and the product total is summed from these rows.
+                                Each variant can have its own price and stock.
                             </p>
                         </div>
 
@@ -122,10 +122,8 @@ const Show = ({ product }) => {
                             <table className="custom-table">
                                 <thead className="custom-thead">
                                     <tr>
-                                        <th className="custom-th rounded-l-md">Attribute</th>
-                                        <th className="custom-th">Value</th>
+                                        <th className="custom-th rounded-l-md">Variant</th>
                                         <th className="custom-th">Buying price</th>
-                                        <th className="custom-th">Average cost</th>
                                         <th className="custom-th">Selling price</th>
                                         <th className="custom-th rounded-r-md">Stock</th>
                                     </tr>
@@ -134,16 +132,10 @@ const Show = ({ product }) => {
                                     {variants.map((variant) => (
                                         <tr key={variant.id} className="custom-body-tr">
                                             <td className="custom-body-td">
-                                                {variant.attribute_value?.attribute?.name || "N/A"}
-                                            </td>
-                                            <td className="custom-body-td">
                                                 {variant.attribute_value?.name || "N/A"}
                                             </td>
                                             <td className="custom-body-td">
                                                 {variant.buying_price ?? "N/A"}
-                                            </td>
-                                            <td className="custom-body-td">
-                                                {variant.average_cost ?? "N/A"}
                                             </td>
                                             <td className="custom-body-td">
                                                 {variant.selling_price ?? "Not set"}

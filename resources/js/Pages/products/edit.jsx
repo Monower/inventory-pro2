@@ -7,7 +7,7 @@ const Edit = ({ product, categories, attributes }) => {
     const existingImagePath = product.product_image_url || null;
     const initialAttributeId = product.attribute_id ? String(product.attribute_id) : "";
 
-    const { data, setData, put, errors, processing } = useForm({
+    const { data, setData, post, errors, processing } = useForm({
         name: product.name || "",
         description: product.description || "",
         unit: product.unit || "",
@@ -15,6 +15,7 @@ const Edit = ({ product, categories, attributes }) => {
         sub_category_id: product.sub_category_id || categories[0]?.sub_categories[0]?.id || "",
         product_image: null,
         attribute_id: initialAttributeId,
+        _method: "PUT",
     });
 
     const [imagePreview, setImagePreview] = useState(existingImagePath);
@@ -45,7 +46,9 @@ const Edit = ({ product, categories, attributes }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route("products.update", product.id));
+        post(route("products.update", product.id), {
+            forceFormData: true,
+        });
     };
 
     return (
