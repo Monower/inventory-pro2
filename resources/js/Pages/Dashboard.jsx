@@ -25,25 +25,6 @@ export default function Dashboard({ data }) {
                                 system.
                             </p>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-3 sm:w-auto">
-                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    Metrics
-                                </p>
-                                <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                                    {totalMetrics}
-                                </p>
-                            </div>
-                            <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    Status
-                                </p>
-                                <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-300">
-                                    Live
-                                </p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
