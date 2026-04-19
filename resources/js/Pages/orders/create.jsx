@@ -541,7 +541,7 @@ const Create = ({ customers, products, banks }) => {
                                             key={customer.id}
                                             value={customer.id}
                                         >
-                                            {customer.phone}
+                                            {customer.name} ({customer.phone})
                                         </option>
                                     ))}
                                 </select>

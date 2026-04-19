@@ -59,7 +59,7 @@
                     <strong>Customer</strong><br>
                     {{ $order->customer?->name ?? 'Walk-in customer' }}<br>
                     <span class="muted">Phone: {{ $order->customer?->phone ?? 'N/A' }}</span><br>
-                    <span class="muted">Email: {{ $order->customer?->email ?? 'N/A' }}</span>
+                    <span class="muted">Email: {{ $order->customer?->display_email ?? 'N/A' }}</span>
                 </td>
                 <td class="text-right">
                     <strong>Status</strong><br>

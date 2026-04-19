@@ -66,6 +66,22 @@ const Edit = ({ order, customers, products, banks }) => {
         cart: [],
     });
 
+    const [cart, setCart] = useState(
+        order.items.map((item) => ({
+            line_key: item.product_variant_id
+                ? `variant-${item.product_variant_id}`
+                : `product-${item.product.id}`,
+            product_id: item.product.id,
+            product_variant_id: item.product_variant_id || null,
+            name: item.product.name,
+            variant_name: getVariantName(item.product_variant),
+            selling_price: Number(item.price),
+            stock: Number(item.product_variant?.stock ?? item.product.stock ?? 0),
+            unit: item.product.unit,
+            quantity: item.quantity,
+        }))
+    );
+
     const allErrors = Object.values(errors);
     const saleOptions = useMemo(() => buildSaleOptions(products), [products]);
     const filteredSaleOptions = useMemo(() => {
@@ -84,22 +100,6 @@ const Edit = ({ order, customers, products, banks }) => {
             );
         });
     }, [cart, productSearch, saleOptions]);
-
-    const [cart, setCart] = useState(
-        order.items.map((item) => ({
-            line_key: item.product_variant_id
-                ? `variant-${item.product_variant_id}`
-                : `product-${item.product.id}`,
-            product_id: item.product.id,
-            product_variant_id: item.product_variant_id || null,
-            name: item.product.name,
-            variant_name: getVariantName(item.product_variant),
-            selling_price: Number(item.price),
-            stock: Number(item.product_variant?.stock ?? item.product.stock ?? 0),
-            unit: item.product.unit,
-            quantity: item.quantity,
-        }))
-    );
 
     useEffect(() => {
         setData(
@@ -453,7 +453,7 @@ const Edit = ({ order, customers, products, banks }) => {
                             <option value="">-- Select customer --</option>
                             {customers.map((c) => (
                                 <option key={c.id} value={c.id}>
-                                    {c.phone}
+                                    {c.name} ({c.phone})
                                 </option>
                             ))}
                         </select>

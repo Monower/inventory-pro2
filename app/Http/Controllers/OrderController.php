@@ -46,7 +46,7 @@ class OrderController extends Controller
 
     public function create()
     {
-        $customers = Customer::all();
+        $customers = $this->orderCustomers();
         $products = Product::with('variants.attributeValue.attribute')->get();
         $banks = Bank::all();
         return Inertia::render('orders/create', compact('customers', 'products', 'banks'));
@@ -137,7 +137,7 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $order->load('items.product', 'items.productVariant.attributeValue.attribute');
-        $customers = Customer::all();
+        $customers = $this->orderCustomers();
         $products = Product::with('variants.attributeValue.attribute')->get();
         $banks = Bank::all();
 
@@ -368,6 +368,14 @@ class OrderController extends Controller
         } while (Order::where('order_number', $orderNumber)->exists());
 
         return $orderNumber;
+    }
+
+    protected function orderCustomers()
+    {
+        return Customer::query()
+            ->orderByRaw('phone = ? desc', [Customer::WALK_IN_PHONE])
+            ->orderBy('name')
+            ->get();
     }
 
     protected function companyDetails(): array

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Customer;
-use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -47,14 +46,9 @@ class CustomerController extends Controller
             'address' => 'nullable|string|max:1000',
         ]);
 
-        $email = $validated['email'] ?? '';
-        // if (!$email) {
-        //     $email = 'customer+' . $validated['phone'] . '+' . Str::lower(Str::random(8)) . '@placeholder.local';
-        // }
-
         Customer::create([
             'name' => $validated['name'] ?? '',
-            'email' => $email,
+            'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
             'address' => $validated['address'] ?? '',
         ]);
@@ -86,7 +80,7 @@ class CustomerController extends Controller
 
         $customer->update([
             'name' => $validated['name'] ?? '',
-            'email' => $validated['email'] ?? '',
+            'email' => $validated['email'] ?? null,
             'phone' => $validated['phone'],
             'address' => $validated['address'] ?? '',
         ]);

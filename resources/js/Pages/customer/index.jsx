@@ -143,7 +143,7 @@ const Index = ({ customers }) => {
                                             {customer?.name?.length < 1 ? "N/A" : customer?.name}
                                         </td>
                                         <td className="custom-body-td">
-                                            {customer?.email?.length < 1 ? "N/A" : customer?.email}
+                                            {customer?.display_email || "N/A"}
                                         </td>
                                         <td className="custom-body-td">
                                             {customer?.address?.length < 1 ? "N/A" : customer.address}

@@ -105,7 +105,7 @@ const Show = ({ order }) => {
                     </p>
                     <p>
                         <strong>Email:</strong>{" "}
-                        {order?.customer?.email || "N/A"}
+                        {order?.customer?.display_email || "N/A"}
                     </p>
                 </div>
 
