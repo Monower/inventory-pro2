@@ -1,6 +1,6 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import BackButton from "@/Components/BackButton/BackButton";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
 
@@ -88,6 +88,14 @@ const Create = ({ customers, products, banks }) => {
         () => new Set(cart.map((item) => item.line_key)),
         [cart]
     );
+    const getAvailableVariants = useCallback(
+        (productRow) =>
+            productRow.variants.filter(
+                (variant) => !selectedLineKeys.has(variant.line_key)
+            ),
+        [selectedLineKeys]
+    );
+
     const filteredProductRows = useMemo(() => {
         const search = productSearch.trim().toLowerCase();
 
@@ -110,7 +118,7 @@ const Create = ({ customers, products, banks }) => {
 
             return getAvailableVariants(product).length > 0;
         });
-    }, [productRows, productSearch, selectedLineKeys]);
+    }, [getAvailableVariants, productRows, productSearch, selectedLineKeys]);
 
     // Add product to cart
     const addCartOption = (option) => {
@@ -160,11 +168,6 @@ const Create = ({ customers, products, banks }) => {
 
         addCartOption(productRow.simple_option);
     };
-
-    const getAvailableVariants = (productRow) =>
-        productRow.variants.filter(
-            (variant) => !selectedLineKeys.has(variant.line_key)
-        );
 
     // Update quantity
     const updateQuantity = (lineKey, quantity) => {

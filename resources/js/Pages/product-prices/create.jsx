@@ -33,21 +33,32 @@ const ProductPricesCreate = ({ products, selectedProductId }) => {
             return;
         }
 
-        if (selectedProduct.attribute?.values?.length) {
+        setData("attribute_stocks", []);
+    }, [selectedProduct]);
+
+    const toggleVariantValue = (valueId, checked) => {
+        if (!checked) {
             setData(
                 "attribute_stocks",
-                selectedProduct.attribute.values.map((value) => ({
-                    attribute_value_id: String(value.id),
-                    buying_price: "",
-                    selling_price: "",
-                    stock: "",
-                }))
+                data.attribute_stocks.filter((item) => String(item.attribute_value_id) !== String(valueId))
             );
             return;
         }
 
-        setData("attribute_stocks", []);
-    }, [selectedProduct]);
+        if (data.attribute_stocks.some((item) => String(item.attribute_value_id) === String(valueId))) {
+            return;
+        }
+
+        setData("attribute_stocks", [
+            ...data.attribute_stocks,
+            {
+                attribute_value_id: String(valueId),
+                buying_price: "",
+                selling_price: "",
+                stock: "",
+            },
+        ]);
+    };
 
     const updateVariantField = (valueId, field, value) => {
         setData(
@@ -68,13 +79,18 @@ const ProductPricesCreate = ({ products, selectedProductId }) => {
             return;
         }
 
+        if (hasAttribute && data.attribute_stocks.length === 0) {
+            setClientError("Select at least one attribute value for this product.");
+            return;
+        }
+
         if (
             hasAttribute &&
             data.attribute_stocks.some(
                 (item) => item.buying_price === "" || item.selling_price === "" || item.stock === ""
             )
         ) {
-            setClientError("Fill in buying price, selling price, and stock for each attribute value.");
+            setClientError("Fill in buying price, selling price, and stock for each selected attribute value.");
             return;
         }
 
@@ -152,26 +168,32 @@ const ProductPricesCreate = ({ products, selectedProductId }) => {
                                     <div>
                                         <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Variant pricing</h4>
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                                            Each attribute value keeps its own buying price, selling price, and stock.
+                                            Select only the attribute values this product actually has.
                                         </p>
                                     </div>
 
-                                    {data.attribute_stocks.map((item) => {
-                                        const value = selectedProduct?.attribute?.values?.find(
-                                            (entry) => String(entry.id) === String(item.attribute_value_id)
+                                    {selectedProduct?.attribute?.values?.map((value) => {
+                                        const row = data.attribute_stocks.find(
+                                            (item) => String(item.attribute_value_id) === String(value.id)
                                         );
+                                        const selected = Boolean(row);
 
                                         return (
                                             <div
-                                                key={item.attribute_value_id}
-                                                className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_160px_160px_160px] dark:border-slate-700 dark:bg-slate-800/60"
+                                                key={value.id}
+                                                className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_160px_160px_160px_160px] dark:border-slate-700 dark:bg-slate-800/60"
                                             >
-                                                <div className="font-medium text-slate-900 dark:text-slate-100">
+                                                <label className="flex items-center gap-2 font-medium text-slate-900 dark:text-slate-100">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selected}
+                                                        onChange={(event) => toggleVariantValue(value.id, event.target.checked)}
+                                                    />
                                                     {value?.name || value?.value}
-                                                </div>
-                                                <input type="number" min="0" step="0.01" value={item.buying_price} onChange={(event) => updateVariantField(item.attribute_value_id, "buying_price", event.target.value)} className="custom-input" placeholder="Buying price" />
-                                                <input type="number" min="0" step="0.01" value={item.selling_price} onChange={(event) => updateVariantField(item.attribute_value_id, "selling_price", event.target.value)} className="custom-input" placeholder="Selling price" />
-                                                <input type="number" min="0" value={item.stock} onChange={(event) => updateVariantField(item.attribute_value_id, "stock", event.target.value)} className="custom-input" placeholder="Stock" />
+                                                </label>
+                                                <input type="number" min="0" step="0.01" disabled={!selected} value={row?.buying_price ?? ""} onChange={(event) => updateVariantField(value.id, "buying_price", event.target.value)} className="custom-input disabled:cursor-not-allowed disabled:opacity-50" placeholder="Buying price" />
+                                                <input type="number" min="0" step="0.01" disabled={!selected} value={row?.selling_price ?? ""} onChange={(event) => updateVariantField(value.id, "selling_price", event.target.value)} className="custom-input disabled:cursor-not-allowed disabled:opacity-50" placeholder="Selling price" />
+                                                <input type="number" min="0" disabled={!selected} value={row?.stock ?? ""} onChange={(event) => updateVariantField(value.id, "stock", event.target.value)} className="custom-input disabled:cursor-not-allowed disabled:opacity-50" placeholder="Stock" />
                                             </div>
                                         );
                                     })}
