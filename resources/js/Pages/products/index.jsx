@@ -98,11 +98,17 @@ const Index = () => {
                                             {(products.current_page - 1) * products.per_page + index + 1}
                                         </td>
                                         <td>
-                                            <img
-                                                src={"/storage/app/public/"+product.product_image}
-                                                alt={product.name}
-                                                className="w-16 h-16 object-cover rounded"
-                                            />
+                                            {product.product_image_url ? (
+                                                <img
+                                                    src={product.product_image_url}
+                                                    alt={product.name}
+                                                    className="w-16 h-16 object-cover rounded"
+                                                />
+                                            ) : (
+                                                <div className="flex h-16 w-16 items-center justify-center rounded bg-slate-100 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                                    No image
+                                                </div>
+                                            )}
                                         </td>
                                         {/* <td className="custom-body-td">
                                             {product.sub_category?.name || "N/A"}

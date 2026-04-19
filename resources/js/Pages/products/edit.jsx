@@ -4,7 +4,7 @@ import { useState } from "react";
 import BackButton from "@/Components/BackButton/BackButton";
 
 const Edit = ({ product, categories, attributes }) => {
-    const existingImagePath = product.product_image ? `/storage/app/public/${product.product_image}` : null;
+    const existingImagePath = product.product_image_url || null;
     const initialAttributeId = product.attribute_id ? String(product.attribute_id) : "";
 
     const { data, setData, put, errors, processing } = useForm({

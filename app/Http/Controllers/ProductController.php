@@ -32,9 +32,10 @@ class ProductController extends Controller
             })
             ->latest()
             ->paginate(10)
+            ->through(fn (Product $product) => $this->withProductImageUrl($product))
             ->withQueryString();
 
-        return Inertia::render('Products/index', [
+        return Inertia::render('products/index', [
             'products' => $products,
             'filters' => [
                 'q' => $q,
@@ -48,7 +49,7 @@ class ProductController extends Controller
         $categories = Category::with('subCategories')->get();
         $attributes = Attribute::with('values')->get();
 
-        return Inertia::render('Products/create', [
+        return Inertia::render('products/create', [
             'categories' => $categories,
             'attributes' => $attributes,
         ]);
@@ -95,8 +96,10 @@ class ProductController extends Controller
     // Display the specified product
     public function show(Product $product)
     {
-        return Inertia::render('Products/show', [
-            'product' => $product->load(['subCategory.category', 'attribute', 'variants.attributeValue.attribute']),
+        return Inertia::render('products/show', [
+            'product' => $this->withProductImageUrl(
+                $product->load(['subCategory.category', 'attribute', 'variants.attributeValue.attribute'])
+            ),
         ]);
     }
 
@@ -106,8 +109,10 @@ class ProductController extends Controller
         $categories = Category::with('subCategories')->get();
         $attributes = Attribute::with('values')->get();
 
-        return Inertia::render('Products/edit', [
-            'product' => $product->load(['subCategory.category', 'attribute', 'variants.attributeValue.attribute']),
+        return Inertia::render('products/edit', [
+            'product' => $this->withProductImageUrl(
+                $product->load(['subCategory.category', 'attribute', 'variants.attributeValue.attribute'])
+            ),
             'categories' => $categories,
             'attributes' => $attributes,
         ]);
@@ -177,6 +182,15 @@ class ProductController extends Controller
         } else {
             return redirect()->route('products.index')->with('error', 'Product not found.');
         }
+    }
+
+    private function withProductImageUrl(Product $product): array
+    {
+        return array_merge($product->toArray(), [
+            'product_image_url' => $product->product_image
+                ? asset('storage/' . ltrim($product->product_image, '/'))
+                : null,
+        ]);
     }
 
 }

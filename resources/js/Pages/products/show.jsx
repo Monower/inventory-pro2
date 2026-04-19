@@ -46,9 +46,9 @@ const Show = ({ product }) => {
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="md:col-span-1">
-                            {product?.product_image ? (
+                            {product?.product_image_url ? (
                                 <img
-                                    src={`/storage/app/public/${product.product_image}`}
+                                    src={product.product_image_url}
                                     alt={product?.name}
                                     className="w-full max-w-xs h-auto rounded-md border"
                                 />
