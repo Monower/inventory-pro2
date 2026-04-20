@@ -10,13 +10,20 @@ import { Sun, Moon, Menu as MenuIcon, X } from "lucide-react";
 import { applyTheme, resolveTheme } from "@/lib/theme";
 
 
-export default function AuthenticatedLayout({ header, children, title = "" }) {
+export default function AuthenticatedLayout({
+    header,
+    children,
+    title = "",
+    initialSidebarCollapsed = false,
+}) {
     const user = usePage().props.auth.user;
     const { settings, company_name, flash } = usePage().props;
     const { url } = usePage();
     // 🌗 Theme state
     const [theme, setTheme] = useState(() => resolveTheme());
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(
+        () => initialSidebarCollapsed
+    );
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);

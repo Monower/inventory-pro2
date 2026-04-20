@@ -245,7 +245,7 @@ const Create = ({ customers, products, banks }) => {
     };
 
     return (
-        <AuthenticatedLayout title="Create order">
+        <AuthenticatedLayout title="Create order" initialSidebarCollapsed>
             <section className="space-y-6">
                 <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
