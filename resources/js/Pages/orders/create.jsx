@@ -3,6 +3,7 @@ import BackButton from "@/Components/BackButton/BackButton";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm } from "@inertiajs/react";
 import Alert from "@/Components/Alert/Alert";
+import axios from "axios";
 
 const getVariantName = (variant) => variant?.attribute_value?.name || "";
 
@@ -66,11 +67,21 @@ const buildProductRows = (products = []) =>
         };
     });
 
-const Create = ({ customers, products, banks }) => {
+const Create = ({ customers: initialCustomers, products, banks }) => {
     const [cart, setCart] = useState([]);
     const [clientError, setClientError] = useState("");
     const [variantModalProduct, setVariantModalProduct] = useState(null);
     const [productSearch, setProductSearch] = useState("");
+    const [customerOptions, setCustomerOptions] = useState(initialCustomers || []);
+    const [showCustomerModal, setShowCustomerModal] = useState(false);
+    const [quickCustomerProcessing, setQuickCustomerProcessing] = useState(false);
+    const [quickCustomerErrors, setQuickCustomerErrors] = useState({});
+    const [quickCustomer, setQuickCustomer] = useState({
+        name: "",
+        phone: "",
+        email: "",
+        address: "",
+    });
 
     // useForm hook for the order
     const { data, setData, post, errors, processing } = useForm({
@@ -244,6 +255,56 @@ const Create = ({ customers, products, banks }) => {
         post(route("orders.store"));
     };
 
+    const resetQuickCustomer = () => {
+        setQuickCustomer({
+            name: "",
+            phone: "",
+            email: "",
+            address: "",
+        });
+        setQuickCustomerErrors({});
+    };
+
+    const closeCustomerModal = () => {
+        setShowCustomerModal(false);
+        resetQuickCustomer();
+    };
+
+    const handleQuickCustomerSubmit = async (e) => {
+        e.preventDefault();
+        setQuickCustomerProcessing(true);
+        setQuickCustomerErrors({});
+        setClientError("");
+
+        try {
+            const response = await axios.post(
+                route("customer.quick-store"),
+                quickCustomer
+            );
+            const customer = response.data.customer;
+
+            setCustomerOptions((currentCustomers) => [
+                customer,
+                ...currentCustomers.filter(
+                    (currentCustomer) => currentCustomer.id !== customer.id
+                ),
+            ]);
+            setData("customer_id", String(customer.id));
+            closeCustomerModal();
+        } catch (error) {
+            if (error.response?.status === 422) {
+                setQuickCustomerErrors(error.response.data.errors || {});
+            } else if (error.response?.status === 403) {
+                setClientError("You do not have permission to create customers.");
+                setShowCustomerModal(false);
+            } else {
+                setClientError("Customer could not be created. Please try again.");
+            }
+        } finally {
+            setQuickCustomerProcessing(false);
+        }
+    };
+
     return (
         <AuthenticatedLayout title="Create order" initialSidebarCollapsed>
             <section className="space-y-6">
@@ -278,7 +339,7 @@ const Create = ({ customers, products, banks }) => {
                                     Customers
                                 </p>
                                 <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                                    {customers?.length ?? 0}
+                                    {customerOptions?.length ?? 0}
                                 </p>
                             </div>
                         </div>
@@ -512,7 +573,7 @@ const Create = ({ customers, products, banks }) => {
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
                                     <p className="text-sm text-slate-500 dark:text-slate-400">Customers</p>
                                     <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                                        {customers?.length ?? 0}
+                                        {customerOptions?.length ?? 0}
                                     </h3>
                                 </div>
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/60">
@@ -528,23 +589,35 @@ const Create = ({ customers, products, banks }) => {
                                 <label className="required-label mb-1">
                                     Select customer
                                 </label>
-                                <select
-                                    value={data.customer_id}
-                                    onChange={(e) =>
-                                        setData("customer_id", e.target.value)
-                                    }
-                                    className="custom-input"
-                                >
-                                    <option value="">-- Select --</option>
-                                    {customers?.map((customer) => (
-                                        <option
-                                            key={customer.id}
-                                            value={customer.id}
-                                        >
-                                            {customer.name} ({customer.phone})
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex flex-col gap-3 md:flex-row">
+                                    <select
+                                        value={data.customer_id}
+                                        onChange={(e) =>
+                                            setData("customer_id", e.target.value)
+                                        }
+                                        className="custom-input"
+                                    >
+                                        <option value="">-- Select --</option>
+                                        {customerOptions?.map((customer) => (
+                                            <option
+                                                key={customer.id}
+                                                value={customer.id}
+                                            >
+                                                {customer.name} ({customer.phone})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCustomerModal(true)}
+                                        className="create-button whitespace-nowrap px-5 py-2.5"
+                                    >
+                                        Add customer
+                                    </button>
+                                </div>
+                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                    Add a customer here without leaving this order.
+                                </p>
                                 {errors.customer_id && (
                                     <p className="text-red-500 text-sm">
                                         {errors.customer_id}
@@ -701,6 +774,152 @@ const Create = ({ customers, products, banks }) => {
                         </div>
                     </div>
                 </form>
+
+                {showCustomerModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
+                        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+                            <div className="mb-5 flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
+                                        Add Customer
+                                    </p>
+                                    <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                                        New customer details
+                                    </h3>
+                                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                                        Save the customer and continue this order.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={closeCustomerModal}
+                                    className="rounded-full border border-slate-300 px-3 py-1 text-sm text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                                >
+                                    Close
+                                </button>
+                            </div>
+
+                            <form
+                                onSubmit={handleQuickCustomerSubmit}
+                                className="space-y-4"
+                            >
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                                            Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={quickCustomer.name}
+                                            onChange={(e) =>
+                                                setQuickCustomer({
+                                                    ...quickCustomer,
+                                                    name: e.target.value,
+                                                })
+                                            }
+                                            className="custom-input"
+                                            placeholder="Enter customer name"
+                                        />
+                                        {quickCustomerErrors.name && (
+                                            <p className="text-red-500 text-sm">
+                                                {quickCustomerErrors.name[0]}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="required-label mb-1">
+                                            Phone
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={quickCustomer.phone}
+                                            onChange={(e) =>
+                                                setQuickCustomer({
+                                                    ...quickCustomer,
+                                                    phone: e.target.value,
+                                                })
+                                            }
+                                            className="custom-input"
+                                            placeholder="Enter customer phone"
+                                            required
+                                        />
+                                        {quickCustomerErrors.phone && (
+                                            <p className="text-red-500 text-sm">
+                                                {quickCustomerErrors.phone[0]}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                                            Email
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={quickCustomer.email}
+                                            onChange={(e) =>
+                                                setQuickCustomer({
+                                                    ...quickCustomer,
+                                                    email: e.target.value,
+                                                })
+                                            }
+                                            className="custom-input"
+                                            placeholder="Enter customer email"
+                                        />
+                                        {quickCustomerErrors.email && (
+                                            <p className="text-red-500 text-sm">
+                                                {quickCustomerErrors.email[0]}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                                            Address
+                                        </label>
+                                        <textarea
+                                            value={quickCustomer.address}
+                                            onChange={(e) =>
+                                                setQuickCustomer({
+                                                    ...quickCustomer,
+                                                    address: e.target.value,
+                                                })
+                                            }
+                                            className="custom-input resize-none"
+                                            placeholder="Enter customer address"
+                                            rows={3}
+                                        />
+                                        {quickCustomerErrors.address && (
+                                            <p className="text-red-500 text-sm">
+                                                {quickCustomerErrors.address[0]}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={closeCustomerModal}
+                                        className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={quickCustomerProcessing}
+                                        className="create-button px-5 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {quickCustomerProcessing
+                                            ? "Saving..."
+                                            : "Save customer"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
 
                 {variantModalProduct && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">

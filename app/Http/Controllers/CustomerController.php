@@ -39,21 +39,19 @@ class CustomerController extends Controller
 
 
     public function store(Request $request){
-        $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'phone' => 'required|string|size:11|unique:customers,phone',
-            'email' => 'nullable|email|max:255|unique:customers,email',
-            'address' => 'nullable|string|max:1000',
-        ]);
-
-        Customer::create([
-            'name' => $validated['name'] ?? '',
-            'email' => $validated['email'] ?? null,
-            'phone' => $validated['phone'],
-            'address' => $validated['address'] ?? '',
-        ]);
+        $this->createCustomer($request);
 
         return to_route('customers.index')->with('success', 'Customer created successfully.');
+    }
+
+
+    public function quickStore(Request $request){
+        $customer = $this->createCustomer($request);
+
+        return response()->json([
+            'customer' => $customer,
+            'message' => 'Customer created successfully.',
+        ], 201);
     }
 
 
@@ -96,5 +94,22 @@ class CustomerController extends Controller
         }
         $customer->delete();
         return to_route('customers.index')->with('success', 'Customer deleted successfully.');
+    }
+
+    protected function createCustomer(Request $request): Customer
+    {
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'phone' => 'required|string|size:11|unique:customers,phone',
+            'email' => 'nullable|email|max:255|unique:customers,email',
+            'address' => 'nullable|string|max:1000',
+        ]);
+
+        return Customer::create([
+            'name' => $validated['name'] ?? '',
+            'email' => $validated['email'] ?? null,
+            'phone' => $validated['phone'],
+            'address' => $validated['address'] ?? '',
+        ]);
     }
 }
